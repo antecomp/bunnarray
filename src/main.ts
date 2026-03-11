@@ -1,11 +1,14 @@
-import { Application, Assets, Container, Sprite } from 'pixi.js';
+import { Application, Assets, Container, Sprite, TilingSprite } from 'pixi.js';
+import 'pixi.js/advanced-blend-modes';
+
+import noise from './assets/noise.png'
 
 async function main() {
   // Create a new application
   const app = new Application();
 
   // Initialize the application
-  await app.init({ background: '#1099bb', resizeTo: window });
+  await app.init({ background: '#1099bb', resizeTo: window, useBackBuffer: true });
 
   // Append the application canvas to the document body
   document.body.appendChild(app.canvas);
@@ -35,7 +38,21 @@ async function main() {
   container.pivot.x = container.width / 2;
   container.pivot.y = container.height / 2;
 
-  // Listen for animate update
+  const overlayLayer = new Container();
+  app.stage.addChild(overlayLayer);
+
+  const noiseTexture = await Assets.load(noise);
+  const noiseOverlay = new TilingSprite({
+    texture: noiseTexture,
+    width: app.screen.width,
+    height: app.screen.height
+  });
+
+  noiseOverlay.eventMode = "none";
+  // noiseOverlay.alpha = 0.2;
+  noiseOverlay.blendMode = 'hard-mix'
+  overlayLayer.addChild(noiseOverlay);
+
   app.ticker.add((time) => {
     // Continuously rotate the container!
     // * use delta to create frame-independent transform *
