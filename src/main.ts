@@ -1,7 +1,6 @@
-import { invoke } from "@tauri-apps/api/core";
 import { Application, Assets, Container, Sprite } from 'pixi.js';
 
-(async () => {
+async function main() {
   // Create a new application
   const app = new Application();
 
@@ -42,28 +41,11 @@ import { Application, Assets, Container, Sprite } from 'pixi.js';
     // * use delta to create frame-independent transform *
     container.rotation -= 0.01 * time.deltaTime;
   });
-})();
 
-
-
-let greetInputEl: HTMLInputElement | null;
-let greetMsgEl: HTMLElement | null;
-
-async function greet() {
-  if (greetMsgEl && greetInputEl) {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    greetMsgEl.textContent = await invoke("greet", {
-      name: greetInputEl.value,
-    });
-  }
+  app.renderer.on('resize', () => {
+    container.x = app.screen.width / 2;
+    container.y = app.screen.height / 2;
+  })
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  greetInputEl = document.querySelector("#greet-input");
-  greetMsgEl = document.querySelector("#greet-msg");
-  document.querySelector("#greet-form")?.addEventListener("submit", (e) => {
-    e.preventDefault();
-    greet();
-  });
-});
-
+main();
