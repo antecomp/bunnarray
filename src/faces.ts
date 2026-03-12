@@ -1,4 +1,4 @@
-import { Application, Container, Texture, TextureSource } from 'pixi.js';
+import { Application, Texture } from 'pixi.js';
 import pleased from './assets/chars/pleased.png';
 import smile from './assets/chars/smile.png';
 import weary from './assets/chars/weary.png';
@@ -9,36 +9,23 @@ const FACE_SOURCES = {
     pleased, smile, weary, nice
 }
 
-// TODO: Change to factory function so I don't have to deal with the async init thing?
-export default class Faces {
-    private app: Application;
+export default async function createFacesContainer(app: Application) {
+    const FACE_TEXTURES: Record<string, Texture> = {};
 
-    private FACE_TEXTURES: Record<string, Texture> = {}
-    public container: Container | undefined;
-    private changeTexture: ((texture: Texture<TextureSource<any>>, duration?: number) => Promise<void>) | undefined
-
-    changeTo(face: keyof typeof FACE_SOURCES) {
-        if (!this.container) throw new Error("Unable to change face, container not yet initialized. Please run init first.");
-        if (!this.changeTexture) throw new Error("Unable to change face, changeFace not yet initialized. Please run init first.");
-        this.changeTexture(this.FACE_TEXTURES[face]);
+    for (const [key, src] of Object.entries(FACE_SOURCES)) {
+        FACE_TEXTURES[key] = await loadImageAsTexture(src);
     }
 
-    constructor(app: Application) {
-        this.app = app;
+    const {container, changeTexture} = await createCrossfadingTextureDisplay(app);
+
+    function changeTo(face: keyof typeof FACE_SOURCES) {
+        changeTexture(FACE_TEXTURES[face]);
     }
 
-    async init() {
-        for (const [key, src] of Object.entries(FACE_SOURCES)) {
-            this.FACE_TEXTURES[key] = await loadImageAsTexture(src);
-        }
-        const { container, changeTexture } = await createCrossfadingTextureDisplay(this.app);
-        this.container = container;
-        this.changeTexture = changeTexture;
+    function centerContainer() {
+        container.x = app.screen.width / 2;
+        container.y = app.screen.height / 2;
     }
 
-    centerContainer() {
-        if(!this.container) throw new Error("Cannot center container as it is not yet initialized. Run init first.")
-        this.container.x = this.app.screen.width / 2;
-        this.container.y = this.app.screen.height / 2;
-    }
+    return {container, changeTo, centerContainer}
 }

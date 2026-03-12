@@ -6,19 +6,18 @@ import vertex from './passvert.glsl';
 
 import { createNoiseTexture } from './noise';
 import initializeApp from './init';
-import Faces from './faces';
+import createFacesContainer from './faces';
 
 async function main() {
   const app = await initializeApp();
 
-  const face = new Faces(app);
-  await face.init();
-  const container = face.container!;
+  const face = await createFacesContainer(app);
+  const container = face.container; // change later to just face.container around.
   face.centerContainer();
   face.changeTo('smile');
 
   // 'this' is not closed over. Need to bind.
-  (window as any)['yeah'] = face.changeTo.bind(face);
+  (window as any)['yeah'] = face.changeTo;
 
   // Overlay
   const overlayLayer = new Container();
