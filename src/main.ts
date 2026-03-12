@@ -1,46 +1,27 @@
-import { Container, DisplacementFilter, Filter, GlProgram, Graphics, Sprite } from 'pixi.js';
 import 'pixi.js/advanced-blend-modes';
 
-import filterFrag from './filter.glsl';
-import vertex from './passvert.glsl';
-
-import { createNoiseTexture } from './noise';
 import initializeApp from './init';
 import createFacesContainer from './faces';
 import createCrystalBallOverlay from './ball';
-import { createMainFilter } from './filters';
+import { createDisplacementFilter, createNoiseFilter } from './filters';
 
 async function main() {
   const app = await initializeApp();
 
   const face = await createFacesContainer(app);
-  const container = face.container; // change later to just face.container around.
   face.centerContainer();
   face.changeTo('smile');
 
   (window as any)['yeah'] = face.changeTo;
 
-  const customFilter = createMainFilter(app);
+  const noiseFilter = createNoiseFilter(app);
 
-  // Update uniform
-  app.ticker.add((ticker) => {
-    displacementSprite.x += 0.5;
-    displacementSprite.y += 0.3;
-  });
+  const displacementFilter = createDisplacementFilter(app, 4);
 
-  const noiseTexture = createNoiseTexture(512, 512);
-  const displacementSprite = new Sprite(noiseTexture);
-  displacementSprite.texture.source.addressMode = 'repeat';
-  app.stage.addChild(displacementSprite);
+  face.container.filters = [displacementFilter, noiseFilter];
 
-  const displacementFilter = new DisplacementFilter(displacementSprite);
-  displacementFilter.scale.x = 8;
-  displacementFilter.scale.y = 8;
-
-  container.filters = [displacementFilter, customFilter];
-
-  const crystalBall = createCrystalBallOverlay(app, container.height / 2);
-  crystalBall.ball.filters = [displacementFilter, customFilter]
+  const crystalBall = createCrystalBallOverlay(app, face.container.height / 2);
+  crystalBall.ball.filters = [displacementFilter, noiseFilter]
 
   app.renderer.on('resize', () => {
     face.centerContainer();

@@ -3,10 +3,12 @@ import pleased from './assets/chars/pleased.png';
 import smile from './assets/chars/smile.png';
 import weary from './assets/chars/weary.png';
 import nice from './assets/nice.jpg';
+import what from './assets/chars/what.jpg';
+
 import { createCrossfadingTextureDisplay, loadImageAsTexture } from './sprite';
 
 const FACE_SOURCES = {
-    pleased, smile, weary, nice
+    pleased, smile, weary, nice, what
 }
 
 export default async function createFacesContainer(app: Application) {
