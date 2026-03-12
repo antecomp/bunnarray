@@ -7,6 +7,7 @@ import vertex from './passvert.glsl';
 import { createNoiseTexture } from './noise';
 import initializeApp from './init';
 import createFacesContainer from './faces';
+import createCrystalBallOverlay from './ball';
 
 async function main() {
   const app = await initializeApp();
@@ -16,12 +17,7 @@ async function main() {
   face.centerContainer();
   face.changeTo('smile');
 
-  // 'this' is not closed over. Need to bind.
   (window as any)['yeah'] = face.changeTo;
-
-  // Overlay
-  const overlayLayer = new Container();
-  app.stage.addChild(overlayLayer);
 
   const customFilter = new Filter({
     glProgram: new GlProgram({
@@ -61,29 +57,13 @@ async function main() {
 
   container.filters = [displacementFilter, customFilter];
 
-  // TODO: Make an init/attacher to just do this automatically.
+  const crystalBall = createCrystalBallOverlay(app, container.height / 2);
+  crystalBall.ball.filters = [displacementFilter, customFilter]
+
   app.renderer.on('resize', () => {
     face.centerContainer();
-    // noiseOverlay.width = app.screen.width;
-    // noiseOverlay.height = app.screen.height;
+    crystalBall.redraw();
   });
-
-  // this is dumb lol - 
-  // TODO: How do redraw on resize?
-  const crystalBallCover = new Graphics()
-    .rect(0, 0, app.screen.width, app.screen.height)
-    .fill(0x000000)
-    .circle(app.screen.width / 2, app.screen.height / 2, container.height / 2)
-    .cut()
-
-  const crystalBall = new Graphics()
-    .circle(app.screen.width / 2, app.screen.height / 2, container.height / 2)
-    .stroke({ width: 5, color: 0xffffff })
-
-
-  app.stage.addChild(crystalBallCover);
-  app.stage.addChild(crystalBall);
-  crystalBall.filters = [displacementFilter, customFilter]
 }
 
 main();
