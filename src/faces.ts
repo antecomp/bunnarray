@@ -9,6 +9,7 @@ const FACE_SOURCES = {
     pleased, smile, weary, nice
 }
 
+// TODO: Change to factory function so I don't have to deal with the async init thing?
 export default class Faces {
     private app: Application;
 
@@ -33,5 +34,11 @@ export default class Faces {
         const { container, changeTexture } = await createCrossfadingTextureDisplay(this.app);
         this.container = container;
         this.changeTexture = changeTexture;
+    }
+
+    centerContainer() {
+        if(!this.container) throw new Error("Cannot center container as it is not yet initialized. Run init first.")
+        this.container.x = this.app.screen.width / 2;
+        this.container.y = this.app.screen.height / 2;
     }
 }
