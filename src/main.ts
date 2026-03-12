@@ -1,7 +1,6 @@
-import { Application, Assets, Container, defaultFilterVert, DisplacementFilter, Filter, GlProgram, Graphics, passthroughFrag, Sprite, TilingSprite, vertexGlTemplate } from 'pixi.js';
+import { Container, DisplacementFilter, Filter, GlProgram, Graphics, Sprite } from 'pixi.js';
 import 'pixi.js/advanced-blend-modes';
 
-import noise from './assets/noise.png'
 
 import filterFrag from './filter.glsl';
 
@@ -15,33 +14,10 @@ import vertex from './passvert.glsl';
 
 import { createCrossfadingTextureDisplay, loadImageAsTexture } from './sprite';
 import { createNoiseTexture } from './noise';
+import initializeApp from './init';
 
 async function main() {
-  // Create a new application
-  const app = new Application();
-
-  // Initialize the application
-  await app.init({
-    background: '#000000ff', resizeTo: window, useBackBuffer: true,
-    resolution: 1,
-    autoDensity: true,
-    antialias: false, roundPixels: true,
-  });
-
-  app.canvas.style.imageRendering = 'pixelated'
-
-  // Append the application canvas to the document body
-  document.body.appendChild(app.canvas);
-
-  // Create and add a container to the stage
-  // const container = new Container();
-
-  // app.stage.addChild(container);
-
-  // // Move the container to the center
-  // container.x = app.screen.width / 2;
-  // container.y = app.screen.height / 2;
-
+  const app = await initializeApp();
 
   const faceTextures = {
     x: await loadImageAsTexture(Them),
@@ -50,9 +26,9 @@ async function main() {
     a: await loadImageAsTexture(nice)
   }
 
-  for (const [, texture] of Object.entries(faceTextures)) {
-    texture.source.scaleMode = 'nearest';
-  }
+  // for (const [, texture] of Object.entries(faceTextures)) {
+  //   texture.source.scaleMode = 'nearest';
+  // }
 
   const { container, changeTexture } = await createCrossfadingTextureDisplay(app);
   container.x = app.screen.width / 2;
@@ -124,7 +100,8 @@ async function main() {
     // noiseOverlay.height = app.screen.height;
   });
 
-  // this is dumb lol
+  // this is dumb lol - 
+  // TODO: How do redraw on resize?
   const crystalBallCover = new Graphics()
     .rect(0, 0, app.screen.width, app.screen.height)
     .fill(0x000000)
