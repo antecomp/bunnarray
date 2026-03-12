@@ -1,4 +1,4 @@
-import { Application, Assets, Container, defaultFilterVert, Filter, GlProgram, passthroughFrag, Sprite, TilingSprite } from 'pixi.js';
+import { Application, Assets, Container, defaultFilterVert, Filter, GlProgram, passthroughFrag, Sprite, TilingSprite, vertexGlTemplate } from 'pixi.js';
 import 'pixi.js/advanced-blend-modes';
 
 import noise from './assets/noise.png'
@@ -71,34 +71,21 @@ async function main() {
 
   const overlayLayer = new Container();
   app.stage.addChild(overlayLayer);
-
-  //const noiseTexture = await Assets.load(noise);
-  // const noiseTexture = await loadImageAsTexture(noise);
-  // const noiseOverlay = new TilingSprite({
-  //   texture: noiseTexture,
-  //   width: app.screen.width,
-  //   height: app.screen.height
-  // });
-
-  // noiseOverlay.eventMode = "none";
-  // // noiseOverlay.alpha = 0.2;
-  // noiseOverlay.blendMode = 'hard-mix'
-  // overlayLayer.addChild(noiseOverlay);
-
-  // console.log(filterFrag);
-
   
   const customFilter = new Filter({
     glProgram: new GlProgram({
       fragment: filterFrag,
-      vertex,
+      vertex: vertex,
     }),
     resources: {
       timeUniforms: {
         uTime: { value: 0.0, type: 'f32' },
+        uDimensions: {value: [container.width, container.height], type: 'vec2<f32>'}
       },
     },
   });
+
+  console.log(customFilter.resources.timeUniforms.uniforms.uDimensions);
 
   // Apply the filter
   container.filters = [customFilter];
@@ -106,6 +93,8 @@ async function main() {
   // Update uniform
   app.ticker.add((ticker) => {
     customFilter.resources.timeUniforms.uniforms.uTime += 0.04 * ticker.deltaTime;
+    customFilter.resources.timeUniforms.uniforms.uDimensions = [container.width, container.height]
+
   });
 
   // TODO: Make an init/attacher to just do this automatically.
