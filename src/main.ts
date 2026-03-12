@@ -1,4 +1,4 @@
-import { Application, Assets, Container, defaultFilterVert, Filter, GlProgram, passthroughFrag, Sprite, TilingSprite, vertexGlTemplate } from 'pixi.js';
+import { Application, Assets, Container, defaultFilterVert, DisplacementFilter, Filter, GlProgram, passthroughFrag, Sprite, TilingSprite, vertexGlTemplate } from 'pixi.js';
 import 'pixi.js/advanced-blend-modes';
 
 import noise from './assets/noise.png'
@@ -13,6 +13,7 @@ import Them3 from './assets/chars/them3.png';
 import vertex from './passvert.glsl';
 
 import { createCrossfadingTextureDisplay, loadImageAsTexture } from './sprite';
+import { createNoiseTexture } from './noise';
 
 async function main() {
   // Create a new application
@@ -20,7 +21,7 @@ async function main() {
 
   // Initialize the application
   await app.init({
-    background: '#744a4aff', resizeTo: window, useBackBuffer: true,
+    background: '#000000ff', resizeTo: window, useBackBuffer: true,
     resolution: window.devicePixelRatio,
     antialias: false, roundPixels: true
   });
@@ -71,7 +72,7 @@ async function main() {
 
   const overlayLayer = new Container();
   app.stage.addChild(overlayLayer);
-  
+
   const customFilter = new Filter({
     glProgram: new GlProgram({
       fragment: filterFrag,
@@ -80,7 +81,7 @@ async function main() {
     resources: {
       timeUniforms: {
         uTime: { value: 0.0, type: 'f32' },
-        uDimensions: {value: [container.width, container.height], type: 'vec2<f32>'}
+        uDimensions: { value: [container.width, container.height], type: 'vec2<f32>' }
       },
     },
   });
@@ -88,14 +89,27 @@ async function main() {
   console.log(customFilter.resources.timeUniforms.uniforms.uDimensions);
 
   // Apply the filter
-  container.filters = [customFilter];
+  //container.filters = [customFilter];
 
   // Update uniform
   app.ticker.add((ticker) => {
     customFilter.resources.timeUniforms.uniforms.uTime += 0.04 * ticker.deltaTime;
+    // this is lazy, fix later.
     customFilter.resources.timeUniforms.uniforms.uDimensions = [container.width, container.height]
-
+    displacementSprite.x += 0.5;
+    displacementSprite.y += 0.3;
   });
+
+  const noiseTexture = createNoiseTexture(512, 512);
+  const displacementSprite = new Sprite(noiseTexture);
+  displacementSprite.texture.source.addressMode = 'repeat';
+  app.stage.addChild(displacementSprite);
+
+  const displacementFilter = new DisplacementFilter(displacementSprite);
+  displacementFilter.scale.x = 10;
+  displacementFilter.scale.y = 10;
+
+  container.filters = [displacementFilter, customFilter];
 
   // TODO: Make an init/attacher to just do this automatically.
   app.renderer.on('resize', () => {
