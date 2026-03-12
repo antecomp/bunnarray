@@ -3,45 +3,69 @@ import 'pixi.js/advanced-blend-modes';
 
 import noise from './assets/noise.png'
 
+import Them from './assets/chars/them.png';
+import Them2 from './assets/chars/them2.png';
+import Them3 from './assets/chars/them3.png';
+
+
+import { createCrossfadingTextureDisplay, loadImageAsTexture } from './sprite';
+
 async function main() {
   // Create a new application
   const app = new Application();
 
   // Initialize the application
-  await app.init({ background: '#1099bb', resizeTo: window, useBackBuffer: true });
+  await app.init({ background: '#000000ff', resizeTo: window, useBackBuffer: true });
 
   // Append the application canvas to the document body
   document.body.appendChild(app.canvas);
 
   // Create and add a container to the stage
-  const container = new Container();
+  // const container = new Container();
 
-  app.stage.addChild(container);
+  // app.stage.addChild(container);
 
-  // Load the bunny texture
-  const texture = await Assets.load('https://pixijs.com/assets/bunny.png');
+  // // Move the container to the center
+  // container.x = app.screen.width / 2;
+  // container.y = app.screen.height / 2;
 
-  // Create a 5x5 grid of bunnies in the container
-  for (let i = 0; i < 25; i++) {
-    const bunny = new Sprite(texture);
 
-    bunny.x = (i % 5) * 40;
-    bunny.y = Math.floor(i / 5) * 40;
-    container.addChild(bunny);
+  const faceTextures = {
+    x: await loadImageAsTexture(Them),
+    y: await loadImageAsTexture(Them2),
+    z: await loadImageAsTexture(Them3)
   }
 
-  // Move the container to the center
+  for (const [,texture] of Object.entries(faceTextures)) {
+    texture.source.scaleMode = 'nearest';
+  }
+
+  const { container, changeTexture } = await createCrossfadingTextureDisplay(app);
   container.x = app.screen.width / 2;
   container.y = app.screen.height / 2;
-
-  // Center the bunny sprites in local container coordinates
   container.pivot.x = container.width / 2;
   container.pivot.y = container.height / 2;
+
+  changeTexture(faceTextures.x)
+
+  setTimeout(() => {
+    changeTexture(faceTextures.y)
+  }, 2000)
+
+  setTimeout(() => {
+    changeTexture(faceTextures.z)
+  }, 4000);
+
+  (window as any).yeah = (key: 'x' | 'y' | 'z') => changeTexture(faceTextures[key]);
+
+
+  // Overlay
 
   const overlayLayer = new Container();
   app.stage.addChild(overlayLayer);
 
-  const noiseTexture = await Assets.load(noise);
+  //const noiseTexture = await Assets.load(noise);
+  const noiseTexture = await loadImageAsTexture(noise);
   const noiseOverlay = new TilingSprite({
     texture: noiseTexture,
     width: app.screen.width,
@@ -53,16 +77,10 @@ async function main() {
   noiseOverlay.blendMode = 'hard-mix'
   overlayLayer.addChild(noiseOverlay);
 
-  app.ticker.add((time) => {
-    // Continuously rotate the container!
-    // * use delta to create frame-independent transform *
-    container.rotation -= 0.01 * time.deltaTime;
-  });
-
   app.renderer.on('resize', () => {
     container.x = app.screen.width / 2;
     container.y = app.screen.height / 2;
-  })
+  });
 }
 
 main();
