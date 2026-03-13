@@ -63,6 +63,7 @@ export function linkNodes(
         if(node.options) {
             // For each option branch, the fallthrough is nextNode (node after BLOCK CLOSE)
             for (const option of node.options) {
+                // The next (which comes after this whole options block) is the fallback...
                 linkNodes(option.nodes, nextNode, labelMap);
 
                 // Wire option.next to the first real node in its branch, or to the fallthrough

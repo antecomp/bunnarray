@@ -16,16 +16,22 @@ export type ParsedOption = {
     next?: LinkedNode | null; // filled in by linker
 }
 
-export type ParsedNode = GotoPlaceholder | {
+// Change this type name later, it's confusing.
+export type ParsedTrueNode = {
     text: string;
+    face?: string
     options?: ParsedOption[];
     next?: LinkedNode | null; // filled in by linker
 }
+
+// Change this type name later, it's confusing/
+export type ParsedNode = GotoPlaceholder | ParsedTrueNode;
 
 // Final linked node shape, matching DialogueNode. Likely redundant but
 // will keep it this way just in case I do any additional parsing passes on the node content itself.
 export type LinkedNode = {
     text: string;
+    face?: string
 } & (
         | { next: LinkedNode | null }
         | { options: { text: string; next: LinkedNode | null }[] }
@@ -40,6 +46,15 @@ type SequenceResult = {
 };
 
 type OptionsResult = { options: ParsedOption[]; endIndex: number };
+
+// Lazy, but good enough lol. I don't want to make a grammar for like 2 special notations in a text line type.
+function parseTextLine(line: string): ParsedTrueNode {
+    const faceRgx = /\<face:.*?\>/g
+    const faceMatches = (line.match(faceRgx) ?? []).map(match => match.replace(/\<face:|\>/g, ''));
+    return { text: line.replace(faceRgx, '').trim(), face: faceMatches[0] }
+}
+
+(window as any).testLineParser = (line: string) => parseTextLine(line);
 
 // Linear run of dialogue nodes, escaped when we hit an option or a block close. 
 // Also Returns the index it stopped at to continue tracking with other behaviors
@@ -72,7 +87,8 @@ export function parseSequence(tokens: Token[], i: number): SequenceResult {
         }
 
         if (tok.type == 'TEXT') {
-            const node: ParsedNode = { text: tok.text };
+            //const node: ParsedNode = { text: tok.text };
+            const node = parseTextLine(tok.text);
 
             // If a label was pending, point it at this node.
             if (pendingLabel !== null) {

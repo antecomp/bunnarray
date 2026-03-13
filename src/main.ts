@@ -57,7 +57,7 @@ async function main() {
 }
 
 const input = `
-Hello, friend.
+Hello, friend. <face:smile>
 How are you?
 {
 ?: Doing well!
