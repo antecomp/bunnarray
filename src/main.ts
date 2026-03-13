@@ -7,12 +7,14 @@ import { createDisplacementFilter, createNoiseFilter } from './filters';
 import { TextStyle } from 'pixi.js';
 import { createCrossFadingTextDisplay } from './text';
 
-const textStyle = new TextStyle({
+const TEXT_STYLE = new TextStyle({
     fontFamily: ['Georgia', 'serif'],
-    fontSize: 36,
+    fontSize: 32,
     fill: 0xffffff,
-    align: 'center'
+    align: 'center',
 });
+
+const CRYSTAL_BALL_RADIUS = 290;
 
 async function main() {
   const app = await initializeApp();
@@ -29,20 +31,20 @@ async function main() {
 
   face.container.filters = [displacementFilter, noiseFilter];
 
-  const crystalBall = createCrystalBallOverlay(app, face.container.height / 2);
+  const crystalBall = createCrystalBallOverlay(app, CRYSTAL_BALL_RADIUS);
   crystalBall.ball.filters = [displacementFilter, noiseFilter]
 
-  const {container: textContainer, changeText} = createCrossFadingTextDisplay(app, textStyle, true);
-  changeText("Initial Text");
-  setTimeout(() => changeText("Jeg tilintetgjør haterne mine ved å bli venn med dem."), 2000);
-  textContainer.x = app.screen.width / 2;
-  textContainer.y = 50;
+  const responseText = createCrossFadingTextDisplay(app, TEXT_STYLE, true);
+  responseText.changeText("Initial Text");
+  setTimeout(() => responseText.changeText("Jeg tilintetgjør haterne mine ved å bli venn med dem."), 2000);
+  responseText.centerText(true, true, {x: 0, y: -CRYSTAL_BALL_RADIUS - TEXT_STYLE.fontSize});
 
-  textContainer.filters = [noiseFilter]
+  responseText.container.filters = [noiseFilter]
 
   app.renderer.on('resize', () => {
     face.centerContainer();
     crystalBall.redraw();
+    responseText.centerText(true, true, {x: 0, y: -CRYSTAL_BALL_RADIUS - TEXT_STYLE.fontSize})
   });
 }
 

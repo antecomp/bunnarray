@@ -12,9 +12,9 @@ export function createCrossFadingTextDisplay(app: Application, style: TextStyle,
         if (transitioning) throw new Error("Cannot change text during transition!");
         transitioning = true;
 
-        next = new Text({text: value, style});
+        next = new Text({ text: value, style });
         next.alpha = 0;
-        if(center) next.anchor.set(0.5);
+        if (center) next.anchor.set(0.5);
         container.addChild(next);
 
         let elapsed = 0;
@@ -26,7 +26,7 @@ export function createCrossFadingTextDisplay(app: Application, style: TextStyle,
                 next!.alpha = t;
                 if (current) current.alpha = 1 - t;
 
-                if(t >= 1) {
+                if (t >= 1) {
                     app.ticker.remove(fade);
 
                     if (current) {
@@ -43,5 +43,10 @@ export function createCrossFadingTextDisplay(app: Application, style: TextStyle,
         })
     }
 
-    return {container, changeText}
+    function centerText(horizontal = true, vertical = true, offset?: { x: number, y: number }) {
+        if (horizontal) container.x = (app.screen.width / 2) + (offset?.x ?? 0);
+        if (vertical)   container.y = (app.screen.height / 2) + (offset?.y ?? 0);
+    }
+
+    return { container, changeText, centerText }
 }
