@@ -7,6 +7,7 @@ import { createDisplacementFilter, createNoiseFilter } from './filters';
 import { TextStyle } from 'pixi.js';
 import { createCrossFadingTextDisplay } from './text';
 import createDialogueRunner from './dialogue';
+import compileDialogue, { traceCompiledDialogue } from './dialogue-parse/compileDialogue';
 
 
 const CRYSTAL_BALL_RADIUS = 290;
@@ -39,8 +40,6 @@ async function main() {
   crystalBall.ball.filters = [displacementFilter, noiseFilter];
 
   const responseText = createCrossFadingTextDisplay(app, TEXT_STYLE, true);
-  // responseText.changeText("Initial Text");
-  // setTimeout(() => responseText.changeText("Jeg tilintetgjør haterne mine ved å bli venn med dem."), 2000);
 
   const dialogueRunner = createDialogueRunner(undefined, {changeFace: face.changeTo, changeText: responseText.changeText});
 
@@ -56,5 +55,28 @@ async function main() {
     responseText.centerText(true, true, {x: 0, y: CRYSTAL_BALL_RADIUS / 1.5})
   });
 }
+
+const input = `
+Hello, friend.
+How are you?
+{
+?: Doing well!
+That is great to hear.
+?: Doing bad.
+Sorry to hear that.
+-> elsewhere
+?: Meh.
+-> elsewhere
+}
+Fallback, we continue here.
+Then we keep going.
+
+@elsewhere
+We jumped here via goto.
+And continue from this tag.
+`;
+
+const root = compileDialogue(input);
+traceCompiledDialogue(root);
 
 main();

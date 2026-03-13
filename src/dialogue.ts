@@ -21,7 +21,7 @@ export const TEST_DIALOGUE: DialogueNode = {
         text: 'Wow more text!',
         face: 'pleased',
         next: {
-            text: 'And even more.',
+            text: 'Jeg tilintetgjør haterne mine ved å bli venn med dem.',
             next: {
                 text: 'Okay that is enough text',
                 face: 'weary'
