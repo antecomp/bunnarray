@@ -11,6 +11,9 @@ const FACE_SOURCES = {
     pleased, smile, weary, nice, what
 }
 
+export type AvailableFace = keyof typeof FACE_SOURCES;
+export type FaceChangeFn = (to: AvailableFace) => Promise<void>;
+
 export default async function createFacesContainer(app: Application) {
     const FACE_TEXTURES: Record<string, Texture> = {};
 
@@ -20,8 +23,8 @@ export default async function createFacesContainer(app: Application) {
 
     const {container, changeTexture} = await createCrossfadingTextureDisplay(app);
 
-    function changeTo(face: keyof typeof FACE_SOURCES) {
-        changeTexture(FACE_TEXTURES[face]);
+    function changeTo(face: AvailableFace) {
+        return changeTexture(FACE_TEXTURES[face]);
     }
 
     function centerContainer() {

@@ -1,5 +1,7 @@
 import { Application, Container, Graphics, TextStyle, Text, CanvasTextMetrics } from "pixi.js";
 
+export type ChangeTextFn = (value: string, duration?: number) => Promise<void>
+
 function createTextWithBackground(value: string, style: TextStyle, center: boolean) {
     const wrapper = new Container();
     const text = new Text({ text: value, style });

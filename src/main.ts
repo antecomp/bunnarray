@@ -6,6 +6,7 @@ import createCrystalBallOverlay from './ball';
 import { createDisplacementFilter, createNoiseFilter } from './filters';
 import { TextStyle } from 'pixi.js';
 import { createCrossFadingTextDisplay } from './text';
+import createDialogueRunner from './dialogue';
 
 
 const CRYSTAL_BALL_RADIUS = 290;
@@ -36,11 +37,15 @@ async function main() {
 
   const crystalBall = createCrystalBallOverlay(app, CRYSTAL_BALL_RADIUS);
   crystalBall.ball.filters = [displacementFilter, noiseFilter];
-  crystalBall.ball.on('pointertap', () => console.log('trigger'))
 
   const responseText = createCrossFadingTextDisplay(app, TEXT_STYLE, true);
-  responseText.changeText("Initial Text");
-  setTimeout(() => responseText.changeText("Jeg tilintetgjør haterne mine ved å bli venn med dem."), 2000);
+  // responseText.changeText("Initial Text");
+  // setTimeout(() => responseText.changeText("Jeg tilintetgjør haterne mine ved å bli venn med dem."), 2000);
+
+  const dialogueRunner = createDialogueRunner(undefined, {changeFace: face.changeTo, changeText: responseText.changeText});
+
+  crystalBall.ball.on('pointertap', dialogueRunner.proceed);
+
   responseText.centerText(true, true, {x: 0, y: CRYSTAL_BALL_RADIUS / 1.5});
 
   responseText.container.filters = [noiseFilter]
