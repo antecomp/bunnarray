@@ -43,7 +43,11 @@ type SequenceResult = {
     labels: Record<string, ParsedNode>
 };
 
-type OptionsResult = { options: ParsedOption[]; endIndex: number };
+type OptionsResult = {
+    options: ParsedOption[];
+    endIndex: number;
+    labels: Record<string, ParsedNode>;
+};
 
 // Lazy, but good enough lol. I don't want to make a grammar for like 2 special notations in a text line type.
 function parseTextLine(line: string): DialogueNodeData {
@@ -58,8 +62,6 @@ function parseTextLine(line: string): DialogueNodeData {
 // Also Returns the index it stopped at to continue tracking with other behaviors
 export function parseSequence(tokens: Token[], i: number): SequenceResult {
     const nodes: ParsedNode[] = [];
-    // this setup will of course only preserve labels at the top level.
-    // which is what we want anyways (dont put labels in the middle of a block, that makes little logical sense)
     const labels: Record<string, ParsedNode> = {};
     let pendingLabel: string | null = null;
 
@@ -81,7 +83,7 @@ export function parseSequence(tokens: Token[], i: number): SequenceResult {
         if (tok.type == 'GOTO') {
             nodes.push({ _goto: tok.label }); // Placeholder, filled in by linker later.
             i++;
-            break; // A goto ends the sequence.
+            continue; // Keep scanning so later labels can still be indexed.
         }
 
         if (tok.type == 'TEXT') {
@@ -96,8 +98,9 @@ export function parseSequence(tokens: Token[], i: number): SequenceResult {
 
             // Peek ahead: if the very next token is a BLOCK_OPEN, this node owns that options block.
             if (tokens[i + 1]?.type === 'BLOCK_OPEN') {
-                const { options, endIndex } = parseOptions(tokens, i + 2); // Skip the {
+                const { options, endIndex, labels: optionLabels } = parseOptions(tokens, i + 2); // Skip the {
                 node.options = options;
+                Object.assign(labels, optionLabels);
                 i = endIndex; // endIndex points just past the closing }
             } else {
                 i++;
@@ -114,6 +117,7 @@ export function parseSequence(tokens: Token[], i: number): SequenceResult {
 // Returns an array of option objects and the index just past the closing } (to be used by parseSequence above)
 function parseOptions(tokens: Token[], i: number): OptionsResult {
     const options: ParsedOption[] = [];
+    const labels: Record<string, ParsedNode> = {};
 
     while (i < tokens.length) {
         const tok = tokens[i];
@@ -128,8 +132,9 @@ function parseOptions(tokens: Token[], i: number): OptionsResult {
             i++; // consume ?:
 
             // Parse whatever follows this option until the next OPTION or BLOCK_CLOSE.
-            const { nodes, endIndex } = parseSequence(tokens, i);
+            const { nodes, endIndex, labels: optionLabels } = parseSequence(tokens, i);
             i = endIndex;
+            Object.assign(labels, optionLabels);
 
             options.push({ text: optionText, nodes });
         } else {
@@ -137,5 +142,5 @@ function parseOptions(tokens: Token[], i: number): OptionsResult {
         }
     }
 
-    return { options, endIndex: i }
+    return { options, endIndex: i, labels }
 }

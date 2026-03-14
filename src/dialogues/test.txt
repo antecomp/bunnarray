@@ -3,6 +3,7 @@ Hello, friend. <face:smile>
 How are you?
 {
     ?: Doing well!
+        @test
         That is great to hear.
     ?: Doing bad.
         Sorry to hear that.
@@ -14,14 +15,17 @@ How are you?
     {
         ?: fuck you
         Okay, be that way, punk.
+        ?: Just kidding, im good
+        -> test
     }
+    This should be an inner fallback.
 }
 Fallback, we continue here.
 Then we keep going.
-
+->skipelsewhere
 @elsewhere
 We jumped here via goto.
 And continue from this tag.
-
+@skipelsewhere
 Hopefully my dialogue system loops here
 -> start
