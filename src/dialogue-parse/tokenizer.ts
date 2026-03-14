@@ -23,6 +23,8 @@ export default function tokenize(raw: string) {
         line = line.trim();
         if (!line) continue; // Skip line breaks.
 
+        if(line.startsWith('#')) continue; // Comments.
+
         if (line === '{') {
             tokens.push({type: 'BLOCK_OPEN'});
         }

@@ -59,8 +59,8 @@ export function linkNodes(
 
         const nextNode = 
             resolveLinkedNode(nodes[i+1], labelMap) // Have a following node in the same sequence.
-            ?? fallthrough          // End of sequence, is there a fallthrough?
-            ?? null;                // Truly at the end of the dialogue.
+            ?? fallthrough                          // End of sequence, is there a fallthrough?
+            ?? null;                                // Truly at the end of the dialogue.
 
         // Node is a goto, resolve target and place in.
         if(isGoto(node)) {
