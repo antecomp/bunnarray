@@ -30,7 +30,7 @@ export const TEST_DIALOGUE: DialogueNode = {
     }
 }
 
-export default function createDialogueRunner(root: DialogueNode = TEST_DIALOGUE, deps: { changeFace: FaceChangeFn, changeText: ChangeTextFn }) {
+export default function createDialogueRunner(root: DialogueNode, deps: { changeFace: FaceChangeFn, changeText: ChangeTextFn }) {
     // TODO: Utilize promises returned by the change methods to block interaction until ready.
 
     let current = root;

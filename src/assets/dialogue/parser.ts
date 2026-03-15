@@ -5,6 +5,8 @@ goto        -> Goto Text Newline
 textNode    -> (Label Text Newline)? Text (optionBlock | Newline)
 option      -> Option Text (optionBlock | Newline statement*)
 optionBlock -> Newline? BlockOpen Newline option+ BlockClose Newline
+
+Plus a bunch of bs to make Newline optional actually for EOF because im dumb
 */
 
 import { CstParser } from "chevrotain";
@@ -19,7 +21,7 @@ export class DialogueParser extends CstParser {
     dialogue = this.RULE("dialogue", () => {
         this.OPTION(() => this.CONSUME(Newline));  // leading newline
         this.MANY(() => this.SUBRULE(this.statement))
-        this.OPTION2(() => this.CONSUME2(Newline)); // Trailing newline
+        // this.OPTION2(() => this.CONSUME2(Newline)); // Trailing newline (do we need this?)
     });
 
     statement = this.RULE("statement", () => {
