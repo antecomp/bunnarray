@@ -13,6 +13,10 @@ import input from './dialogues/test.bny?raw'
 import { DialogueParser } from './assets/dialogue/parser';
 import { DialogueLexer } from './assets/dialogue/lexer';
 
+import test from './assets/dialogue/test';
+
+test();
+
 const CRYSTAL_BALL_RADIUS = 290;
 
 const TEXT_STYLE = new TextStyle({
@@ -80,36 +84,36 @@ const root = compileDialogue(input);
 
 
 
-const parser = new DialogueParser();
+// const parser = new DialogueParser();
 
-function testParse(input: string) {
-  const lexResult = DialogueLexer.tokenize(input);
-  console.log(lexResult.tokens.map(t => ({
-    type: t.tokenType.name,
-    image: t.image
-  })));
-  parser.input = lexResult.tokens;
-  const cst = parser.dialogue();
+// function testParse(input: string) {
+//   const lexResult = DialogueLexer.tokenize(input);
+//   console.log(lexResult.tokens.map(t => ({
+//     type: t.tokenType.name,
+//     image: t.image
+//   })));
+//   parser.input = lexResult.tokens;
+//   const cst = parser.dialogue();
 
-  if (parser.errors.length > 0) {
-    console.error("Parse errors:", parser.errors);
-    return;
-  }
+//   if (parser.errors.length > 0) {
+//     console.error("Parse errors:", parser.errors);
+//     return;
+//   }
 
-  console.log(JSON.stringify(cst, null, 2));
-}
+//   console.log(JSON.stringify(cst, null, 2));
+// }
 
-testParse(`
-  @start
-Hello, friend.
-How are you? {
-    ?: Doing well!
-        That is great to hear.
-    ?: Doing bad.
-        Sorry to hear that.
-        -> elsewhere
-}
-Fallback here.
-`);
+// testParse(`
+//   @start
+// Hello, friend.
+// How are you? {
+//     ?: Doing well!
+//         That is great to hear.
+//     ?: Doing bad.
+//         Sorry to hear that.
+//         -> elsewhere
+// }
+// Fallback here.
+// `);
 
 main();
