@@ -1,6 +1,6 @@
 import { DialogueNode } from "./types";
 import { AvailableFace } from "../faces";
-import { FlattenResult } from "./processor";
+import { UnlinkedNode } from "./processor";
 
 // Lazy, but good enough lol. I don't want to make a grammar for like 2 special notations in a text line type.
 function parseTextLine(line: string): DialogueNode {
@@ -9,18 +9,18 @@ function parseTextLine(line: string): DialogueNode {
     return { text: line.replace(faceRgx, '').trim(), face: faceMatches[0] as AvailableFace }
 }
 
-export function build(result: FlattenResult): DialogueNode | null {
-    if (result.nodes.length === 0) return null;
+export function build(nodes: UnlinkedNode[]): DialogueNode | null {
+    if (nodes.length === 0) return null;
 
     // Pass 1: construct all DialogueNodes without next/options wiring
     const byId = new Map<string, DialogueNode>();
-    for (const node of result.nodes) {
+    for (const node of nodes) {
         const { text, face } = parseTextLine(node.text);
         byId.set(node.id, { text, face } as DialogueNode);
     }
 
     // Pass 2: wire next and options using the map
-    for (const node of result.nodes) {
+    for (const node of nodes) {
         const dialogueNode = byId.get(node.id)!;
 
         if (node.options) {
@@ -37,5 +37,5 @@ export function build(result: FlattenResult): DialogueNode | null {
         }
     }
 
-    return byId.get(result.nodes[0].id) ?? null;
+    return byId.get(nodes[0].id) ?? null;
 }

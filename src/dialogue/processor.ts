@@ -18,12 +18,7 @@ export type UnlinkedNode = {
     }[];
 };
 
-export type FlattenResult = {
-    nodes: UnlinkedNode[];
-    labels: Record<string, string>; // label name → node id
-};
-
-export function flatten(tree: NodeTree[]): FlattenResult {
+export function flatten(tree: NodeTree[]): UnlinkedNode[] {
     const nodes: UnlinkedNode[] = [];
     const labels: Record<string, string> = {};
 
@@ -42,7 +37,7 @@ export function flatten(tree: NodeTree[]): FlattenResult {
         }
     }
 
-    return { nodes, labels };
+    return nodes;
 }
 
 function resolveRef(ref: NodeRef | null, labels: Record<string, string>): NodeRef | null {
