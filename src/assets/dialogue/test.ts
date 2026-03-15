@@ -26,6 +26,7 @@ function testVisitor(input: string) {
 
 export default function test() {
 testVisitor(`
+#comment
 @start
 Hello, friend.
 How are you? {
@@ -36,8 +37,11 @@ How are you? {
         Sorry to hear that.
         -> elsewhere
 }
+        #comment
 Fallback here.
+        #comment
 @elsewhere
 We jumped here.
+        #comment
 `);
 }
