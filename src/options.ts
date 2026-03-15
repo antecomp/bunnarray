@@ -48,20 +48,56 @@ export default function createOptionsOverlay(app: Application, ballRadius: numbe
     }
 
     // Please make a type definition for this, what am I looking at?
-    function render(optionData: ReturnType<(ReturnType<typeof createDialogueRunner>['proceed'])>) {
-        con.removeChildren();
+    async function render(optionData: ReturnType<(ReturnType<typeof createDialogueRunner>['proceed'])>, fadeDur = 60) {
+        //con.removeChildren();
+        
+        await new Promise<void>(resolve => {
+            if(con.children.length == 0) resolve();
+            let elapsed = 0;
+            con.children.forEach(child => {
+                app.ticker.add(function fade(ticker) {
+                    elapsed += ticker.deltaTime;
+                    const t = Math.min(elapsed / fadeDur, 1);
+                    child.alpha = 1 - t;
+
+                    if (t >= 1) {
+                        app.ticker.remove(fade);
+                        con.removeChild(child) // <- code smell.
+                        child.destroy();
+
+                        resolve();
+                    }
+                })
+            })
+        })
 
         if (!optionData) return;
 
         const layout = getOptionSlots(optionData.length, ballRadius);
 
-        optionData.forEach((op, i) => {
+        optionData.forEach(async (op, i) => {
             const text = createTextWithBackground(op.text, TEXT_STYLE, true);
             text.eventMode = 'static';
             text.cursor = 'pointer'
             text.x = layout[i].x;
             text.y = layout[i].y;
+
+            text.alpha = 0;
+
             con.addChild(text);
+            await new Promise<void>(resolve => {
+                let elapsed = 0;
+                app.ticker.add(function fadeIn(ticker) {
+                    elapsed += ticker.deltaTime;
+                    const t = Math.min(elapsed / fadeDur, 1);
+                    text.alpha = t;
+
+                    if(t >= 1) {
+                        app.ticker.remove(fadeIn);
+                        resolve();
+                    }
+                })
+            });
 
             text.on('pointertap', () => {
                 render(op.run())
