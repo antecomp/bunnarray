@@ -1,5 +1,5 @@
 /*
-Faux Semantic Analysis, Initial visit run through CST to generate something easier to work with.
+Faux AST, Initial visit run through CST to generate something easier to work with.
 Mirrors grammar/CST shape generally but with clean objects.
 */
 

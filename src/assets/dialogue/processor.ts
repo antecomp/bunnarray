@@ -1,4 +1,4 @@
-// Takes simplified tree from Visitor and flattens it into plain set of UnlinkedNodes.
+// Immediate Representation - Takes simplified tree from Visitor and flattens it into plain set of UnlinkedNodes.
 // UnlinkedNodes track connections with IDs, that will then be converted into proper DialogueNodes and linked later.
 
 import { generateId } from "./genid";

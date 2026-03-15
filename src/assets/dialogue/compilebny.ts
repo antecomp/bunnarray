@@ -1,5 +1,5 @@
-// 𑣲₍ ᐢ. .ᐢ₎
-// .bny dialogue compiler
+// .bny dialogue compiler 𑣲₍ ᐢ. .ᐢ₎ 
+// made by omni 2026
 
 import { DialogueNode } from "../../dialogue";
 import { build } from "./builder";
@@ -28,7 +28,12 @@ export function compileBnyDialogue(raw: string): DialogueNode | null {
         return null;
     }
 
+    // AST with Chevro info stripped.
     const tree = visitor.visit(cst);
+
+    // Large set of nodes referenced by preliminary id
     const flatResult = flatten(tree);
+
+    // Creates and links actual DialogueNodes
     return build(flatResult);
 }
