@@ -4,11 +4,15 @@ How are you? {
     ?: Doing well!
         That is great to hear. <face:pleased>
     ?: Not great.
+        @bad
         Sorry to hear that. <face:weary>
         -> elsewhere
-    ?: Been better
-        Better than bad! <face:smile>
-        -> elsewhere
+    ?: I've been... {
+        ?: Worse
+            Hey that's a start! <face:smile>
+        ?: Better
+            -> bad
+    }
     ?: I won't say
         Why is that? {
             ?: Don't feel like it!
@@ -24,4 +28,4 @@ If you ever want to talk about it,
 Do not hesitate to.
 @wrapup
 Well thats it for this test... <face:weary>
-# -> start
+-> start
