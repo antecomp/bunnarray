@@ -1,7 +1,7 @@
 // .bny dialogue compiler 𑣲₍ ᐢ. .ᐢ₎ 
 // made by omni 2026
 
-import { DialogueNode } from "./runner";
+import { DialogueNode } from "./types";
 import { build } from "./builder";
 import { resetIdCounter } from "./genid";
 import { DialogueLexer } from "./lexer";

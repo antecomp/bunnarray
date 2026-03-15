@@ -1,18 +1,6 @@
-import { AvailableFace, FaceChangeFn } from "../faces";
+import { FaceChangeFn } from "../faces";
 import { ChangeTextFn } from "../text";
-
-export type DialogueNode = {
-    text: string,
-    // Otherwise inherit from parent.
-    face?: AvailableFace,
-} & ({
-    next?: DialogueNode
-} | {
-    options: {
-        text: string,
-        next: DialogueNode
-    }[]
-});
+import { DialogueNode } from "./types";
 
 export const TEST_DIALOGUE: DialogueNode = {
     text: "This is the first line of text",

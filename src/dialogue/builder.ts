@@ -1,5 +1,5 @@
-import { DialogueNode } from "./runner";
-import { AvailableFace } from "../../faces";
+import { DialogueNode } from "./types";
+import { AvailableFace } from "../faces";
 import { FlattenResult } from "./processor";
 
 // Lazy, but good enough lol. I don't want to make a grammar for like 2 special notations in a text line type.

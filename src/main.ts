@@ -9,7 +9,8 @@ import { createCrossFadingTextDisplay } from './text';
 
 import input from './dialogues/test.bny?raw'
 import { compileBnyDialogue } from './dialogue/compilebny';
-import createDialogueRunner, { DialogueNode } from './dialogue/runner';
+import createDialogueRunner from './dialogue/runner';
+import { DialogueNode } from "./dialogue/types";
 
 
 const CRYSTAL_BALL_RADIUS = 290;
