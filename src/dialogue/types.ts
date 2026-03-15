@@ -1,5 +1,9 @@
 import { AvailableFace } from "../faces";
 
+export type DialogueOption = {
+    text: string;
+    next: DialogueNode;
+}
 
 export type DialogueNode = {
     text: string;
@@ -8,8 +12,5 @@ export type DialogueNode = {
 } & ({
     next?: DialogueNode;
 } | {
-    options: {
-        text: string;
-        next: DialogueNode;
-    }[];
+    options: DialogueOption[];
 });

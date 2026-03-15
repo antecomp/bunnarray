@@ -1,59 +1,37 @@
-import { FaceChangeFn } from "../faces";
-import { ChangeTextFn } from "../text";
+import { AvailableFace } from "../faces";
 import { DialogueNode } from "./types";
 
-export const TEST_DIALOGUE: DialogueNode = {
-    text: "This is the first line of text",
-    face: 'smile',
-    next: {
-        text: 'Wow more text!',
-        face: 'pleased',
-        next: {
-            text: 'Jeg tilintetgjør haterne mine ved å bli venn med dem.',
-            next: {
-                text: 'Okay that is enough text',
-                face: 'weary'
-            }
-        }
-    }
+export type DialogueState = {
+    text: string;
+    face?: AvailableFace;
+    options?: { text: string; next: DialogueNode }[];
+    ended: boolean;
 }
 
-export default function createDialogueRunner(root: DialogueNode, deps: { changeFace: FaceChangeFn, changeText: ChangeTextFn }) {
-    // TODO: Utilize promises returned by the change methods to block interaction until ready.
-
+export default function createDialogueRunner(root: DialogueNode) {
     let current = root;
 
-    function renderCurrent() {
-        if (current.face) deps.changeFace(current.face);
-        deps.changeText(current.text);
-    }
-
-    function getCurrentOptions() {
-        if (!('options' in current)) return;
-
-        return current.options.map(option => ({
-            run: () => moveTo(option.next),
-            text: option.text
-        }));
-    }
-
-    function moveTo(node: DialogueNode) {
-        current = node;
-        renderCurrent();
-
-        return getCurrentOptions();
-    }
-
-    renderCurrent();
-
-    function proceed() {
-        if ('next' in current && current.next) {
-            return moveTo(current.next);
+    function stateOf(node: DialogueNode): DialogueState {
+        return {
+            text: node.text,
+            face: node.face,
+            options: 'options' in node ? node.options : undefined,
+            ended: !('next' in node) && !('options' in node)
         }
-
-        return getCurrentOptions();
     }
 
-    return { proceed }
+    const currentState = () => stateOf(current);
 
+    function proceed(): DialogueState {
+        if ('next' in current && current.next) current = current.next;
+        return stateOf(current);
+    }
+
+    function choose(index: number): DialogueState {
+        if (!('options' in current)) throw new Error("No options at current node");
+        current = current.options[index].next;
+        return stateOf(current);
+    }
+
+    return {proceed, choose, currentState};
 }
