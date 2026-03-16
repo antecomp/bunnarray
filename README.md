@@ -129,7 +129,6 @@ export type DialogueOption = {
 }
 ```
 The compile function returns the DialogueNode at the "start" of this graph corresponding to the first line of text in the dialogue script.
-> Because of this structure, the 
 
 ### Why is it called BNY?
 * bnuy :)
@@ -138,7 +137,6 @@ The compile function returns the DialogueNode at the "start" of this graph corre
 -------------------------------------------------------
 
 ### TODO
-* Fix bug where dialogue cannot begin with a prompt.
 * Side-Effect Directives. 
 * Maybe some runtime directive to swap out text for variables?
 * Conditional Branches based on runtime state (use SE directives to update state too, be careful about traceability!)

@@ -1,0 +1,18 @@
+Opening Option {
+    ?: Hello
+        Hey!
+    ?: Goodbye
+        Already? Well..
+        -> end
+}
+How have you been? {
+    ?: Good
+        Great!
+    ?: Bad
+        I won't stand for that kind of energy,
+        get out of my sight!
+        -> end
+}
+Well it was great talking to you!
+@end
+Goodbye!

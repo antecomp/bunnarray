@@ -78,11 +78,12 @@ function flattenSequence(
             next: node.block ? null : nextRef,
         };
 
+        // Preserve source order so build() can use the first flattened node as the dialogue root.
+        nodes.push(unlinked);
+
         if (node.block) {
             unlinked.options = flattenBlock(node.block, node.text, nextRef, nodes, labels);
         }
-
-        nodes.push(unlinked);
     }
 
     // If sequence ends with a goto, return it as an override for the caller.
