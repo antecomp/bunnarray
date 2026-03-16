@@ -140,3 +140,18 @@ The compile function returns the DialogueNode at the "start" of this graph corre
 * Side-Effect Directives. 
 * Maybe some runtime directive to swap out text for variables?
 * Conditional Branches based on runtime state (use SE directives to update state too, be careful about traceability!)
+
+## VS Code Syntax Highlighting
+
+A minimal VS Code language extension for `.bny` files lives in [tools/vscode-bny](./tools/vscode-bny).
+
+It currently highlights:
+
+- comments
+- labels like `@start`
+- gotos like `-> start`
+- option markers like `?:`
+- block braces
+- directives like `<face:neu_smile>`
+
+To try it locally, open that folder in VS Code and run an Extension Development Host with `F5`, or package/install it as a normal extension.

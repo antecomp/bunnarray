@@ -1,0 +1,116 @@
+{
+  "name": "BNY",
+  "scopeName": "source.bny",
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#label"
+    },
+    {
+      "include": "#goto"
+    },
+    {
+      "include": "#option"
+    },
+    {
+      "include": "#directive"
+    },
+    {
+      "include": "#brace"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.bny",
+          "match": "^\\s*#.*$"
+        }
+      ]
+    },
+    "label": {
+      "patterns": [
+        {
+          "name": "meta.label.bny",
+          "match": "^(\\s*)(@)(\\s*)([^#{}\\n].*?)\\s*$",
+          "captures": {
+            "2": {
+              "name": "keyword.control.label.bny"
+            },
+            "4": {
+              "name": "entity.name.label.bny"
+            }
+          }
+        }
+      ]
+    },
+    "goto": {
+      "patterns": [
+        {
+          "name": "meta.goto.bny",
+          "match": "^(\\s*)(->)(\\s*)([^#{}\\n].*?)\\s*$",
+          "captures": {
+            "2": {
+              "name": "keyword.control.goto.bny"
+            },
+            "4": {
+              "name": "entity.name.label.bny"
+            }
+          }
+        }
+      ]
+    },
+    "option": {
+      "patterns": [
+        {
+          "name": "meta.option.bny",
+          "match": "^(\\s*)(\\?:)(\\s*)(.*?)(\\s*)(\\{)?\\s*$",
+          "captures": {
+            "2": {
+              "name": "keyword.control.option.bny"
+            },
+            "4": {
+              "name": "string.unquoted.option-text.bny"
+            },
+            "6": {
+              "name": "punctuation.section.block.begin.bny"
+            }
+          }
+        }
+      ]
+    },
+    "directive": {
+      "patterns": [
+        {
+          "name": "meta.directive.bny",
+          "match": "<([A-Za-z_][\\w-]*)(:)([^>]+)>",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.directive.bny"
+            },
+            "2": {
+              "name": "punctuation.separator.key-value.bny"
+            },
+            "3": {
+              "name": "string.unquoted.directive-value.bny"
+            }
+          }
+        }
+      ]
+    },
+    "brace": {
+      "patterns": [
+        {
+          "name": "punctuation.section.block.begin.bny",
+          "match": "\\{"
+        },
+        {
+          "name": "punctuation.section.block.end.bny",
+          "match": "\\}"
+        }
+      ]
+    }
+  }
+}

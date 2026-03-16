@@ -1,0 +1,35 @@
+{
+  "name": "bny-language",
+  "displayName": "BNY Language Support",
+  "description": "Syntax highlighting and editor support for BNY dialogue files.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "bny",
+        "aliases": [
+          "BNY",
+          "bny"
+        ],
+        "extensions": [
+          ".bny"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "bny",
+        "scopeName": "source.bny",
+        "path": "./syntaxes/bny.tmLanguage.json"
+      }
+    ]
+  }
+}
