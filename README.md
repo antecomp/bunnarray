@@ -1,9 +1,9 @@
 # Crystal (Working Title)
 A short custom-built visual novel created for the Agora Road "Demo Disc Jam"
 
-Made using PixiJS.
+Made using PixiJS, Vite & Tauri.
 
-# 𑣲₍ ᐢ. .ᐢ₎  BNY DIALOGUE
+# BNY DIALOGUE 𑣲₍ ᐢ. .ᐢ₎
 Because I am utterly insane I took this as an opportunity to create my own custom dialogue language parser using [chevrotain](https://chevrotain.io/docs/).
 
 The syntax is pretty simple...
