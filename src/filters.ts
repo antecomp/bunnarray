@@ -3,7 +3,7 @@ import filterFrag from './filter.glsl';
 import passVert from './passvert.glsl';
 import { createNoiseTexture } from "./noise";
 
-export function createNoiseFilter(app: Application) {
+export function createNoiseFilter(app: Application, intensity?: number) {
     const filter = new Filter({
         glProgram: new GlProgram({
             fragment: filterFrag,
@@ -12,6 +12,7 @@ export function createNoiseFilter(app: Application) {
         resources: {
             timeUniforms: {
                 uTime: { value: 0.0, type: 'f32' },
+                uIntensity: { value: intensity, type: 'f32' }
             }
         }
     });
@@ -29,10 +30,10 @@ export function createDisplacementFilter(app: Application, scale = 8) {
     const displacementSprite = new Sprite(noiseTexture);
     displacementSprite.texture.source.addressMode = 'repeat';
     app.stage.addChild(displacementSprite);
-    
+
     const displacementFilter = new DisplacementFilter(displacementSprite);
     displacementFilter.scale.set(scale);
-    
+
     app.ticker.add(_ => {
         displacementSprite.x += 0.5;
         displacementSprite.y += 0.5;

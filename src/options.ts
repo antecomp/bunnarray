@@ -3,6 +3,7 @@ import { createTextWithBackground } from "./text";
 import { TEXT_STYLE } from "./main";
 import { fadeTo } from "./fade";
 import { DialogueNode } from "./dialogue/types";
+import { createNoiseFilter } from "./filters";
 
 function getOptionSlots(count: number, radius: number, gapX = 150, gapY = 90) {
     const sideX = radius + gapX;
@@ -63,12 +64,20 @@ export default function createOptionsOverlay(app: Application, ballRadius: numbe
 
         const nodes = options.map((op, i) => {
             const text = createTextWithBackground(op.text, TEXT_STYLE, true);
+
+            const normalNoise = createNoiseFilter(app);
+            const lightNoise = createNoiseFilter(app, 1.0);
+
+            text.filters = [normalNoise];
+
             text.eventMode = 'static';
             text.cursor = 'pointer';
             text.alpha = 0;
             text.x = layout[i].x;
             text.y = layout[i].y;
             text.on('pointertap', () => onChoose(i));
+            text.on('pointerover', () => {text.filters = [lightNoise]});
+            text.on('pointerleave', () => {text.filters = [normalNoise]});
             con.addChild(text);
             return text;
         });

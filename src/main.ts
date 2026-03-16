@@ -43,7 +43,6 @@ async function main() {
   const responseText = createCrossFadingTextDisplay(app, TEXT_STYLE, true);
 
   const optionsOverlay = createOptionsOverlay(app, CRYSTAL_BALL_RADIUS);
-  optionsOverlay.con.filters = [noiseFilter]
 
   responseText.centerText(true, true, { x: 0, y: CRYSTAL_BALL_RADIUS / 1.5 });
   responseText.container.filters = [noiseFilter]
