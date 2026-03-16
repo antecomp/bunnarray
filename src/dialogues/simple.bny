@@ -27,6 +27,6 @@ How are you? {
 If you ever want to talk about it,
 Do not hesitate to.
 @wrapup
-Well thats it for this test... <face:soft_frown>
+Well thats it for this test... <face:soft_frown> <signal:hitend> <signal:bonus>
 # Just always loop-back to the beginning so we can test the other options.
 -> start

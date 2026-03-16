@@ -15,14 +15,23 @@ function parseTextLine(line: string): DialogueNode {
         return '';
     }).trim();
 
+    // Handle Known Directives ........................
     let face: string | undefined;
+    let signals: undefined | string[];
     for (const [directive, values] of Object.entries(directives)) {
         if (directive === 'face' && face === undefined) {
             face = values[0];
         }
+
+        if(directive === 'signal') {
+            signals = values
+        }
     }
 
-    return { text, face };
+    console.log(signals);
+    console.log(directives);
+
+    return { text, face, signals };
 }
 
 export function build(nodes: UnlinkedNode[]): DialogueNode | null {
@@ -31,8 +40,8 @@ export function build(nodes: UnlinkedNode[]): DialogueNode | null {
     // Pass 1: construct all DialogueNodes without next/options wiring
     const byId = new Map<string, DialogueNode>();
     for (const node of nodes) {
-        const { text, face } = parseTextLine(node.text);
-        byId.set(node.id, { text, face } as DialogueNode);
+        const constructedNode = parseTextLine(node.text);
+        byId.set(node.id, constructedNode);
     }
 
     // Pass 2: wire next and options using the map

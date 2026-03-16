@@ -5,8 +5,10 @@ export type DialogueOption = {
 
 export type DialogueNode = {
     text: string;
-    // Otherwise inherit from parent.
-    face?: string;
+    // Optional, will inherit from parent (i.e be unchanged) if undefined.
+    face: string | undefined;
+    // Signal response handled by runner.
+    signals: string[] | undefined
 } & ({
     next?: DialogueNode;
 } | {

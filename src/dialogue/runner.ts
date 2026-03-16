@@ -7,6 +7,7 @@ export type DialogueState = {
     text: string;
     face?: string;
     options?: { text: string; next: DialogueNode }[];
+    signals: string[] | undefined
     ended: boolean;
 }
 
@@ -14,10 +15,12 @@ function createDialogueStateMachine(root: DialogueNode) {
     let current = root;
 
     function stateOf(node: DialogueNode): DialogueState {
+        console.log(node);
         return {
             text: node.text,
             face: node.face,
             options: 'options' in node ? node.options : undefined,
+            signals: node.signals,
             ended: !('next' in node && node.next) && !('options' in node)
         }
     }
@@ -54,6 +57,7 @@ export default function createDialogueRunner(
 
         await optionsOverlay.hide();
         if (state.face) face.changeTo(state.face);
+        if(state.signals) console.log(state.signals);
         await responseText.changeText(state.text);
 
         if(state.options) {
