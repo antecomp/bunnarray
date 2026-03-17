@@ -112,10 +112,15 @@ export class DialogueParser extends CstParser {
         this.OPTION(() => this.CONSUME2(Newline));
     });
 
-    matchBranch = this.RULE("matchBranch", () => {
-        this.CONSUME(Equals);
-        this.CONSUME(Text);         // match value
-        this.CONSUME(Newline);
-        this.MANY(() => this.SUBRULE(this.statement));
+matchBranch = this.RULE("matchBranch", () => {
+    this.CONSUME(Equals);
+    this.CONSUME(Text);
+    this.CONSUME(Newline);
+    this.MANY({
+        // keep iterating unless the next two tokens are OpenBracket followed by TagClose" 
+        // i.e. stop when we're about to hit [/
+        GATE: () => this.LA(1).tokenType !== OpenBracket || this.LA(2).tokenType !== TagClose,
+        DEF: () => this.SUBRULE(this.statement)
     });
+});
 }

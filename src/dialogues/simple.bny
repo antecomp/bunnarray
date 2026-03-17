@@ -28,10 +28,25 @@ How are you? <face:neu_grin> {
 If you ever want to talk about it,
 just let me know.
 @wrapup
-Well thats it for this test... <face:soft_frown> <signal:hitend> <signal:bonus>
+Aaaaa
+# Well thats it for this test... <face:soft_frown> <signal:hitend> <signal:bonus>
 # Just always loop-back to the beginning so we can test the other options.
 
-[block:ta]
+# [block:ta]
+# Blah blah blah
+# [/block]
+Fallback
+This will run a condition
+[match:check]
+    =result1
+        I detect result 1
+    =result2
+        I detect result 2
+[/match]
+[block:tx]
 Blah blah blah
 [/block]
+This is a fallback, it should run regardless of match
+
+
 -> start
