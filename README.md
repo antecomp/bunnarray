@@ -165,6 +165,7 @@ The compile function returns the DialogueNode at the "start" of this graph corre
 * Maybe some runtime directive to swap out text for variables?
     * Maybe something like $var inline?
 * Conditional Branches based on runtime state (use SE directives to update state too, be careful about traceability!)
+    * Unless I want some basic "set" directives to have a runtime table of values. Might be overengineering there though...
 * Simple "skipped" block that can have a label inside it. Only way to navigate into that block is to goto inside it, its automatically skipped otherwise.
 * After the game jam, to make this general, add a "speaker" property to.
     * I think a `speaker: text` syntax for lines would work well here! Keep a similar inherit behavior to faces.

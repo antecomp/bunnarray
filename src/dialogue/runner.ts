@@ -51,7 +51,7 @@ function createSignalBus() {
 
     function removeListener(signal: string, action: () => void) {
         const listeners = bus.get(signal);
-        if(!listeners) return;
+        if (!listeners) return;
         bus.set(signal,
             listeners.filter(listener => listener !== action)
         );
@@ -59,39 +59,47 @@ function createSignalBus() {
 
     function emit(signal: string) {
         const listeners = bus.get(signal);
-        if(!listeners) {
+        if (!listeners) {
             console.warn("Received unhandled signal: " + signal);
             return;
         };
         listeners.forEach(listener => listener());
     }
 
-    return {addListener, removeListener, emit};
+    return { addListener, removeListener, emit };
+}
+
+function renderTextLine(text: string, varTable: Record<string, string>) {
+    // Fill in variables with runtime values.
+    return text.replace(/\$\w+/g, m => varTable[m.slice(1)]);
 }
 
 export default function createDialogueRunner(
     root: DialogueNode,
-    responseText: ReturnType<typeof createCrossFadingTextDisplay>,
-    optionsOverlay: ReturnType<typeof createOptionsOverlay>,
-    face: Awaited<ReturnType<typeof createFacesContainer>>
+    deps: {
+        responseText: ReturnType<typeof createCrossFadingTextDisplay>,
+        optionsOverlay: ReturnType<typeof createOptionsOverlay>,
+        face: Awaited<ReturnType<typeof createFacesContainer>>
+    },
+    initialVarMap?: Record<string, string>
 ) {
     const runner = createDialogueStateMachine(root);
     const signalBus = createSignalBus();
+    const varMap = new Map<string, string>(initialVarMap && Object.entries(initialVarMap));
 
     let busy = false;
 
     async function render(state: DialogueState) {
-        if(busy) return;
+        if (busy) return;
         busy = true;
+        await deps.optionsOverlay.hide();
+        if (state.face) deps.face.changeTo(state.face);
+        if (state.signals) state.signals.forEach(signal => signalBus.emit(signal));
+        await deps.responseText.changeText(renderTextLine(state.text, Object.fromEntries(varMap)));
 
-        await optionsOverlay.hide();
-        if (state.face) face.changeTo(state.face);
-        if(state.signals) state.signals.forEach(signal => signalBus.emit(signal));
-        await responseText.changeText(state.text);
-
-        if(state.options) {
-            await optionsOverlay.show(state.options, index => {
-                if(busy) return;
+        if (state.options) {
+            await deps.optionsOverlay.show(state.options, index => {
+                if (busy) return;
                 render(runner.choose(index));
             });
         }
@@ -111,7 +119,7 @@ export default function createDialogueRunner(
 
     return {
         // advance, 
-        start, 
+        start,
         proceed,
         addSignalListener: signalBus.addListener,
         removeSignalListener: signalBus.removeListener

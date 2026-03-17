@@ -1,5 +1,5 @@
 @start
-Hey, <face:neu_smile>
+Hey, $name <face:neu_smile>
 How are you? <face:neu_grin> {
     ?: Doing well!
         That is great to hear. <face:clo_grin>

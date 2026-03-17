@@ -47,7 +47,7 @@ async function main() {
   responseText.centerText(true, true, { x: 0, y: CRYSTAL_BALL_RADIUS / 1.5 });
   responseText.container.filters = [noiseFilter]
 
-  const runner = createDialogueRunner(root, responseText, optionsOverlay, face);
+  const runner = createDialogueRunner(root, {responseText, optionsOverlay, face}, {name: 'Omni'});
   crystalBall.ball.on('pointertap', runner.proceed);
   runner.addSignalListener('hitend', () => console.log('Hit end detected in main!'));
   runner.addSignalListener('bonus', function bonus() {
