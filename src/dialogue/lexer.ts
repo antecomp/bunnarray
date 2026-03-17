@@ -27,6 +27,33 @@ export const BlockClose = createToken({
     pattern: /\}/,
 });
 
+export const OpenBracket = createToken({
+    name: "OpenBracket",
+    pattern: /\[/,
+});
+
+export const CloseBracket = createToken({
+    name: "CloseBracket",
+    pattern: /\]/,
+});
+
+export const TagClose = createToken({
+    name: "TagClose",
+    pattern: /\//,
+});
+
+// Keywords
+// Must come befre text so they win at their positions...
+export const BlockKeyword = createToken({
+    name: "BlockKeyword",
+    pattern: /block:/
+});
+
+export const MatchKeyword = createToken({
+    name: "MatchKeyword",
+    pattern: /match:/
+});
+
 // --- Line-starting tokens ---
 // These must come before Text so they win at the start of a line.
 
@@ -50,11 +77,10 @@ export const Equals = createToken({
     pattern: /=\s*/,
 });
 
-
 // General, consume everything else until new line.
 export const Text = createToken({
     name: "Text",
-    pattern: /[^\n{]+/, // Dont include trailing { for block start.
+    pattern: /[^\n{}\[\]]+/,
 });
 
 // --- Lexer ---
@@ -65,6 +91,11 @@ export const allTokens = [
     Newline,
     BlockOpen,
     BlockClose,
+    OpenBracket,
+    CloseBracket,
+    TagClose,
+    BlockKeyword,
+    MatchKeyword,
     Option,
     Goto,
     Label,

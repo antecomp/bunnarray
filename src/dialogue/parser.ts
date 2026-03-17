@@ -3,7 +3,7 @@ dialogue    -> statement*
 statement   -> textNode | goto
 goto        -> Goto Text Newline
 textNode    -> (Label Text Newline)? Text (optionBlock | Newline)
-option      -> Option Text (optionBlock | Newline statement*)
+choice      -> Option Text (optionBlock | Newline statement*)
 optionBlock -> Newline? BlockOpen Newline option+ BlockClose Newline
 
 Plus a bunch of bs to make Newline optional actually for EOF because im dumb
