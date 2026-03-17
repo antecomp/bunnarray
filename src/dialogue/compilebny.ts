@@ -12,7 +12,7 @@ import { DialogueVisitor } from "./visitor";
 const parser = new DialogueParser();
 const visitor = new DialogueVisitor();
 
-export function compileBnyDialogue(raw: string): DialogueNode | null {
+export function compileBnyDialogue(raw: string, debug = true): DialogueNode | null {
     resetIdCounter();
 
     const begin = performance.now();
@@ -24,6 +24,8 @@ export function compileBnyDialogue(raw: string): DialogueNode | null {
         return null;
     }
 
+    if(debug) console.log('Tokens: ', lexResult);
+
     parser.input = lexResult.tokens;
     const cst = parser.dialogue();
     if (parser.errors.length > 0) {
@@ -31,11 +33,17 @@ export function compileBnyDialogue(raw: string): DialogueNode | null {
         return null;
     }
 
+    if(debug) console.log('CST: ', cst);
+
     // AST with Chevro info stripped.
     const tree = visitor.visit(cst);
 
+    if(debug) console.log('Visited Tree: ', tree);
+
     // Large set of nodes referenced by preliminary id
     const flatResult = flatten(tree);
+
+    if(debug) console.log('Flattened IR: ', flatResult)
 
     // Creates and links actual DialogueNodes
     const built = build(flatResult);

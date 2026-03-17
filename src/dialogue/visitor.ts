@@ -25,6 +25,21 @@ export type OptionTree = {
     nestedBlock?: OptionTree[]; // present if option immediately opens a block
 };
 
+export type SkipBlockTree = {
+    kind: 'skipBlock',
+    label: string;
+    body: NodeTree[]
+}
+
+export type MatchBlockTree = {
+    kind: 'matchBlock';
+    on: 'string'; // function name
+    branches: {
+        value: string; // match value
+        body: NodeTree[]; // Corresponding tree
+    }[]
+}
+
 
 import { generateId } from "./genid";
 import { DialogueParser } from "./parser";
@@ -45,6 +60,8 @@ export class DialogueVisitor extends BaseVisitor {
     statement(ctx: any): NodeTree {
         if (ctx.textNode) return this.visit(ctx.textNode[0]);
         if (ctx.goto) return this.visit(ctx.goto[0]);
+        if (ctx.skipBlock) return this.visit(ctx.skipBlock[0]);
+        if (ctx.matchBlock) return this.visit(ctx.matchBlock[0]);
         throw new Error("Unknown statement type");
     }
 
@@ -96,6 +113,29 @@ export class DialogueVisitor extends BaseVisitor {
             kind: 'goto',
             id: generateId(),
             target: ctx.Text[0].image.trim(),
+        };
+    }
+
+    skipBlock(ctx: any): SkipBlockTree {
+        return {
+            kind: 'skipBlock',
+            label: ctx.Text[0].image.trim(),
+            body: (ctx.statement ?? []).map((s: any) => this.visit(s)),
+        };
+    }
+
+    matchBlock(ctx: any): MatchBlockTree {
+        return {
+            kind: 'matchBlock',
+            on: ctx.Text[0].image.trim(),
+            branches: (ctx.matchBranch ?? []).map((b: any) => this.visit(b)),
+        };
+    }
+
+    matchBranch(ctx: any): MatchBlockTree['branches'][number] {
+        return {
+            value: ctx.Text[0].image.trim(),
+            body: (ctx.statement ?? []).map((s: any) => this.visit(s)),
         };
     }
 

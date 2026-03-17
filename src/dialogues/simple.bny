@@ -30,4 +30,8 @@ just let me know.
 @wrapup
 Well thats it for this test... <face:soft_frown> <signal:hitend> <signal:bonus>
 # Just always loop-back to the beginning so we can test the other options.
+
+[block:ta]
+Blah blah blah
+[/block]
 -> start
