@@ -28,9 +28,6 @@ function parseTextLine(line: string): DialogueNode {
         }
     }
 
-    console.log(signals);
-    console.log(directives);
-
     return { text, face, signals };
 }
 

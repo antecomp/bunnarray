@@ -97,9 +97,9 @@ I hate you!
 
 ### Directives
 Within a line of dialogue text (and normal text only) you 
-can define directives for additional behavior. Right now 
-there are two directives.
+can define directives for additional behavior.
 Directives take the format of `<directive:value>`. 
+> Directives heavily rely on the specific shape and implementation of the DialogueNode type and its runner.
 
 #### Face
 One directive is called `face`, it is used to indicate the expression sprite to use when displaying this dialogues text. If this directive is not supplied, we just assume the most recent face at runtime.
@@ -112,7 +112,25 @@ That I am angry! <face:anger>
 > How you handle these faces is up to implementation, of course, but the basic idea is that the generated dialogue "node" (described below) has a face attribute you can read.
 
 #### Signals
-(TODO: DOCUMENT)
+Another directive is called `signal`, it is used to have dialogue nodes "emit" a named signal when they are navigated into. These signals can be listened to for running side-effects and other events that correspond to reaching points in the dialogue.
+
+For example...
+```
+Here is the key to the castle! <signal:keygiven>
+```
+
+Then the runtime user of the dialogue (through use of the `dialogueRunner`) can then "listen" to these signals;
+```typescript
+const runner = createDialogueRunner(...);
+runner.addSignalListener('keygiven', () => Inventory.addItem(key));
+```
+The runner also has a `removeSignalListener` method, which can be used to create one-off reactions like this;
+```typescript
+runner.addSignalListener('something', function action() {
+    // do something...
+    runner.removeSignalListener('something', action);
+})
+```
 
 ### DialogueNode (actual runtime type)
 If making your own "runner" for the dialogue, know that this parser converts everything into a graph of DialogueNodes. DialogueNodes take the shape:

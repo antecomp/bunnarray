@@ -15,7 +15,6 @@ function createDialogueStateMachine(root: DialogueNode) {
     let current = root;
 
     function stateOf(node: DialogueNode): DialogueState {
-        console.log(node);
         return {
             text: node.text,
             face: node.face,
@@ -61,7 +60,7 @@ function createSignalBus() {
     function emit(signal: string) {
         const listeners = bus.get(signal);
         if(!listeners) {
-            console.warn("Received unhandled signal " + signal);
+            console.warn("Received unhandled signal: " + signal);
             return;
         };
         listeners.forEach(listener => listener());

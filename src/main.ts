@@ -50,6 +50,10 @@ async function main() {
   const runner = createDialogueRunner(root, responseText, optionsOverlay, face);
   crystalBall.ball.on('pointertap', runner.proceed);
   runner.addSignalListener('hitend', () => console.log('Hit end detected in main!'));
+  runner.addSignalListener('bonus', function bonus() {
+    console.log("This should only run once!");
+    runner.removeSignalListener('bonus', bonus);
+  })
   runner.start();
 
   app.renderer.on('resize', () => {
