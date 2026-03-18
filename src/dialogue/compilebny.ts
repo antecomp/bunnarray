@@ -51,5 +51,7 @@ export function compileBnyDialogue(raw: string, debug = true): DialogueNode | nu
     const end = performance.now();
     console.log(`𑣲₍ ᐢ. .ᐢ₎ : Compiled in ${end - begin}ms!`)
 
+    if(debug) console.log('Final build: ', built);
+
     return built;
 }

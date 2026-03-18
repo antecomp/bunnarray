@@ -26,6 +26,10 @@ How are you? <face:neu_grin> {
 -> wrapup
 @elsewhere
 If you ever want to talk about it,
+[match:slop]
+    =soy
+        do not be afraid to
+[/match]
 just let me know.
 @wrapup
 Aaaaa
