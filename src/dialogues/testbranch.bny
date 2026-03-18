@@ -55,4 +55,20 @@ And what about nested matches?
                 Got to b through a nested match
         [/match]
 [/match]
-Also have a fallback here, does our nested match connect?
+Also have a fallback here, our nested match should connect.
+Lastly, the weirdest edge case. Sometimes we might have a nested match that is chained.
+# In this case, the nested match should fallback/treat the outers chain as it's own chain too...
+# Right now, however, it instead just hits the "And then" not the chained match.
+[match:test]
+    =a
+        # We should enter this test, but then it will fail and should chain to the outers chain...
+        [match:testx]
+            =fail
+                We should not see this
+        [/match]
+[/match]
+[match:testb]
+    =b
+        We should hit this b detect
+[/match]
+And *then* this is the last fallback for this annoying thing.

@@ -102,34 +102,36 @@ function buildNextRef(
 function buildMatch(
     match: MatchTree,
     fallback: NodeRef | null,
+    chain: UnlinkedMatch | null,
     nodes: UnlinkedNode[],
     labels: Record<string, string>
 ): UnlinkedMatch {
+    // Build chained match first so we can pass it down to branches
+    // For edge case where we have nested AND chained matches, children should inherit chain if needed.
+    const chained = match.chained
+        ? buildMatch(match.chained, fallback, null, nodes, labels)
+        : null;
+    
+    // Branches should fall through to chained match if present, then outer fallback
+    const branchChain = chained ?? chain;
+
     const branches: Record<string, NodeRef | UnlinkedMatch> = {};
 
     for (const branch of match.branches) {
-        // Branch owns a match directly. No body.
         if (branch.match) {
-            branches[branch.value] = buildMatch(branch.match, fallback, nodes, labels);
+            // Pass branchChain so nested matches can escape upward through chains
+            branches[branch.value] = buildMatch(branch.match, fallback, branchChain, nodes, labels);
             continue;
         }
 
-        // Normal branch, flatten body and get first ref.
         const result = flattenSequence(branch.body, fallback, nodes, labels);
-        const branchRef = result ?? fallback;
-        if(!branchRef) throw new Error("You should never see this, buildMatch.")
-        branches[branch.value] = branchRef;
+        branches[branch.value] = result ?? fallback ?? (() => { throw new Error("buildMatch: no branch ref") })();
     }
-
-    // Chained match becomes fallback for this match
-    const chained = match.chained
-        ? buildMatch(match.chained, fallback, nodes, labels)
-        : undefined;
 
     return {
         on: match.on,
         branches,
-        fallback: chained ?? fallback ?? undefined
+        fallback: branchChain ?? fallback ?? undefined
     }
 }
 
@@ -176,7 +178,7 @@ function flattenSequence(
             const unlinked: UnlinkedNode = {
                 id: node.id,
                 text: node.text,
-                match: buildMatch(node.match, nextRef, nodes, labels)
+                match: buildMatch(node.match, nextRef, null, nodes, labels)
             };
             nodes.push(unlinked);
             if (!firstRef) firstRef = idRef(node.id);
@@ -226,7 +228,7 @@ function flattenOptionBlock(
         if (option.match) {
             return {
                 text: option.text,
-                match: buildMatch(option.match, fallback, nodes, labels),
+                match: buildMatch(option.match, fallback, null, nodes, labels),
             };
         }
 
