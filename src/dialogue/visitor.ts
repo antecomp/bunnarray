@@ -22,7 +22,7 @@ export type NodeTree = TextTree | GotoTree | SkipBlockTree | MatchBlockTree;
 export type OptionTree = {
     text: string;
     branch: NodeTree[];       // empty if this is a chained option
-    nestedBlock?: OptionTree[]; // present if option immediately opens a block
+    nestedOptionBlock?: OptionTree[]; // present if option immediately opens a block
 };
 
 export type SkipBlockTree = {
@@ -98,7 +98,7 @@ export class DialogueVisitor extends BaseVisitor {
             return {
                 text,
                 branch: [],
-                nestedBlock: this.visit(ctx.optionBlock[0]),
+                nestedOptionBlock: this.visit(ctx.optionBlock[0]),
             };
         }
 

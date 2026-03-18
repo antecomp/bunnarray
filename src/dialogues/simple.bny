@@ -46,6 +46,11 @@ This will run a condition
         I detect result 2
     =result3
         ->ta
+    =result4
+        [match:aaa]
+            =egg
+                -> elsewhere
+        [/match]
 [/match]
 [block:tx]
 Blah blah blah
