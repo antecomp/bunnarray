@@ -15,14 +15,26 @@ export type TextTree = {
     text: string;             // raw, face tag still inside
     label?: string;           // @name if present
     optionBlock?: OptionTree[];     // present if followed by an option block
+    match?: MatchTree
 };
 
-export type NodeTree = TextTree | GotoTree | SkipBlockTree | MatchBlockTree;
+export type MatchTree = {
+    on: string;
+    branches: MatchBranch[];
+    chained?: MatchTree;
+};
+
+export type MatchBranch = {
+    value: string;
+    body: NodeTree[];
+    match: MatchTree | undefined // nested match.
+};
 
 export type OptionTree = {
     text: string;
-    branch: NodeTree[];       // empty if this is a chained option
-    nestedOptionBlock?: OptionTree[]; // present if option immediately opens a block
+    branch: NodeTree[];
+    nestedOptionBlock?: OptionTree[];
+    match?: MatchTree;
 };
 
 export type SkipBlockTree = {
@@ -31,14 +43,7 @@ export type SkipBlockTree = {
     body: NodeTree[]
 }
 
-export type MatchBlockTree = {
-    kind: 'matchBlock';
-    on: 'string'; // function name
-    branches: {
-        value: string; // match value
-        body: NodeTree[]; // Corresponding tree
-    }[]
-}
+export type NodeTree = TextTree | GotoTree | SkipBlockTree;
 
 
 import { generateId } from "./genid";
@@ -61,7 +66,7 @@ export class DialogueVisitor extends BaseVisitor {
         if (ctx.textNode) return this.visit(ctx.textNode[0]);
         if (ctx.goto) return this.visit(ctx.goto[0]);
         if (ctx.skipBlock) return this.visit(ctx.skipBlock[0]);
-        if (ctx.matchBlock) return this.visit(ctx.matchBlock[0]);
+        // if (ctx.matchBlock) return this.visit(ctx.matchBlock[0]);
         throw new Error("Unknown statement type");
     }
 
@@ -81,31 +86,11 @@ export class DialogueVisitor extends BaseVisitor {
             node.optionBlock = this.visit(ctx.optionBlock[0]);
         }
 
-        return node;
-    }
-
-    optionBlock(ctx: any): OptionTree[] {
-        return (ctx.choice ?? []).map((c: any) => this.visit(c));
-    }
-
-
-    choice(ctx: any): OptionTree {
-        const text = ctx.Text[0].image.trim();
-
-        // Chained block case: ?: text {    no statements, just a nested block
-        // will generate interspersed node later.
-        if (ctx.optionBlock && (!ctx.statement || ctx.statement.length === 0)) {
-            return {
-                text,
-                branch: [],
-                nestedOptionBlock: this.visit(ctx.optionBlock[0]),
-            };
+        if (ctx.matchBlock) {
+            node.match = (this.visit(ctx.matchBlock[0]));
         }
 
-        // Normal case: statements optionally followed by a block
-        const branch = (ctx.statement ?? []).map((s: any) => this.visit(s));
-
-        return { text, branch };
+        return node;
     }
 
     goto(ctx: any): GotoTree {
@@ -116,6 +101,37 @@ export class DialogueVisitor extends BaseVisitor {
         };
     }
 
+    optionBlock(ctx: any): OptionTree[] {
+        return (ctx.choice ?? []).map((c: any) => this.visit(c));
+    }
+
+    choice(ctx: any): OptionTree {
+        const text = ctx.Text[0].image.trim();
+
+        // Chained block - option immediately opens a nested block.
+        if (ctx.optionBlock && (!ctx.statement || ctx.statement.length === 0)) {
+            return {
+                text,
+                branch: [],
+                nestedOptionBlock: this.visit(ctx.optionBlock[0]),
+            };
+        }
+
+        // Owns a match block directly.
+        if(ctx.matchBlock && (!ctx.statement || ctx.statement.length === 0)) {
+            return {
+                text,
+                branch: [],
+                match: this.visit(ctx.matchBlock[0])
+            }
+        }
+
+        // Normal case: statements optionally followed by a block
+        const branch = (ctx.statement ?? []).map((s: any) => this.visit(s));
+
+        return { text, branch };
+    }
+
     skipBlock(ctx: any): SkipBlockTree {
         return {
             kind: 'skipBlock',
@@ -124,18 +140,19 @@ export class DialogueVisitor extends BaseVisitor {
         };
     }
 
-    matchBlock(ctx: any): MatchBlockTree {
+    matchBlock(ctx: any): MatchTree {
         return {
-            kind: 'matchBlock',
             on: ctx.Text[0].image.trim(),
             branches: (ctx.matchBranch ?? []).map((b: any) => this.visit(b)),
+            chained: ctx.matchBlock ? this.visit(ctx.matchBlock[0]) : undefined
         };
     }
 
-    matchBranch(ctx: any): MatchBlockTree['branches'][number] {
+    matchBranch(ctx: any): MatchBranch {
         return {
             value: ctx.Text[0].image.trim(),
             body: (ctx.statement ?? []).map((s: any) => this.visit(s)),
+            match: ctx.matchBlock ? this.visit(ctx.matchBlock[0]) : undefined
         };
     }
 

@@ -52,6 +52,10 @@ This will run a condition
                 -> elsewhere
         [/match]
 [/match]
+[match:checkalt]
+    =rez
+        Followup match detected rez.
+[/match]
 [block:tx]
 Blah blah blah
 [/block]

@@ -1,13 +1,13 @@
 /*
 dialogue    -> statement*
-statement   -> textNode | goto | skipBlock | matchBlock
+statement   -> textNode | goto | skipBlock
 goto        → Goto Text Newline?
-textNode    → (Label Text Newline)? Text (optionBlock | Newline statement*)?
+textNode    → (Label Text Newline)? Text (optionBlock | Newline matchBlock | Newline?) 
 optionBlock → BlockOpen Newline choice+ BlockClose Newline?
 choice      → Option Text (optionBlock | matchBlock | Newline statement*)
 skipBlock   → SkipBlockOpen Text CloseBracket Newline statement* SkipBlockClose Newline?
 matchBlock  → MatchBlockOpen Text CloseBracket Newline matchBranch+ MatchBlockClose Newline? matchBlock?
-matchBranch → Equals Text Newline statement*
+matchBranch → Equals Text Newline (matchBlock |statement)*
 */
 
 import { CstParser } from "chevrotain";
@@ -37,7 +37,7 @@ export class DialogueParser extends CstParser {
             { ALT: () => this.SUBRULE(this.textNode) },
             { ALT: () => this.SUBRULE(this.goto) },
             { ALT: () => this.SUBRULE(this.skipBlock) },
-            { ALT: () => this.SUBRULE(this.matchBlock) },
+            // { ALT: () => this.SUBRULE(this.matchBlock) },
         ]);
     });
 
@@ -119,6 +119,9 @@ export class DialogueParser extends CstParser {
         this.CONSUME(Equals);
         this.CONSUME(Text);
         this.CONSUME(Newline);
-        this.MANY(() => this.SUBRULE(this.statement));
+        this.OR([
+            {ALT: () => this.SUBRULE(this.matchBlock)},
+            {ALT: () => this.MANY(() => this.SUBRULE(this.statement))}
+        ]);
     });
 }
