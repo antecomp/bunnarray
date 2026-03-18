@@ -11,6 +11,9 @@ export type DialogueMatch = {
     matches: {
         [match: string]: DialogueNode
     }
+    fallback?:
+        | DialogueNode // fallback to some dialogue node on no match
+        | DialogueMatch // allow chaining of different matches
 }
 
 export type DialogueNode = {

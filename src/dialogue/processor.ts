@@ -7,6 +7,7 @@ import { GotoTree, NodeTree, OptionTree, TextTree } from "./visitor";
 type NodeRef =
     | { kind: 'id'; value: string }  // resolved node reference
     | { kind: 'label'; value: string }  // unresolved goto target
+    | { kind: 'match'; on: string; matches: Record<string, NodeRef | null>; fallback: NodeRef | null }
 
 export type UnlinkedNode = {
     id: string;
