@@ -6,7 +6,7 @@ import { build } from "./builder";
 import { resetIdCounter } from "./genid";
 import { DialogueLexer } from "./lexer";
 import { DialogueParser } from "./parser";
-import flatten from "./processor";
+import { flatten } from "./processor";
 import { DialogueVisitor } from "./visitor";
 
 const parser = new DialogueParser();
