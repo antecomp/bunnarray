@@ -176,10 +176,6 @@ function flattenSequence(
         if (node.label) labels[node.label] = node.id;
 
         if (node.optionBlock) {
-            // Build blockMatch chain first if present.
-            const blockChain = node.blockMatch
-                ? buildMatch(node.blockMatch, nextRef, null, nodes, labels)
-                : null;
 
             const unlinked: UnlinkedNode = {
                 id: node.id,
@@ -188,6 +184,12 @@ function flattenSequence(
             };
 
             nodes.push(unlinked);
+
+            // Build blockMatch chain if present. Also must be after so new nodes pushed after.
+            const blockChain = node.blockMatch
+                ? buildMatch(node.blockMatch, nextRef, null, nodes, labels)
+                : null;
+
             // Populate unlinked node with options after-the-fact, 
             // to prevent accidentally placing the option nodes before it in the sequence 
             // Fixes a bug with an option as root.

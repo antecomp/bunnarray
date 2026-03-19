@@ -109,6 +109,40 @@ describe('Basic sequencing', () => {
     });
 });
 
+
+describe('directives', () => {
+    it('face directive is extracted', () => {
+        const root = compile('Hello <face:smile>');
+        expect(root.text).toBe('Hello');
+        expect(root.face).toBe('smile');
+    });
+
+    it('signal directive is extracted', () => {
+        const root = compile('Hello <signal:something>');
+        expect(root.text).toBe('Hello');
+        expect(root.signals).toContain('something');
+    });
+
+    it('multiple signals on one node', () => {
+        const root = compile('Hello <signal:a> <signal:b>');
+        expect(root.signals).toContain('a');
+        expect(root.signals).toContain('b');
+    });
+
+    it('directives still work on options', () => {
+        const root = compile(`
+            Hello <face:smile> <signal:a> {
+                ?: Cya
+            }
+            Goodbye
+        `);
+
+        expect(root.face).toBe('smile');
+        expect(root.signals).toContain('a');
+    })
+});
+
+
 describe('option blocks', () => {
     it('basic options with fallback', () => {
         const root = compile(`
@@ -346,3 +380,101 @@ describe('match blocks', () => {
         expect(chainB.on).toBe('funcB');
     });
 });
+
+describe('option and match combinations', () => {
+    it('option block with blockMatch fallback', () => {
+        const root = compile(`
+            Prompt {
+                ?: Option
+                    Here we go!
+            }
+            [match:func]
+                =a
+                    Match result
+            [/match]
+            After
+        `);
+        console.log(root);
+        const option = choose(root, 'Option');
+        expect(option.text).toBe('Here we go!');
+        expect('match' in option).toBe(true);
+    });
+
+    it('empty option branch with blockMatch leads directly to match', () => {
+        const root = compile(`
+            Prompt {
+                ?: Send it!
+            }
+            [match:func]
+                =a
+                    We should see this
+            [/match]
+            After
+        `);
+        if (!('options' in root)) throw new Error();
+        const opt = root.options[0];
+        expect('match' in opt).toBe(true);
+    });
+
+    it('option goto wins over blockMatch', () => {
+        const root = compile(`
+            Prompt {
+                ?: Jump
+                    -> end
+            }
+            [match:func]
+                =a
+                    Should not reach
+            [/match]
+            @end
+            End
+        `);
+        const jump = choose(root, 'Jump');
+        expect(jump.text).toBe('End');
+    });
+
+    it('nested option inside branch threads blockMatch down', () => {
+        const root = compile(`
+            Outer {
+                ?: Enter
+                    Inner {
+                        ?: Inner option
+                    }
+            }
+            [match:func]
+                =a
+                    Match result
+            [/match]
+            After
+        `);
+        const enter = choose(root, 'Enter');
+        const inner = choose(enter, 'Inner option');
+        // inner option should lead to match, not After directly
+        expect('match' in inner).toBe(true);
+    });
+
+    it('chained blockMatch', () => {
+        const root = compile(`
+            Prompt {
+                ?: Option
+            }
+            [match:funcA]
+                =a
+                    Got A
+            [/match]
+            [match:funcB]
+                =b
+                    Got B
+            [/match]
+            After
+        `);
+        if (!('options' in root)) throw new Error();
+        const opt = root.options[0];
+        expect('match' in opt).toBe(true);
+        const matchA = (opt as any).match as DialogueMatch;
+        expect(matchA.fallback).toBeDefined();
+        const chainB = matchA.fallback as DialogueMatch;
+        expect(chainB.on).toBe('funcB');
+    });
+});
+
