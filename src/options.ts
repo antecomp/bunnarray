@@ -1,12 +1,12 @@
 import { Application, Container } from "pixi.js";
 import { createTextWithBackground } from "./text";
-import { TEXT_STYLE } from "./main";
+import { OPTION_STYLE } from "./main";
 import { fadeTo } from "./fade";
 import { DialogueOption } from "./dialogue/types";
 import { createNoiseFilter } from "./filters";
 import { renderTextLine } from "./dialogue/runner";
 
-function getOptionSlots(count: number, radius: number, gapX = 150, gapY = 90) {
+function getOptionSlots(count: number, radius: number, gapX = 125, gapY = 90) {
     const sideX = radius + gapX;
 
     switch (count) {
@@ -39,7 +39,6 @@ function getOptionSlots(count: number, radius: number, gapX = 150, gapY = 90) {
     }
 }
 
-
 export default function createOptionsOverlay(app: Application, ballRadius: number) {
     const con = new Container();
     app.stage.addChild(con);
@@ -67,7 +66,8 @@ export default function createOptionsOverlay(app: Application, ballRadius: numbe
         const nodes = options.map((op, i) => {
             const text = createTextWithBackground(
                 renderTextLine(op.text, varTable),
-                TEXT_STYLE, true
+                OPTION_STYLE, 
+                true
             );
 
             const normalNoise = createNoiseFilter(app);

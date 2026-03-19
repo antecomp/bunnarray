@@ -1,5 +1,5 @@
-#Click here to begin. <face:eye_closed>
-Click here to begin
+Click here to begin. <face:eye_closed>
+#Click here to begin
 @intro
 Welcome to the Conduit. <face:eye_open>
 The conduit connects you with those wo have passed.
@@ -8,7 +8,7 @@ Before establishing communication, know of these ground rules:
 @rules
 1. Do not ask them about the afterlife.
 2. Do not ask them about their surroundings or condition.
-3. Do not mention their death, 
+3. Do not ask about their death, 
    or the circumstances around their death.
 # more?
 Any of these will cause them major distress and will end the session.
@@ -36,14 +36,46 @@ Who do you wish to speak to? {
 }
 Hey, it has been a while  <face:neu_smile> {
     ?: How are you?
+        I am...
         How... <face:concern_surprise>
         I- <face:concern_sfrown>
         ->gameover
     ?: It is good to see you.
 }
-...
+I missed you, where have you been? <face:neu_sfrown> {
+    ?: You died.
+        I know that. <face:aclo_flat>
+        @whynotearlier
+        Why did you not try to talk to me earlier? <face:anger_flat> {
+            ?: I couldn't.
+                Why not? {
+                    ?: The technology did not exist yet.
+                        The technology...?
+                }
+            ?: It has not been that long.
+                Don't lie to me, it has been 4 years. <face:anger_sopen> {
+                    ?: How do you know that?
+                        Because I have sat here waiting that whole time, <face:anger_sfrown>
+                        I can't do anything here except entertain myself with memories. <face:neu_concern>
+                        There is nothing else I can do but remember. 
+                        There is nothing else I can feel but what-
+                        -I...
+                        Why have you taken so long? <face:concern_tfrown>
+                        -> gameover
+                }
+            ?: I'm sorry.
+                It's okay.
+                I am glad you are here now.
+        }
+    ?: It's hard to explain.
+        Hard to explain what? That I am dead? <face:aclo_surprise>
+        Do you think I can't tell?
+        You know what I meant.
+        -> whynotearlier
+}
 
 [block:gameover]
+    # make sure you reset game state on gameover so the try again is truly fresh.
     SESSION TERMINATED <signal:gameover> <face:error> {
         ?: Try again
             -> intro

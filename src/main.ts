@@ -14,7 +14,7 @@ import createOptionsOverlay from './options';
 import pickRandom from './utils';
 
 
-const CRYSTAL_BALL_RADIUS = 290;
+export const CRYSTAL_BALL_RADIUS = 290;
 
 export const TEXT_STYLE = new TextStyle({
   fontFamily: ['Georgia', 'serif'],
@@ -24,6 +24,17 @@ export const TEXT_STYLE = new TextStyle({
   wordWrap: true,
   wordWrapWidth: CRYSTAL_BALL_RADIUS * 1.25
 });
+
+export const OPTION_STYLE = new TextStyle({
+  fontFamily: ['Georgia', 'serif'],
+  fontSize: 28,
+  fill: 0xffffff,
+  align: 'center',
+  wordWrap: true,
+  wordWrapWidth: CRYSTAL_BALL_RADIUS * 0.75    
+});
+
+const NAMES = ["Jasmine", "Ana", "Anaya", "Amy", "Lucy"]
 
 async function main() {
   const app = await initializeApp();
@@ -48,14 +59,10 @@ async function main() {
   responseText.centerText(true, true, { x: 0, y: CRYSTAL_BALL_RADIUS / 1.6 });
   responseText.container.filters = [noiseFilter]
 
-  const MATCHES: Record<string, () => string> = {
-    test: () => "a",
-    testb: () => "b",
-    testx: () => "x"
-  }
+  const MATCHES: Record<string, () => string> = {}
 
   const VARS: Record<string, string> = {
-    hername: pickRandom(["Jasmine", "Ana", "Anaya", "Amy", "Lucy"])
+    hername: pickRandom(NAMES)
   }
 
   const runner = createDialogueRunner(
@@ -64,6 +71,13 @@ async function main() {
     MATCHES, 
     VARS
   );
+
+  // Reset game state on gameover.
+  runner.addSignalListener('gameover', () => {
+    // Avoid using the same name twice on restart.
+    const previousName = runner.readVar('hername')!;
+    runner.setVar('hername', pickRandom(NAMES.filter(n => n !== previousName)));
+  })
   
   crystalBall.ball.on('pointertap', runner.proceed);
   runner.start();
