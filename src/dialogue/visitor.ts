@@ -16,6 +16,7 @@ export type TextTree = {
     label?: string;           // @name if present
     optionBlock?: OptionTree[];     // present if followed by an option block
     match?: MatchTree
+    blockMatch?: MatchTree // If a match immediately follows option block.
 };
 
 export type MatchTree = {
@@ -83,7 +84,13 @@ export class DialogueVisitor extends BaseVisitor {
         };
 
         if (ctx.optionBlock) {
-            node.optionBlock = this.visit(ctx.optionBlock[0]);
+            const optionBlockCtx = ctx.optionBlock[0];
+            node.optionBlock = this.visit(optionBlockCtx);
+            // blockMatch is owned by optionBlock in the grammar
+            // but surfes on the textNode in the visitor.
+            if(optionBlockCtx.children.matchBlock) {
+                node.blockMatch = this.visit(optionBlockCtx.children.matchBlock[0]);
+            }
         }
 
         if (ctx.matchBlock) {

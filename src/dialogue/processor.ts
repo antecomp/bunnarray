@@ -176,13 +176,19 @@ function flattenSequence(
         if (node.label) labels[node.label] = node.id;
 
         if (node.optionBlock) {
+           // Build blockMatch chain first if present.
+           const blockChain = node.blockMatch
+                ? buildMatch(node.blockMatch, nextRef, null, nodes, labels)
+                : null;
+            
             const unlinked: UnlinkedNode = {
                 id: node.id,
                 text: node.text,
-                options: flattenOptionBlock(node.optionBlock, node.text, nextRef, nodes, labels),
+                options: flattenOptionBlock(node.optionBlock, node.text, nextRef, blockChain, nodes, labels)
             };
+
             nodes.push(unlinked);
-            if (!firstRef) firstRef = idRef(node.id);
+            if(!firstRef) firstRef = idRef(node.id);
             continue;
         }
 
@@ -243,6 +249,7 @@ function flattenOptionBlock(
     block: OptionTree[],
     parentPrompt: string,
     fallback: NodeRef | null,
+    chain: UnlinkedMatch | null,
     nodes: UnlinkedNode[],
     labels: Record<string, string>
 ): UnlinkedOption[] {
@@ -253,7 +260,7 @@ function flattenOptionBlock(
             const synthetic: UnlinkedNode = {
                 id: syntheticId,
                 text: parentPrompt,
-                options: flattenOptionBlock(option.nestedOptionBlock, parentPrompt, fallback, nodes, labels),
+                options: flattenOptionBlock(option.nestedOptionBlock, parentPrompt, fallback, chain, nodes, labels),
             };
             nodes.push(synthetic);
             return { text: option.text, next: idRef(syntheticId) };
@@ -263,12 +270,12 @@ function flattenOptionBlock(
         if (option.match) {
             return {
                 text: option.text,
-                match: buildMatch(option.match, fallback, null, nodes, labels),
+                match: buildMatch(option.match, fallback, chain, nodes, labels),
             };
         }
 
         // Normal branch
-        const firstRef = flattenSequence(option.branch, fallback, null, nodes, labels);
+        const firstRef = flattenSequence(option.branch, fallback, chain, nodes, labels);
         return { text: option.text, next: firstRef ?? fallback };
     });
 }

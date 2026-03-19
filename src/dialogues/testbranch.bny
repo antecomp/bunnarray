@@ -1,4 +1,5 @@
 Hello, $name <face:neu_neu>
+-> xxxdone
 Welcome to the branch test.
 Below will branch on the 'test' condition.
 [match:test]
@@ -56,7 +57,7 @@ And what about nested matches?
         [/match]
 [/match]
 Also have a fallback here, our nested match should connect.
-Lastly, the weirdest edge case. Sometimes we might have a nested match that is chained.
+Now, a weird edge case. Sometimes we might have a nested match that is chained.
 # In this case, the nested match should fallback/treat the outers chain as it's own chain too...
 [match:test]
     =a
@@ -113,10 +114,16 @@ You should see this first
 ->xxx
 @xxxdone
 And finally we're here.
-# Okay, one last stupid edge case. Matches as an option "fallback" (chain).
-# Are you ready to test it? {
-#     ?: Yeah lets go for it
-#         Sweet, lets go.
-#     ?: Yes, but with internal match too!
-# }
-# sdfjhfsd
+Okay one last silly test.
+Matches as option fallback {
+    ?: Lets do it
+        Here we go!
+}
+[match:test]
+    =a
+        Managed to get into the match as a fallback!
+[/match]
+[match:test]
+    =a
+        This fallback match can also be a chain!!!
+[/match]

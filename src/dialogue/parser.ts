@@ -3,7 +3,7 @@ dialogue    -> statement*
 statement   -> textNode | goto | skipBlock
 goto        → Goto Text Newline?
 textNode    → (Label Text Newline)? Text (optionBlock | Newline matchBlock | Newline?) 
-optionBlock → BlockOpen Newline choice+ BlockClose Newline?
+optionBlock → BlockOpen Newline choice+ BlockClose Newline? matchBlock?
 choice      → Option Text (optionBlock | Newline matchBlock | Newline statement*)
 skipBlock   → SkipBlockOpen Text CloseBracket Newline statement* SkipBlockClose Newline?
 matchBlock  → MatchBlockOpen Text CloseBracket Newline matchBranch+ MatchBlockClose Newline? matchBlock?
@@ -74,6 +74,7 @@ export class DialogueParser extends CstParser {
         this.MANY(() => this.SUBRULE(this.choice));
         this.CONSUME(BlockClose);
         this.OPTION2(() => this.CONSUME2(Newline));  // optional trailing newline for EOF
+        this.OPTION3(() => this.SUBRULE(this.matchBlock)); // options "fallback" is a match block. Owned by option instead of chained like other things.
     });
 
     choice = this.RULE("choice", () => {
