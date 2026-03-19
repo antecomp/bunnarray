@@ -1,0 +1,38 @@
+#Click here to begin. <face:eye_closed>
+Click here to begin
+Welcome to the Display. <face:eye_open>
+# Add short intro the core concept here.
+Before establishing communication, know of these ground rules:
+@rules
+1. Do not ask the spirit about the afterlife.
+2. Do not ask the spirit about their surroundings or condition.
+# more?
+Any of these will cause them major distress and will end the session.
+Do you understand these terms? {
+    ?: Yes
+    ?: No
+        You must accept these terms to continue,
+        Do you need them to be reiterated? {
+            ?: Yes
+                -> rules
+            ?: No, I accept the terms.
+            ?: No, I do not accept the terms.
+                -> gameover
+        }
+}
+Terms accepted.
+Who do you wish to speak to? {
+    ?: My wife
+        Establishing connection...
+    ?: My wife, $hername
+        Establishing connection <signal:nameshared>
+}
+... <face:clo_neu> {
+    ?: Hey.
+}
+Hey, it has been a while  <face:neu_smile>
+
+
+[block:gameover]
+    SESSION TERMINATED <signal:gameover>
+[/block]

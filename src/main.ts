@@ -7,7 +7,7 @@ import { createDisplacementFilter, createNoiseFilter } from './filters';
 import { TextStyle } from 'pixi.js';
 import { createCrossFadingTextDisplay } from './text';
 
-import input from './dialogues/testbranch.bny?raw'
+import input from './dialogues/main.bny?raw'
 import { compileBnyDialogue } from './dialogue/compilebny';
 import createDialogueRunner from './dialogue/runner';
 import createOptionsOverlay from './options';
