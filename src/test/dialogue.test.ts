@@ -120,7 +120,7 @@ describe('option blocks', () => {
             }
             Fallback
         `);
-        console.log(root)
+        //console.log(root)
         expect(optionTexts(root)).toEqual(['Good', 'Bad']);
         const good = choose(root, 'Good');
         expect(good.text).toBe('Great!');
@@ -188,5 +188,65 @@ describe('option blocks', () => {
         const enter = choose(root, 'Enter');
         const inner = choose(enter, 'Inner option');
         expect(inner.text).toBe('Fallback');
+    });
+
+    it('basic options with fallback', () => {
+        const root = compile(`
+            Hello,
+            How are you? {
+                ?: Good
+                    Great!
+                ?: Bad
+                    Sorry!
+            }
+            Fallback
+        `);
+        //console.log(root)
+        const next = ('next' in root) ? root.next : null;
+        if(!next) throw new Error("Root next not attached!")
+        expect(optionTexts(next)).toEqual(['Good', 'Bad']);
+        const good = choose(next, 'Good');
+        expect(good.text).toBe('Great!');
+        expect(trace(good)).toEqual(['Great!', 'Fallback']);
+        const bad = choose(next, 'Bad');
+        expect(trace(bad)).toEqual(['Sorry!', 'Fallback']);
+    });
+});
+
+describe('skip blocks', () => {
+    it('skip block is transparent to surrounding chain', () => {
+        const root = compile(`
+            Hello
+            [block:skip]
+                Inner
+            [/block]
+            Goodbye
+        `);
+        expect(trace(root)).toEqual(['Hello', 'Goodbye']);
+    });
+
+    it('label inside skip block is reachable via goto', () => {
+        const root = compile(`
+            -> inner
+            [block:skip]
+                @inner
+                Inner text
+            [/block]
+            After
+        `);
+        expect(root.text).toBe('Inner text');
+    });
+
+    it('skip block body falls through to surrounding next', () => {
+        const root = compile(`
+            -> skip
+            [block:skip]
+                Inside
+            [/block]
+            After
+        `);
+        const inside = root; // root is Inside since we goto skip
+        expect(inside.text).toBe('Inside');
+        expect(trace(inside)).toEqual(['Inside', 'After']);
     });
 });
