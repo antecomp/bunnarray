@@ -1,6 +1,6 @@
 #Click here to begin. <face:eye_closed>
 Click here to begin
-Welcome to the Display. <face:eye_open>
+Welcome to the Conduit. <face:eye_open>
 # Add short intro the core concept here.
 Before establishing communication, know of these ground rules:
 @rules
@@ -24,15 +24,20 @@ Terms accepted.
 Who do you wish to speak to? {
     ?: My wife
         Establishing connection...
-    ?: My wife, $hername
+    ?: My wife, $hername.
         Establishing connection <signal:nameshared>
 }
 ... <face:clo_neu> {
     ?: Hey.
 }
-Hey, it has been a while  <face:neu_smile>
+Hey, it has been a while  <face:neu_smile> {
+    ?: How are you?
+        How... <face:concern_surprise>
+        I- <face:concern_sfrown>
+        ->gameover
+}
 
 
 [block:gameover]
-    SESSION TERMINATED <signal:gameover>
+    SESSION TERMINATED <signal:gameover> <face:error>
 [/block]

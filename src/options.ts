@@ -4,6 +4,7 @@ import { TEXT_STYLE } from "./main";
 import { fadeTo } from "./fade";
 import { DialogueOption } from "./dialogue/types";
 import { createNoiseFilter } from "./filters";
+import { renderTextLine } from "./dialogue/runner";
 
 function getOptionSlots(count: number, radius: number, gapX = 150, gapY = 90) {
     const sideX = radius + gapX;
@@ -57,13 +58,17 @@ export default function createOptionsOverlay(app: Application, ballRadius: numbe
 
     async function show(
         options: DialogueOption[],
+        varTable: Record<string, string>,
         onChoose: (index: number) => void,
         fadeDur = 15
     ) {
         const layout = getOptionSlots(options.length, ballRadius);
 
         const nodes = options.map((op, i) => {
-            const text = createTextWithBackground(op.text, TEXT_STYLE, true);
+            const text = createTextWithBackground(
+                renderTextLine(op.text, varTable),
+                TEXT_STYLE, true
+            );
 
             const normalNoise = createNoiseFilter(app);
             const lightNoise = createNoiseFilter(app, 1.0);
@@ -76,8 +81,8 @@ export default function createOptionsOverlay(app: Application, ballRadius: numbe
             text.x = layout[i].x;
             text.y = layout[i].y;
             text.on('pointertap', () => onChoose(i));
-            text.on('pointerover', () => {text.filters = [lightNoise]});
-            text.on('pointerleave', () => {text.filters = [normalNoise]});
+            text.on('pointerover', () => { text.filters = [lightNoise] });
+            text.on('pointerleave', () => { text.filters = [normalNoise] });
             con.addChild(text);
             return text;
         });

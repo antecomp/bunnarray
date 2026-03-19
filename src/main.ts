@@ -11,6 +11,7 @@ import input from './dialogues/main.bny?raw'
 import { compileBnyDialogue } from './dialogue/compilebny';
 import createDialogueRunner from './dialogue/runner';
 import createOptionsOverlay from './options';
+import pickRandom from './utils';
 
 
 const CRYSTAL_BALL_RADIUS = 290;
@@ -47,20 +48,24 @@ async function main() {
   responseText.centerText(true, true, { x: 0, y: CRYSTAL_BALL_RADIUS / 1.5 });
   responseText.container.filters = [noiseFilter]
 
-  const PLACEHOLDERFUNCS: Record<string, () => string> = {
+  const MATCHES: Record<string, () => string> = {
     test: () => "a",
     testb: () => "b",
     testx: () => "x"
   }
 
-  const runner = createDialogueRunner(root, { responseText, optionsOverlay, face }, PLACEHOLDERFUNCS, { name: 'Omni' });
+  const VARS: Record<string, string> = {
+    hername: pickRandom(["Jasmine", "Ana", "Anaya", "Amy", "Lucy"])
+  }
+
+  const runner = createDialogueRunner(
+    root, 
+    { responseText, optionsOverlay, face }, 
+    MATCHES, 
+    VARS
+  );
+  
   crystalBall.ball.on('pointertap', runner.proceed);
-  runner.addSignalListener('hitend', () => console.log('Hit end detected in main!'));
-  runner.addSignalListener('bonus', function bonus() {
-    console.log("This should only run once!");
-    runner.setVar('name', 'buddy');
-    runner.removeSignalListener('bonus', bonus);
-  })
   runner.start();
 
   app.renderer.on('resize', () => {

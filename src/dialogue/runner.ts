@@ -96,7 +96,7 @@ function createSignalBus() {
     return { addListener, removeListener, emit };
 }
 
-function renderTextLine(text: string, varTable: Record<string, string>) {
+export function renderTextLine(text: string, varTable: Record<string, string>) {
     // Fill in variables with runtime values.
     return text.replace(/\$\w+/g, m => varTable[m.slice(1)]);
 }
@@ -133,7 +133,7 @@ export default function createDialogueRunner(
         );
 
         if (state.options) {
-            await deps.optionsOverlay.show(state.options, index => {
+            await deps.optionsOverlay.show(state.options, Object.fromEntries(varMap), index => {
                 if (busy) return;
                 render(stateMachine.choose(index));
             });
