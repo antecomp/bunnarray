@@ -263,6 +263,7 @@ The compile function returns the DialogueNode at the "start" of this graph corre
 -------------------------------------------------------
 
 ### TODO
+* Move label collection to visitor to remove redundant second pass through dialogue tree.
 * MORE TESTS. THERE ARE BUGS I CAN FEEL THEM CRAWLING AROUND AT NIGHT. I KNOW THEY ARE THERE.
 * After the game jam, maybe a "set" directive to have some default dialogue-owned stuff for matches without needing to set up a backend.
 * After the game jam, to make this general, add a "speaker" property to.
