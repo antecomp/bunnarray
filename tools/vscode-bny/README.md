@@ -4,7 +4,7 @@ Minimal VS Code language support for `.bny` dialogue files.
 
 Included:
 
-- syntax highlighting for comments, labels, gotos, option markers, braces, directives, and `$variables`
+- syntax highlighting for comments, labels, gotos, option markers, skip blocks, match blocks, match cases, braces, directives, and `$variables`
 - bracket matching and auto-closing for `{}` and `<>`
 - `.bny` file association
 

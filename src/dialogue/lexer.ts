@@ -27,6 +27,32 @@ export const BlockClose = createToken({
     pattern: /\}/,
 });
 
+// --- Block tag tokens because lexing this generally makes me want to eat uranium.
+export const SkipBlockOpen = createToken({
+    name: "SkipBlockOpen",
+    pattern: /\[block:/,
+});
+
+export const SkipBlockClose = createToken({
+    name: "SkipBlockClose",
+    pattern: /\[\/block\]/,
+});
+
+export const MatchBlockOpen = createToken({
+    name: "MatchBlockOpen",
+    pattern: /\[match:/,
+});
+
+export const MatchBlockClose = createToken({
+    name: "MatchBlockClose",
+    pattern: /\[\/match\]/,
+});
+
+export const CloseBracket = createToken({
+    name: "CloseBracket",
+    pattern: /\]/,
+});
+
 // --- Line-starting tokens ---
 // These must come before Text so they win at the start of a line.
 
@@ -50,11 +76,10 @@ export const Equals = createToken({
     pattern: /=\s*/,
 });
 
-
 // General, consume everything else until new line.
 export const Text = createToken({
     name: "Text",
-    pattern: /[^\n{]+/, // Dont include trailing { for block start.
+    pattern: /[^\n{}\[\]]+/
 });
 
 // --- Lexer ---
@@ -65,10 +90,15 @@ export const allTokens = [
     Newline,
     BlockOpen,
     BlockClose,
+    SkipBlockOpen,
+    SkipBlockClose,
+    MatchBlockOpen,
+    MatchBlockClose,
     Option,
     Goto,
     Label,
     Equals,
+    CloseBracket,
     Text,
 ];
 

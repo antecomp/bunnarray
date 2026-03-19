@@ -7,7 +7,7 @@ import { createDisplacementFilter, createNoiseFilter } from './filters';
 import { TextStyle } from 'pixi.js';
 import { createCrossFadingTextDisplay } from './text';
 
-import input from './dialogues/simple.bny?raw'
+import input from './dialogues/testbranch.bny?raw'
 import { compileBnyDialogue } from './dialogue/compilebny';
 import createDialogueRunner from './dialogue/runner';
 import createOptionsOverlay from './options';
@@ -47,7 +47,13 @@ async function main() {
   responseText.centerText(true, true, { x: 0, y: CRYSTAL_BALL_RADIUS / 1.5 });
   responseText.container.filters = [noiseFilter]
 
-  const runner = createDialogueRunner(root, {responseText, optionsOverlay, face}, {name: 'Omni'});
+  const PLACEHOLDERFUNCS: Record<string, () => string> = {
+    test: () => "a",
+    testb: () => "b",
+    testx: () => "x"
+  }
+
+  const runner = createDialogueRunner(root, { responseText, optionsOverlay, face }, PLACEHOLDERFUNCS, { name: 'Omni' });
   crystalBall.ball.on('pointertap', runner.proceed);
   runner.addSignalListener('hitend', () => console.log('Hit end detected in main!'));
   runner.addSignalListener('bonus', function bonus() {

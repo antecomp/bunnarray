@@ -1,0 +1,164 @@
+Hello, $name <face:neu_neu>
+-> xxxdone
+Welcome to the branch test.
+Below will branch on the 'test' condition.
+[match:test]
+    =a
+        We detected a!
+    =b
+        We should not see this
+[/match]
+This is now the fallback of the match.
+Let's go into the next test.
+Can we match in an option? {
+    ?: I hope so! 
+        [match:testb]
+            =b
+                Detected b!
+            =c
+                We should no see this.
+        [/match]
+}
+This is a fallback for the option, hopefully the match falls into this too!
+Next, lets make sure our match just runs into the fallback when nothing hits.
+[match:testx]
+    =y
+        We should not see this
+    =a
+        We should not see this either
+[/match]
+This is the fallback we should see!
+Can a match lead to a goto?
+[match:test]
+    =a
+        -> onA
+    =b
+        How.
+[/match]
+Fallback we should not see
+
+@onA
+This is the result of the goto we should hit.
+What about chained matches?
+[match:test]
+    =x
+        Should not see this
+[/match]
+[match:testb]
+    =b
+        Detected b, because test a failed first
+[/match]
+And what about nested matches?
+[match:test]
+    =a
+        [match:testb]
+            =b
+                Got to b through a nested match
+        [/match]
+[/match]
+Also have a fallback here, our nested match should connect.
+Now, a weird edge case. Sometimes we might have a nested match that is chained.
+# In this case, the nested match should fallback/treat the outers chain as it's own chain too...
+[match:test]
+    =a
+        # We should enter this test, but then it will fail and should chain to the outers chain...
+        [match:testx]
+            =fail
+                We should not see this
+        [/match]
+[/match]
+[match:testb]
+    =b
+        We should hit this b detect
+[/match]
+And *then* this is the last fallback for this annoying thing.
+But alas, that last test is if the matches are directly owned by the cases. What happens when there's a sequence first?
+[match:test]
+    =a
+        Wow we're in a right now, 
+        but then there's a sequence
+        and only now there's a nested match...
+        [match:testx]
+            =fail
+                We should not see this
+        [/match]
+[/match]
+[match:testb]
+    =b
+        We should hit this b from our chain.
+[/match]
+Similar, final fallback for everything here.
+We should also make sure the match fallback inheritance also works when at the end of an option stream. {
+    ?: Agreed & Match that passes
+        Alright, here is the sequence.
+        Match time.
+        [match:test]
+            =a
+                (correct) match hit a here.
+        [/match]
+    ?: Agreed & Match that fails
+        Okay, sequence here.
+        Match time.
+        [match:test]
+            =fail
+                We should not see this
+        [/match]
+}
+This is the fallback of the option, the match should still hit this.
+While we are here, we should also test the skip block
+[block:xxx]
+and this second
+->xxxdone
+[/block]
+You should see this first
+->xxx
+@xxxdone
+And finally we're here.
+Okay one last silly test.
+Matches as option fallback {
+    ?: Lets do it
+        Here we go!
+}
+[match:test]
+    =a
+        Managed to get into the match as a fallback!
+[/match]
+[match:test]
+    =a
+        This fallback match can also be a chain!!!
+[/match]
+What about straight to a match? {
+    ?: Send it!
+}
+[match:test]
+    =a
+        We should see this.
+[/match]
+Then finally back to a normal node.
+Lets make sure our fixes didn't break normal fallbacks {
+    ?: Okay
+        Some text
+    ?: Okay (NR)
+}
+Normal fallback
+That we continue from here...
+Let's also make sure our gotos still win over everything. {
+    ?: Test
+        -> pasta
+}
+[match:test]
+    =a
+        This should be skipped
+[/match]
+@pasta
+We should go here!
+How about nested options? {
+    ?: enter inner
+        Inner prompt {
+            ?: inner option
+        }
+}
+[match:test]
+    =a
+        We should see this as a match fallback
+[/match]

@@ -19,6 +19,14 @@ Hello, it has been a while,
 how has life been treating you?
 ```
 
+### Comments
+I only have line comments right now becuase they are easier 
+to parse lol. Use `#` at the start of a line to comment it out.
+```
+# At this point in the story, she probably hates you.
+I hate you!
+```
+
 ### Options (Branches)
 Options (branching dialogue based on player responses) are defined with a prompt text and curly braces like this;
 ```
@@ -91,12 +99,74 @@ Well, anyways... the dialogue continues here...
 ```
 "Well anyways..." will come after both "cool" and "not cool." automatically.
 
-### Comments
-I only have line comments right now becuase they are easier 
-to parse lol. Use `#` at the start of a line to comment it out.
+### Skip Blocks
+Skip blocks allow you to define a sequence of dialogue that will be skipped over when running through linearly, and instead required an explicit goto to get into. It allows you to optionally preface text or perform other actions where you want to conditionally show certain chunks in a sequence. They take the form:
 ```
-# At this point in the story, she probably hates you.
-I hate you!
+[block:label]
+...
+[/block]
+```
+Where `label` is the label you will use to get into this block with a goto. For example;
+```
+Lets test the skip block...
+[block:xxx]
+    and this second
+    ->xxxdone
+[/block]
+You should see this first
+->xxx
+@xxxdone
+And finally we're here.
+```
+
+### Match blocks
+Match blocks allow dialogue to automatically branch based on game state. Match block work by running a function by name, then, based on the (string) return of that function, it chooses where to navigate to. It uses the following syntax:
+```
+[match:on]
+    =returncase
+        <sequence>
+    =anothercase
+        <sequence>
+[/match]
+fallback
+```
+Where `on` is the name of the function that we will run and match the result of, and each case after an `=` is a potential return string of that function.
+For example...
+```
+Well, that depends on if the dragon is slain...
+[match:dragon]
+    =slain
+        What? The dragon is slain? That is fantastic!
+        Here is all of my money!!!
+    =notslain
+        The dragon is still alive and I live in fear.
+        Please slay the dragon and come back later
+[/match]
+# This goodbye will always run after the match (unless their sequence has a goto)
+Goodbye!
+```
+Matches can also be nested or chained. A nested match allows you to enforce multiple conditions passing, and chains allow you to run matches in sequence, akin to a fallback.
+```
+[match:conditionOne]
+    =a
+        [match:nestedCondition]
+            ...
+        [/match]
+[/match]
+[match:conditionTwo]
+    =noodles
+        Yum!
+[/match]
+```
+
+NOTE: Currently, matches cannot function as fallbacks for options. I might patch that in later.
+
+Actually configuring these checks the matches can run is done by supplying the dialogueRunner with `matchFuncs`:
+```ts
+type MatchFuncs = Record<string, () => string>
+const matches = {
+    dragon: () => dragon.isSlain ? 'slain' : 'notslain';
+}
 ```
 
 ### Directives
@@ -193,9 +263,9 @@ The compile function returns the DialogueNode at the "start" of this graph corre
 -------------------------------------------------------
 
 ### TODO
-* Simple "skipped" block that can have a label inside it. Only way to navigate into that block is to goto inside it, its automatically skipped otherwise.
-* Conditional Branches based on runtime state (use SE directives to update state too, be careful about traceability!)
-    * Unless I want some basic "set" directives to have a runtime table of values. Might be overengineering there though...
+* Allow options to chain into matches as a "fallback"
+* Extensive general testing (should have started with this but game jams call for me not to waste a few hours writing tests)
+* After the game jam, maybe a "set" directive to have some default dialogue-owned stuff for matches without needing to set up a backend.
 * After the game jam, to make this general, add a "speaker" property to.
     * I think a `speaker: text` syntax for lines would work well here! Keep a similar inherit behavior to faces.
 

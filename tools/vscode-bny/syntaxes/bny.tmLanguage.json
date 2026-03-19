@@ -9,6 +9,15 @@
       "include": "#variable"
     },
     {
+      "include": "#block-tag"
+    },
+    {
+      "include": "#match-tag"
+    },
+    {
+      "include": "#match-branch"
+    },
+    {
       "include": "#label"
     },
     {
@@ -52,6 +61,102 @@
             },
             "4": {
               "name": "entity.name.label.bny"
+            }
+          }
+        }
+      ]
+    },
+    "block-tag": {
+      "patterns": [
+        {
+          "name": "meta.block.skip.begin.bny",
+          "match": "^(\\s*)(\\[)(block)(:)([^\\]\\n]+)(\\])\\s*$",
+          "captures": {
+            "2": {
+              "name": "punctuation.definition.tag.begin.bny"
+            },
+            "3": {
+              "name": "keyword.control.block.bny"
+            },
+            "4": {
+              "name": "punctuation.separator.key-value.bny"
+            },
+            "5": {
+              "name": "entity.name.label.bny"
+            },
+            "6": {
+              "name": "punctuation.definition.tag.end.bny"
+            }
+          }
+        },
+        {
+          "name": "meta.block.skip.end.bny",
+          "match": "^(\\s*)(\\[\\/)(block)(\\])\\s*$",
+          "captures": {
+            "2": {
+              "name": "punctuation.definition.tag.begin.bny"
+            },
+            "3": {
+              "name": "keyword.control.block.bny"
+            },
+            "4": {
+              "name": "punctuation.definition.tag.end.bny"
+            }
+          }
+        }
+      ]
+    },
+    "match-tag": {
+      "patterns": [
+        {
+          "name": "meta.match.begin.bny",
+          "match": "^(\\s*)(\\[)(match)(:)([^\\]\\n]+)(\\])\\s*$",
+          "captures": {
+            "2": {
+              "name": "punctuation.definition.tag.begin.bny"
+            },
+            "3": {
+              "name": "keyword.control.match.bny"
+            },
+            "4": {
+              "name": "punctuation.separator.key-value.bny"
+            },
+            "5": {
+              "name": "entity.name.function.match.bny"
+            },
+            "6": {
+              "name": "punctuation.definition.tag.end.bny"
+            }
+          }
+        },
+        {
+          "name": "meta.match.end.bny",
+          "match": "^(\\s*)(\\[\\/)(match)(\\])\\s*$",
+          "captures": {
+            "2": {
+              "name": "punctuation.definition.tag.begin.bny"
+            },
+            "3": {
+              "name": "keyword.control.match.bny"
+            },
+            "4": {
+              "name": "punctuation.definition.tag.end.bny"
+            }
+          }
+        }
+      ]
+    },
+    "match-branch": {
+      "patterns": [
+        {
+          "name": "meta.match.branch.bny",
+          "match": "^(\\s*)(=)(\\s*)([^#{}\\[\\]\\n].*?)\\s*$",
+          "captures": {
+            "2": {
+              "name": "keyword.control.match-case.bny"
+            },
+            "4": {
+              "name": "constant.other.match-case.bny"
             }
           }
         }

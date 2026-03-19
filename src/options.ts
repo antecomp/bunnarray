@@ -2,7 +2,7 @@ import { Application, Container } from "pixi.js";
 import { createTextWithBackground } from "./text";
 import { TEXT_STYLE } from "./main";
 import { fadeTo } from "./fade";
-import { DialogueNode } from "./dialogue/types";
+import { DialogueOption } from "./dialogue/types";
 import { createNoiseFilter } from "./filters";
 
 function getOptionSlots(count: number, radius: number, gapX = 150, gapY = 90) {
@@ -56,7 +56,7 @@ export default function createOptionsOverlay(app: Application, ballRadius: numbe
     }
 
     async function show(
-        options: { text: string; next: DialogueNode }[],
+        options: DialogueOption[],
         onChoose: (index: number) => void,
         fadeDur = 15
     ) {

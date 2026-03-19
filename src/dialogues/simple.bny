@@ -26,8 +26,42 @@ How are you? <face:neu_grin> {
 -> wrapup
 @elsewhere
 If you ever want to talk about it,
+[match:slop]
+    =soy
+        do not be afraid to
+[/match]
 just let me know.
 @wrapup
-Well thats it for this test... <face:soft_frown> <signal:hitend> <signal:bonus>
+Aaaaa
+# Well thats it for this test... <face:soft_frown> <signal:hitend> <signal:bonus>
 # Just always loop-back to the beginning so we can test the other options.
+
+[block:ta]
+Blah blah blah
+[/block]
+Fallback
+This will run a condition
+[match:check]
+    =result1
+        I detect result 1
+        This like any other sequence
+        -> wrapup
+    =result2
+        I detect result 2
+    =result3
+        ->ta
+    =result4
+        [match:aaa]
+            =egg
+                -> elsewhere
+        [/match]
+[/match]
+[match:checkalt]
+    =rez
+        Followup match detected rez.
+[/match]
+[block:tx]
+Blah blah blah
+[/block]
+This is a fallback, it should run regardless of match
 -> start
