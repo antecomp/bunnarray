@@ -1,11 +1,15 @@
 #Click here to begin. <face:eye_closed>
 Click here to begin
+@intro
 Welcome to the Conduit. <face:eye_open>
-# Add short intro the core concept here.
+The conduit connects you with those wo have passed.
+# Add very breif intro to worldbuild a bit better.
 Before establishing communication, know of these ground rules:
 @rules
-1. Do not ask the spirit about the afterlife.
-2. Do not ask the spirit about their surroundings or condition.
+1. Do not ask them about the afterlife.
+2. Do not ask them about their surroundings or condition.
+3. Do not mention their death, 
+   or the circumstances around their death.
 # more?
 Any of these will cause them major distress and will end the session.
 Do you understand these terms? {
@@ -16,8 +20,8 @@ Do you understand these terms? {
             ?: Yes
                 -> rules
             ?: No, I accept the terms.
-            ?: No, I do not accept the terms.
-                -> gameover
+            # ?: No, I do not accept the terms.
+            #     -> gameover
         }
 }
 Terms accepted.
@@ -35,9 +39,13 @@ Hey, it has been a while  <face:neu_smile> {
         How... <face:concern_surprise>
         I- <face:concern_sfrown>
         ->gameover
+    ?: It is good to see you.
 }
-
+...
 
 [block:gameover]
-    SESSION TERMINATED <signal:gameover> <face:error>
+    SESSION TERMINATED <signal:gameover> <face:error> {
+        ?: Try again
+            -> intro
+    }
 [/block]
