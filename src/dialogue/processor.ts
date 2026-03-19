@@ -111,7 +111,7 @@ function buildMatch(
     const chained = match.chained
         ? buildMatch(match.chained, fallback, null, nodes, labels)
         : null;
-    
+
     // Branches should fall through to chained match if present, then outer fallback
     const branchChain = chained ?? chain;
 
@@ -121,7 +121,7 @@ function buildMatch(
         if (branch.nestedMatch) {
             // Build nested match first, then pass it as chain to body sequence.
             const unlinkedNestedMatch = buildMatch(branch.nestedMatch, fallback, branchChain, nodes, labels);
-            if(branch.body.length > 0) {
+            if (branch.body.length > 0) {
                 // Body exists, flatten it with nested match as chain.
                 const result = flattenSequence(branch.body, fallback, unlinkedNestedMatch, nodes, labels);
                 branches[branch.value] = result ?? unlinkedNestedMatch;
@@ -134,7 +134,7 @@ function buildMatch(
 
         const result = flattenSequence(branch.body, fallback, branchChain, nodes, labels);
         const branchRef = result ?? fallback;
-        if(!branchRef && !branchChain) throw new Error("buildMatch: no branch ref or chain");
+        if (!branchRef && !branchChain) throw new Error("buildMatch: no branch ref or chain");
         branches[branch.value] = branchRef ?? branchChain!;
     }
 
@@ -170,17 +170,17 @@ function flattenSequence(
             continue;
         }
 
-        const nextRef = buildNextRef(sequence, i + 1, fallback);
+        const nextRef = buildNextRef(sequence, i + 1, null);
         const isLast = buildNextRef(sequence, i + 1, null) === null;
 
         if (node.label) labels[node.label] = node.id;
 
         if (node.optionBlock) {
-           // Build blockMatch chain first if present.
-           const blockChain = node.blockMatch
+            // Build blockMatch chain first if present.
+            const blockChain = node.blockMatch
                 ? buildMatch(node.blockMatch, nextRef, null, nodes, labels)
                 : null;
-            
+
             const unlinked: UnlinkedNode = {
                 id: node.id,
                 text: node.text,
@@ -188,14 +188,14 @@ function flattenSequence(
             };
 
             nodes.push(unlinked);
-            if(!firstRef) firstRef = idRef(node.id);
+            if (!firstRef) firstRef = idRef(node.id);
             continue;
         }
 
         if (node.match) {
             const builtMatch = buildMatch(node.match, nextRef, isLast ? chain : null, nodes, labels);
             // Only extend with chain if match has no fallback already
-            if(isLast && chain && !builtMatch.fallback) {
+            if (isLast && chain && !builtMatch.fallback) {
                 builtMatch.fallback = chain;
             }
             const unlinked: UnlinkedNode = {
@@ -204,32 +204,19 @@ function flattenSequence(
                 match: builtMatch
             };
             nodes.push(unlinked);
-            if(!firstRef) firstRef = idRef(node.id);
+            if (!firstRef) firstRef = idRef(node.id);
             continue;
         }
 
         // Plain
-        // Priority: nextRef > fallback > chain
+        // Priority: nextRef > chain > fallback
         let unlinked: UnlinkedNode;
-        if(nextRef || fallback) {
-            unlinked = {
-                id: node.id,
-                text: node.text,
-                next: nextRef ?? fallback
-            }
+        if (nextRef) {
+            unlinked = { id: node.id, text: node.text, next: nextRef };
         } else if (isLast && chain) {
-            // Nothing else available: use chain as match
-            unlinked = {
-                id: node.id,
-                text: node.text,
-                match: chain
-            };
-        } else { // end
-            unlinked = {
-                id: node.id,
-                text: node.text,
-                next: null
-            }
+            unlinked = { id: node.id, text: node.text, match: chain };
+        } else {
+            unlinked = { id: node.id, text: node.text, next: fallback };
         }
 
         nodes.push(unlinked);
@@ -276,6 +263,12 @@ function flattenOptionBlock(
 
         // Normal branch
         const firstRef = flattenSequence(option.branch, fallback, chain, nodes, labels);
+
+        // If branch is empty and we have a chain, the option leads directly to that match.
+        if (!firstRef && chain) {
+            return { text: option.text, match: chain }
+        }
+
         return { text: option.text, next: firstRef ?? fallback };
     });
 }

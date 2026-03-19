@@ -127,3 +127,11 @@ Matches as option fallback {
     =a
         This fallback match can also be a chain!!!
 [/match]
+What about straight to a match? {
+    ?: Send it!
+}
+[match:test]
+    =a
+        We should see this.
+[/match]
+Then finally back to a normal node.
