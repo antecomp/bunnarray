@@ -19,8 +19,8 @@ Before establishing communication, know of these ground rules:
 @rules
 1. Do not ask them about the afterlife.
 2. Do not ask them about their surroundings or condition.
-3. Do not ask about their death, 
-   or the circumstances around their death.
+3. Do not ask about their death-
+   -or the circumstances around their death.
 # more?
 Any of these will cause them major distress and will end the session.
 Do you understand these terms? {
@@ -31,8 +31,6 @@ Do you understand these terms? {
             ?: Yes
                 -> rules
             ?: No, I accept the terms.
-            # ?: No, I do not accept the terms.
-            #     -> gameover
         }
 }
 
@@ -89,7 +87,7 @@ I missed you, where have you been? <face:neu_sfrown> {
                     }
                 }
             ?: It has not been that long.
-                Don't lie to me, it has been 4 years. <face:anger_sopen> {
+                Don't lie to me, it has been years... <face:anger_sopen> {
                     ?: How do you know that?
                         Because I have sat here waiting that whole time, <face:anger_sfrown>
                         @onlymemories
@@ -104,7 +102,6 @@ I missed you, where have you been? <face:neu_sfrown> {
                 @missedsorry
                 It's okay. <face:soft_tfrown>
                 # should be the only possible exit out of this block.
-                I am glad you are here now. <face:neu_grin>
         }
     ?: It's hard to explain.
         Hard to explain what? That I am dead? <face:aclo_surprise>
@@ -112,17 +109,91 @@ I missed you, where have you been? <face:neu_sfrown> {
         You know what I meant.
         -> whynotearlier
 }
-
 # --- Phase 2: Some basic conversations and reminiscing to establish a "baseline"
 # Player should be able to "run through" this a few times to collect background information.
-
-# do I really want this lame small-talk here? How do I get into phase 2 naturally?
-How have you been? {
-    ?: Good
-        That is good to hear.
-    ?: (TEST) CONFRONT.
-        -> confront
+#       What is the *intent* here? Let that motivate the tone and character speech.
+#           They want the PC to believe they are actually their wife, but why?
+#       What is the motivation of Her and the PC?
+You still do that, you know. <face:neu_smile> {
+    ?: Do what?
 }
+Take too long to say what you mean.
+...
+You used to just stand there-
+-waiting for everything to click.
+For it all to make sense to you.
+Even when I asked you simple things. {
+    ?: Like what?
+    ?: I don't remember that.
+        You don't? <face:concern_tfrown>
+        It was...
+}
+Anything, really.
+You always wanted the answer to be right. <face:clo_grin>
+When I met you, I thought you were just indecisive. <face:clo_smile>
+But no-
+-you really would just take your time.
+...
+Remember how often we would have to send the waitress back? <face:cdev_grin>
+Because you still weren't ready to order.
+You would always ask a million questions about the food;
+What to pair with it...
+# Could put a subtle inconsistency/hint here, if you want... Did PC avoid alcohol?
+You would stare at the menu like it mattered. <face:neu_smile>
+Like you could pick wrong. {
+    ?: Where was this?
+        Everywhere! <face:clo_bgrin>
+        Didn't matter where we would be.
+        Every pit-stop was special,
+        Or you would want to make it special.
+    ?: I don't remember doing that.
+        Really? <face:neu_surprise>
+        Maybe you just never noticed... 
+        Or are too embarrassed to admit it. <face:soft_tgrin>
+}
+I appreciated that about you, you know... <face:neu_smile>
+Made all our days more vivid. <face:hclo_tgrin>
+... <face:neu_concern>
+Especially at-
+...
+We would always go to that one place... {
+    ?: The café?
+        # SIGNAL: Place mentioned
+        The café... <face:concern_surprise>
+        Yeah. <face:clo_smile>
+        That sounds right.
+    ?: I don't recall a place like that.
+        # SIGNAL: Place unknown?
+        Really? <face:concern_sfrown>
+        ...
+        That's strange.
+        We went there all the time.
+    ?: We went to a lot of places.
+        # SIGNAL: Place vague
+        Yeah, we did. <face:clo_smile>
+        But this place more than anywhere else.
+}
+...
+I can still picture it. <face:clo_grin>
+# Feel free to change this. I want something said confidently that will be contested later.
+# Consider branching this recollection based on player answer above, too.
+The view of the city, the port in the distance...
+
+
+# Can either be late phase 2, or phase 3. Depending on how you spin it
+# You did that with everything (<- the delay to decide)
+# Not just small things, bigger ones too.
+# Like with the house, 
+# that one off of-
+# ...
+# The one near the lake. {
+#     ?: I lived there before we met.
+#         Oh-
+#         I know, I meant when you sold it.
+#         # Possible flag for contradiction here? Too early?
+#     ?: What do you mean?
+# }
+# Story about the house...
 
 # -- Phase 3: Contradictions - Continue conversations but introduce things that do not align with earlier info.
 # You can use variables to explicitly flag the things the PC would have noticed.
@@ -131,6 +202,8 @@ How have you been? {
 [block:confront]
     What are you trying to imply here? <face:anger_sfrown> {
         ?: What is your name?
+            # I think these responses are too harsh right now. 
+            # Should give more uncertainty than anger.
             [match:is_name_shared]
                 =yes
                     Are you fucking kidding me? <face:anger_grimace>
@@ -155,3 +228,5 @@ How have you been? {
             -> intro
     }
 [/block]
+(Dialogue Ends Here...) <face:error>.
+-> intro
