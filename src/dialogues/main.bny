@@ -13,6 +13,8 @@ Have you used a conduit before? {
         -> whynotearlier
 }
 
+# At the very end just sprinkle in routes that break these rules.
+# Don't try and bend the narrative around it. You can just make some pitfalls.
 
 # to do: Add very brief intro to world-build a bit better.
 Before establishing communication, know of these ground rules:
@@ -138,7 +140,6 @@ Remember how often we would have to send the waitress back? <face:cdev_grin>
 Because you still weren't ready to order.
 You would always ask a million questions about the food;
 What to pair with it...
-# Could put a subtle inconsistency/hint here, if you want... Did PC avoid alcohol?
 You would stare at the menu like it mattered. <face:neu_smile>
 Like you could pick wrong. {
     ?: Where was this?
@@ -150,6 +151,15 @@ Like you could pick wrong. {
         Really? <face:neu_surprise>
         Maybe you just never noticed... 
         Or are too embarrassed to admit it. <face:soft_tgrin>
+    ?: What do you mean "what to pair with it?" 
+        Huh? {
+            ?: I don't drink.
+                # SIGNAL: contradiction? 
+                # or at least one that could also just be a misunderstanding
+                Oh, I meant uh-
+                nevermind.
+                ...
+        }
 }
 I appreciated that about you, you know... <face:neu_smile>
 Made all our days more vivid. <face:hclo_tgrin>
@@ -173,32 +183,49 @@ We would always go to that one place... {
         Yeah, we did. <face:clo_smile>
         But this place more than anywhere else.
 }
+ # TODO IF CAFE: I dont think we should talk about this place (maybe she died here, a path to breaking one of the rules?)
 ...
 I can still picture it. <face:clo_grin>
 # Feel free to change this. I want something said confidently that will be contested later.
 # Consider branching this recollection based on player answer above, too.
 The view of the city, the port in the distance...
+...
+We always sat at the same spot, right? {
+    ?: By the window.
+        # SIGNAL: Known that we sit by the window.
+        Heh, right.
+        Of course, how else would we have that view?
+        Why did you always want to sit there, anyway? {
+            ?: I did it for you.
+                # SIGNAL: Vague, just not in a lame "idk" way -- she gains no insight about you from this.
+            ?: It was brighter. {
+                ?: That place always had dim lights- {
+                    ?: -and I wanted to actually see the menu.
+                        # SIGNAL: By the window and why.
+                        Haha, right!
+                        # TODO: More...
+                }
+            }
+        }
+    # TODO: Very vague answer.
+}
 
 
-# Can either be late phase 2, or phase 3. Depending on how you spin it
-# You did that with everything (<- the delay to decide)
-# Not just small things, bigger ones too.
-# Like with the house, 
-# that one off of-
-# ...
-# The one near the lake. {
-#     ?: I lived there before we met.
-#         Oh-
-#         I know, I meant when you sold it.
-#         # Possible flag for contradiction here? Too early?
-#     ?: What do you mean?
-# }
-# Story about the house...
+
 
 # -- Phase 3: Contradictions - Continue conversations but introduce things that do not align with earlier info.
 # You can use variables to explicitly flag the things the PC would have noticed.
+# Use established behaviors to determine how she talks about the house.
+# Use the house info as one explicit contradiction too (either that was before I met you, ...) <- similar trend just a factual mismatch, rather than behavior
+# If behavior confirmed, she incorporates it into the narrative here.
+# If the behavior is unknown, her description wavers here.
+# If you played along earlier, you lead into the false ending.
+# If you omitted info earlier, the house memory seems like nonsense, and will lead into the contradiction.
 
-# --- Phase 4 Final Confrontation - True ending.
+# Doesn't have to be the house but I think that would work well...
+
+
+# --- Phase 4 Final Confrontation, True Ending or False Ending
 [block:confront]
     What are you trying to imply here? <face:anger_sfrown> {
         ?: What is your name?
@@ -216,9 +243,17 @@ The view of the city, the port in the distance...
                             # Make it very clear that she truly does not know.
                             No, not until you explain what is going on here!
                     }
+            # Follow-up by asking for *your* name. Cannot be answered.
+            # Branch above is more just to teach the mechanic than to divert dialogue much...
+            # I don't remember your name. But I remember you.
+            # (Launch into soft unwind to explain what is happening)
             [/match]
     }
 [/block]
+
+# TODO: Another block for "bad" ending where we play along the whole time
+# "Stay a little longer."
+# "Help me remember the rest."
 
 # --- Default game-over that we can jump to from essentially anywhere.
 [block:gameover]
