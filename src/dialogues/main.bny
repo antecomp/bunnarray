@@ -16,7 +16,9 @@ Have you used a conduit before? {
 # At the very end just sprinkle in routes that break these rules.
 # Don't try and bend the narrative around it. You can just make some pitfalls.
 
-# to do: Add very brief intro to world-build a bit better.
+# TODO: I am sick of these "you were" lines everywhere. rework them.
+
+# TODO: Add very brief intro to world-build a bit better.
 Before establishing communication, know of these ground rules:
 @rules
 1. Do not ask them about the afterlife.
@@ -198,9 +200,9 @@ We always sat at the same spot, right? {
         Why did you always want to sit there, anyway? {
             ?: I did it for you.
                 # SIGNAL: Vague, just not in a lame "idk" way -- she gains no insight about you from this.
-                # TODO: Write this in...
-                Aw
-                # Always so accommodating/considerate, like with- the house...
+                Aw...
+                You were always so thoughtful.
+                # TODO: Write this transition out...
                 -> house
             ?: It was brighter. {
                 ?: That place always had dim lights- {
@@ -221,6 +223,9 @@ We always sat at the same spot, right? {
         }
     # TODO: Workshop this branch. Should highlight the decay theme better.
     ?: Wherever we could.
+        # Have this stupid line because my parser is broken rn
+        # and doesnt work for ?: -> match
+        Wherever...
         [match:cafe_mentioned]
             =true
                 Yeah, that place was always busy.
@@ -247,9 +252,25 @@ We always sat at the same spot, right? {
 # If you played along earlier, you lead into the false ending.
 # If you omitted info earlier, the house memory seems like nonsense, and will lead into the contradiction.
 
+
+# Have a general contradiction early to nicely establish the decay regardless of earlier setup.
 @house
 The house.
-
+...
+# Contradicting with the earlier city/port setting of cafe...?
+The one by the lake,
+You took your time deciding on that one...
+Like you always did. {
+    ?: I had that one before I met you.
+        # How does she react to this?
+        # Oh, well...
+        # It felt like ours.
+        # That is how I remember it.
+        # Make this option key to unlocking confrontation?
+    # TODO: Go along with it answer
+    ?: (Say Nothing)
+}
+# Recall house, using hints (or lackthereof) from above...
 
 # --- Phase 4 Final Confrontation, True Ending or False Ending
  # I think these responses are too harsh right now. 
