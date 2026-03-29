@@ -342,9 +342,43 @@ then out the door...
                 What?
                 That sounds... exactly right.
                 It's so clear to me.
-                The walk, that rickety door, the smell of coffee... {
+                The walk, that entrance, the smell of coffee... {
                     ?: That house wasn't near the café.
                         # TODO: Lead into confrontation...
+                        ...
+                        No...
+                        We walked there.
+                        Every morning.
+                        I remember the door,
+                        that little bell above it.
+                        The way you had to shove it for it to open...
+                        ...
+                        # Why are you trying to pull this apart?
+                        [match:house_confronted]
+                            =true
+                                Why are you trying to pull this apart? {
+                                    ?: Because it isn't just the café.
+                                        Huh? {
+                                            ?: You keep doing this.
+                                                Doing what? {
+                                                    ?: What is your name?
+                                                        -> confront
+                                                }
+                                        }
+                                }
+                            =false
+                                Why are you trying to pull this apart? {
+                                    ?: It's okay {
+                                        ?: It has been years {
+                                            ?: We all misremember things.
+                                                Right...
+                                                Yeah, sorry.
+                                                # TODO: Transition into either the false ending
+                                                # Or the fallback block below...
+                                        }
+                                    }
+                                }
+                        [/match]
                 }
             ?: (Say nothing)
         }
@@ -375,18 +409,30 @@ That was the nice part.
 # TODO: Write this out and make the ending hit.
 [block:confront]
     What are you trying to imply here? <face:anger_sfrown> {
-        ?: What is your name?
+        ?: Please, just tell  me what your name is.
             [match:is_name_shared]
                 =yes
-                    What? <face:anger_grimace>
+                    Is this some sort of joke? <face:anger_grimace>
                     $hername. <face:anger_sfrown>
-                    What is this about?
+                    What is this about? {
+                        ?: And what is my name?
+                            # She cannot answer this.
+                            ...
+                            I-
+                            ...
+                            I know you.
+                            I just-
+                            Why can't it I-...
+                    }
                 =no
                     Is this some sort of joke? <face:anger_grimace> {
                         ?: Just tell me what your name is.
                             # Maybe something more deflective/defensive here. 
                             # Make it very clear that she truly does not know.
                             No, not until you explain what is going on here!
+                            # We can either jump straight to the full confront, or
+                            # try to warp this to the same "what is *my* name" setup as above.
+                            # Or, third option, make this branch have slightly different ending. (prob best)
                     }
             # Follow-up by asking for *your* name. Cannot be answered.
             # Branch above is more just to teach the mechanic than to divert dialogue much...
@@ -421,8 +467,12 @@ That was the nice part.
     ...
     I have been playing these moments back for so long.
     Over and over.
-    My life feel like it does not have chapters anymore,
+    They don't feel separate anymore.
     It's all just one big stream.
+    Places keep folding into each other.
+    Mornings into nights.
+    Houses into cafés.
+    You into a memory.
     ...
     I-
     I just wanted something new,
