@@ -285,6 +285,10 @@ Or maybe just how it felt.
 # - Café window reason (light): Office window reason would match.
 # - The above knowledge of the house location: General point of contention later.
 # - Optional bonus: "I don't drink" informing if there was a bar in or near the house, or similar?
+
+# Do we catch the inconsistencies during recollection, building tension? Or do we instead have a hash "something isn't right"
+# dialogue option unlocked?
+
 [match:window_reason_given]
     # Describing the place as bright and lively vs dark and cozy.
         # For dark maybe describe that PC liked the quiet times
@@ -294,7 +298,10 @@ Or maybe just how it felt.
         I loved how the morning light would come in.
         It brought our whole world to life.
         Especially you, 
-        rising with the sun like a flower.
+        You would never close the blinds.
+        Then each morning you'd spring up with the sun.
+        # too floofy? too nonsensical?
+        Like a flower.
         You certainly made me a more lively person too...
         I could sleep for days,
         without you to wake me up.
@@ -303,11 +310,58 @@ Or maybe just how it felt.
         # Try to make this description less descriptive too
         # Without any prompting, she essentially is making this all up.
         # So naturally it does not have much detail flowing...
-        The coziness of it all.
-
+        It was... nice.
+        Quiet, quaint.
+        Always felt like somewhere you could stay
+        ...
+        You always seemed so comfortable there.
 [/match]
+We fell into a routine pretty quickly,
+didn't we? {
+    ?: Like clockwork
+}
+# I think it might actually be cool to make the cafe a "bad" option
+# The cafe was NOT near this house, but she will fasely put these two memories together.
+Yeah, haha.
+It all blurred together after a while,
+but I remember the routine of it.
+Wake up,
+You would take your time getting ready-
+as always-
+then out the door...
+[match:cafe_mentioned]
+    =true
+        towards the café.
+        Same as always.
+        Didn't even have to think about it.
+        Felt like a continuation of our world,
+        like we never left the house. {
+            ?: That doesn't sound right...
+                # Do we have a soft call-out here?
+                # TODO: Feel free to workshop thw wording here...
+                # Like a "that cafe wasn't at that house though..."
+                # Something to make it clear, but in a way we can recover from...
+                ...
+                It does to me.
+            ?: (Say nothing)
+        }
+    =false
+        Then we were off!
+        Didn't really matter where.
+        ...
+        You always made it feel like it did.
+[/match]
+It all felt... easy.
+Like we had already figured it out.
+Didn't have to think about anything.
+...
+That was the nice part.
+# Moving memory?
+# "I remember bringing boxes in..."
+# The idea is still that he owned this house before her
+# And she is blending memories of her limited stay with him there
+# With memories of other places they have lived...
 
-# Recall house, using hints (or lackthereof) from above...
 
 # --- Phase 4 Final Confrontation, True Ending or False Ending
  # I think these responses are too harsh right now. 
