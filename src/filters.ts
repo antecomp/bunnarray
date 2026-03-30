@@ -12,6 +12,7 @@ export function createNoiseFilter(app: Application, intensity?: number) {
         resources: {
             timeUniforms: {
                 uTime: { value: 0.0, type: 'f32' },
+                // Default is 4.0
                 uIntensity: { value: intensity, type: 'f32' }
             }
         }

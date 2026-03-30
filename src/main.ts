@@ -51,6 +51,7 @@ async function main() {
   // (window as any)['debug_changeface'] = face.changeTo;
 
   const noiseFilter = createNoiseFilter(app);
+  const textNoiseFilter = createNoiseFilter(app, 2.0);
 
   const displacementFilter = createDisplacementFilter(app, 4);
 
@@ -64,7 +65,7 @@ async function main() {
   const optionsOverlay = createOptionsOverlay(app, CRYSTAL_BALL_RADIUS);
 
   responseText.centerText(true, true, { x: 0, y: CRYSTAL_BALL_RADIUS / 1.6 });
-  responseText.container.filters = [noiseFilter]
+  responseText.container.filters = [textNoiseFilter]
 
   const VARS: Record<string, string> = {
     hername: pickRandom(NAMES)

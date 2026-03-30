@@ -70,7 +70,7 @@ export default function createOptionsOverlay(app: Application, ballRadius: numbe
                 true
             );
 
-            const normalNoise = createNoiseFilter(app);
+            const normalNoise = createNoiseFilter(app, 2.0);
             const lightNoise = createNoiseFilter(app, 1.0);
 
             text.filters = [normalNoise];

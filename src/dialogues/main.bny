@@ -85,9 +85,9 @@ I missed you. Where have you been? <face:neu_sfrown> {
                 Don't lie to me, it has been years... <face:anger_sopen> {
                     ?: How do you know that?
                         Because- 
-                        ...
+                        ... <face:anger_sfrown>
                         I have sat here, waiting...
-                        for all that time. <face:anger_sfrown>
+                        for all that time.
                         @onlymemories
                         I can't do anything except entertain myself with memories. <face:neu_concern>
                         There is nothing else I can do but remember. 
