@@ -35,7 +35,7 @@ Your consciousness is now being mapped to the target's vestige...
 ... <face:clo_neu> {
     ?: Hey.
 }
-Hey, it has been a while.  <face:neu_smile> {
+Hey, it's been a while.  <face:neu_smile> {
     ?: How are you?
         I am... <face:concern_surprise>
         How... 
@@ -54,7 +54,7 @@ I missed you. Where have you been? <face:neu_sfrown> {
     ?: You died.
         I know that. <face:aclo_flat>
         @whynotearlier
-        Why did you not try to talk to me earlier? <face:anger_flat> {
+        Why didn't you try to talk to me earlier? <face:anger_flat> {
             ?: I couldn't.
                 Why not? {
                     ?: The technology did not exist yet.
@@ -84,7 +84,9 @@ I missed you. Where have you been? <face:neu_sfrown> {
             ?: It has not been that long.
                 Don't lie to me, it has been years... <face:anger_sopen> {
                     ?: How do you know that?
-                        Because I have sat here waiting that whole time. <face:anger_sfrown>
+                        Because- 
+                        ...
+                        I have sat here waiting that whole time. <face:anger_sfrown>
                         @onlymemories
                         I can't do anything except entertain myself with memories. <face:neu_concern>
                         There is nothing else I can do but remember. 
@@ -140,7 +142,7 @@ you really would just take your time.
 ...
 Remember how often we would have to send the waitress back? <face:cdev_grin>
 Because you still weren't ready to order.
-You would always ask a million questions about the food;
+You would always ask a million questions about the food:
 What to pair with it...
 If it was the sort of thing you'd regret picking...
 You would stare at the menu like it mattered. <face:neu_smile>
@@ -149,7 +151,7 @@ Like you could pick wrong. {
         Everywhere! <face:clo_bgrin>
         Didn't matter where we were.
         Every pit-stop was special,
-        Or you would want to make it special.
+        or you would want to make it special.
     ?: That doesn't sound like me.
         Really? <face:neu_surprise>
         Maybe you just never noticed... 
@@ -200,7 +202,7 @@ The view of the city, the port in the distance...
                                 The light did seem to make you less tense. <face:neu_smile>
                                 Like things bothered you more when they were half-seen.
                                 Even there,
-                                With something a small as lunch. <face:cdev_grin>
+                                with something a small as lunch. <face:cdev_grin>
                                 ... <face:clo_sfrown>
                                 Nothing with you ever felt careless. <face:neu_smile>
                                 Like-
@@ -284,7 +286,7 @@ Or maybe just how it felt.
         Especially you- 
         you would never close the blinds.
         Then each morning you'd spring up with the sun.
-        That certainly made me a more lively person too...
+        That certainly made me livelier too...
         I could sleep for days,
         without you to wake me up.
         Or to keep me going... <face:concern_smile>
@@ -292,7 +294,7 @@ Or maybe just how it felt.
     =false
         It was... nice. <face:clo_grin>
         Quiet, quaint.
-        Always felt like somewhere you could stay
+        Always felt like somewhere you could stay.
         ...
         You always seemed so comfortable there. <face:concern_smile>
         ...
@@ -529,7 +531,7 @@ Hey, you know... <face:concern_smile>
     ...
     I-
     I just wanted something new,
-    Something I have not already recycled.
+    something I have not already recycled.
     ...
     Everything feels so worn down.
     I am sorry this is all that's left of me. <face:soft_frown>
