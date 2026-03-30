@@ -404,20 +404,23 @@ We had boxes sitting by the door for days!
     =true
         Not a thing was unpacked until you knew exactly where you wanted it. <face:devious_tgrin> {
             ?: You're mixing it up again...
-                I... <face:concern_surprise>
-                Maybe I am.
-                ...
-                Things don't stay where I leave them anymore. <face:concern_sfrown>
-                ...
-                Maybe that is why I keep holding them here.
-                The places, the order of it.
-                If I let go,
-                everything runs together again.
-                ... <face:soft_frown>
-                Please...
-                I need you to stay a little longer.
-                Help me keep it in one piece. 
-                -> sculpt_alt_end
+                Mixing up what? <face:soft_frown> {
+                    ?: We did not move into that house together.
+                        I... <face:concern_surprise>
+                        Maybe I am confusing things.
+                        ...
+                        Things don't stay where I leave them anymore. <face:concern_sfrown>
+                        ...
+                        Maybe that is why I keep holding them here.
+                        The places, the order of it.
+                        If I let go,
+                        everything runs together again.
+                        ... <face:soft_frown>
+                        Please...
+                        I need you to stay a little longer.
+                        Help me keep it in one piece. 
+                        -> sculpt_alt_end
+                }
             ?: (Say nothing)
         }
     =false
