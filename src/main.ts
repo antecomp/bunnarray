@@ -17,7 +17,10 @@ import pickRandom from './utils';
 export const CRYSTAL_BALL_RADIUS = 290;
 
 const DEFAULT_FLAGS = {
-  'nameshared': false as boolean
+  nameshared: false as boolean,
+  cafementioned: false as boolean,
+  windowreason: false as boolean,
+  houseconfront: false as boolean
 } satisfies Record<string, string | boolean | number> // Only use primitives to make reset easy.
 
 export const TEXT_STYLE = new TextStyle({
@@ -70,11 +73,20 @@ async function main() {
   let flags = { ...DEFAULT_FLAGS };
 
   const MATCHES: Record<string, () => string> = {
-    'is_name_shared': () => flags.nameshared ? 'yes' : 'no'
+    name_shared: () => String(flags.nameshared),
+    cafe_mentioned: () => String(flags.cafementioned),
+    window_reason_given: () => String(flags.windowreason),
+    house_confronted: () => String(flags.houseconfront)
   }
 
+  function reloadGame() {
+    // Avoid using the same name twice on restart.
+    const previousName = runner.readVar('hername')!;
+    runner.setVar('hername', pickRandom(NAMES.filter(n => n !== previousName)));
 
-  ////////////////////////////////
+    // Reset flags.
+    flags = { ...DEFAULT_FLAGS }
+  }
 
   const runner = createDialogueRunner(
     root,
@@ -83,17 +95,15 @@ async function main() {
     VARS
   );
 
-  runner.addSignalListener('nameshared', () => { flags.nameshared = true })
+  // Signals that flip boolean switches. This is kinda messy, but doing it this way to save time.
+  runner.addSignalListener('set_name_shared', () => { flags.nameshared = true })
+  runner.addSignalListener('set_cafe_mentioned', () => { flags.cafementioned = true })
+  runner.addSignalListener('set_window_reason', () => { flags.windowreason = true })
+  runner.addSignalListener('set_house_confronted', () => { flags.houseconfront = true })
 
-  // Reset game state on gameover.
-  runner.addSignalListener('gameover', () => {
-    // Avoid using the same name twice on restart.
-    const previousName = runner.readVar('hername')!;
-    runner.setVar('hername', pickRandom(NAMES.filter(n => n !== previousName)));
-
-    // Reset flags.
-    flags = { ...DEFAULT_FLAGS }
-  })
+  // Reset game state on gameover or game end.
+  runner.addSignalListener('gameover', reloadGame);
+  runner.addSignalListener('ending', reloadGame);
 
   crystalBall.ball.on('pointertap', runner.proceed);
   runner.start();

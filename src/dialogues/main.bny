@@ -39,7 +39,7 @@ Who do you wish to speak to? {
     ?: My wife
         Establishing connection...
     ?: My wife, $hername.
-        Establishing connection... <signal:nameshared>
+        Establishing connection... <signal:set_name_shared>
 }
 Please remain calm. 
 Your consciousness is now being mapped to the target's vestige...
@@ -199,8 +199,7 @@ The view of the city, the port in the distance...
                     ?: It was brighter. {
                         ?: That place always had dim lights- {
                             ?: -and I wanted to actually see the menu.
-                                # SIGNAL: By the window and why.
-                               Haha, right!
+                               Haha, right! <signal:set_window_reason>
                                The light did seem to make you less tense.
                                Like things bothered you more when they were half-seen.
                                Even there,
@@ -218,7 +217,9 @@ The view of the city, the port in the distance...
                 Like you didn't care.
                 But you'd still hesitate,
                 and pick somewhere that felt right.
-                Like with-
+                That was just your personality,
+                Like...
+                Remember-
                 -> house
             ?: I don't think we should talk about that place.
                 That's unlike you.
@@ -302,6 +303,7 @@ Or maybe just how it felt.
         Always felt like somewhere you could stay
         ...
         You always seemed so comfortable there.
+        ...
 [/match]
 We fell into a routine pretty quickly,
 didn't we? {
@@ -318,7 +320,6 @@ then out the door...
 [match:cafe_mentioned]
     =true
         towards the café.
-        Same as always.
         Didn't even have to think about it.
         Felt like a continuation of our world,
         like we never left the house. {
@@ -382,13 +383,12 @@ then out the door...
     =false
         Then we were off!
         Didn't really matter where.
-        ...
-        You always made it feel like it did.
+        Though,
+        you always made it feel like it did.
 [/match]
 It all felt... easy.
 Like we had already figured it out.
 Didn't have to think about anything.
-...
 That was the nice part.
 Although...
 Didn't start that way, haha.
@@ -412,7 +412,7 @@ Those boxes sat by the door for days!
                 Please,
                 stay a little longer.
                 Help me keep it in one piece.
-                -> sculpt_end
+                -> sculpt_alt_end
             ?: (Say nothing)
         }
     =false
@@ -430,8 +430,8 @@ Hey, you know...
 [block:confront]
     Why would you ask me that? <face:anger_sfrown> {
         ?: Humor me.
-            [match:is_name_shared]
-                =yes
+            [match:name_shared]
+                =true
                     Is this some sort of joke? <face:anger_grimace>
                     $hername. <face:anger_sfrown>
                     What is this about? {
@@ -439,7 +439,7 @@ Hey, you know...
                             # She cannot answer this.
                             -> pc_name
                     }
-                =no
+                =false
                     Is this some sort of joke? <face:anger_grimace> {
                         ?: Just tell me.
                                 It's...
@@ -471,16 +471,21 @@ Hey, you know...
     Please, stay a little longer.
     Help me remember the rest.
     ENDING 1: FILM <signal:ending> {
-        ?: Play again?:
+        ?: Play again?
             -> intro
     }
 [/block]
 
-# This one has a lot of variation, 
-# so let's just make the block the ending card.
 [block:sculpt_end]
     ENDING 3: SCULPTURES <signal:ending> {
-        ?: Play again?:
+        ?: Play again?
+            -> intro
+    }
+[/block]
+
+[block:sculpt_alt_end]
+    ENDING 3: SCULPTURES (Alt) <signal:ending> {
+        ?: Play again?
             -> intro
     }
 [/block]
@@ -518,10 +523,11 @@ Hey, you know...
     #Something I have not already memorized.
     Something that hasn't been worn smooth.
     ...
-    Everything feels so worn down.
+    # Todo: maybe a better word than "doubtful" here?
+    Everything feels so doubtful down.
     I am sorry this is all that's left of me.
     ENDING 2: FRAGMENTS <signal:ending> {
-        ?: Play again?:
+        ?: Play again?
             -> intro
     }
 [/block]
@@ -534,5 +540,5 @@ Hey, you know...
             -> intro
     }
 [/block]
-(Dialogue Ends Here...) <face:error>.
+(Error, Fallout) <face:error>.
 -> intro
