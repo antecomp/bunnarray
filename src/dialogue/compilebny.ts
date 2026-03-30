@@ -12,7 +12,7 @@ import { DialogueVisitor } from "./visitor";
 const parser = new DialogueParser();
 const visitor = new DialogueVisitor();
 
-export function compileBnyDialogue(raw: string, debug = true): DialogueNode | null {
+export function compileBnyDialogue(raw: string, debug = false): DialogueNode | null {
     resetIdCounter();
 
     const begin = performance.now();

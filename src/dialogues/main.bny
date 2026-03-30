@@ -35,7 +35,7 @@ Your consciousness is now being mapped to the target's vestige...
 ... <face:clo_neu> {
     ?: Hey.
 }
-Hey, it's been a while.  <face:neu_smile> {
+Hey, it has been a while.  <face:neu_smile> {
     ?: How are you?
         I am... <face:concern_surprise>
         How... 
@@ -101,7 +101,7 @@ I missed you. Where have you been? <face:neu_sfrown> {
                 It's okay. <face:soft_tfrown>
                 # should be the only possible exit out of this block.
             ?: Have you been waiting this whole time?
-                Yes. <face:alco_frown>
+                Yes. <face:aclo_frown>
                 There is...
                 There is nothing here.
                 ...
@@ -324,7 +324,7 @@ then out the door...
                 The walk, that entrance, the smell of coffee... <face:soft_tfrown> {
                     ?: That house wasn't near the café.
                         ...
-                        No... <face:alco_frown>
+                        No... <face:aclo_frown>
                         We walked there.
                         Every morning.
                         I remember the door, <face:concern_smile>
