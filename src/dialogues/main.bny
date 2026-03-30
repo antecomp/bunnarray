@@ -158,9 +158,9 @@ Like you could pick wrong. {
         Maybe you just never noticed... 
         Or you're too embarrassed to admit it. <face:soft_tgrin>
     ?: "What to pair with it...?"
-        Huh? <face:concern_grimace> {
+        Huh? <face:concern_surprise> {
             ?: I don't drink.
-                Oh, I meant uh- <face:concern_surprise>
+                Oh, I meant uh- 
                 Never mind. <face:concern_sfrown>
                 ...
         }
@@ -309,8 +309,8 @@ It all blurred together after a while, <face:neu_smile>
 but I still remember the order of it.
 Wake up,
 you would take your time getting ready-
-as always-
-then out the door...
+as always- <face:soft_grimace>
+then out the door... <face:neu_smile>
 [match:cafe_mentioned]
     =true
         towards the café.
