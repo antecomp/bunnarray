@@ -1,9 +1,9 @@
 Click here to begin. <face:eye_closed>
 @intro
 Welcome to the Conduit. <face:eye_open>
-The conduit connects you with those who have passed.
+The Conduit connects you with those who have passed.
 
-Before establishing communication, know of these ground rules:
+Before establishing communication, know these ground rules:
 @rules
 1. Do not ask them about the afterlife.
 2. Do not ask them about their state or existence.
@@ -50,7 +50,7 @@ Hey, it has been a while.  <face:neu_smile> {
         Please don't ask me that. <face:soft_frown>
         -> gameover
 }
-I missed you, where have you been? <face:neu_sfrown> {
+I missed you. Where have you been? <face:neu_sfrown> {
     ?: You died.
         I know that. <face:aclo_flat>
         @whynotearlier
@@ -147,18 +147,18 @@ You would stare at the menu like it mattered. <face:neu_smile>
 Like you could pick wrong. {
     ?: Where was this?
         Everywhere! <face:clo_bgrin>
-        Didn't matter where we would be.
+        Didn't matter where we were.
         Every pit-stop was special,
         Or you would want to make it special.
     ?: That doesn't sound like me.
         Really? <face:neu_surprise>
         Maybe you just never noticed... 
-        Or are too embarrassed to admit it. <face:soft_tgrin>
+        Or you're too embarrassed to admit it. <face:soft_tgrin>
     ?: "What to pair with it...?"
         Huh? <face:concern_grimace> {
             ?: I don't drink.
                 Oh, I meant uh- <face:concern_surprise>
-                nevermind. <face:concern_sfrown>
+                Never mind. <face:concern_sfrown>
                 ...
         }
 }
@@ -215,7 +215,7 @@ The view of the city, the port in the distance...
                 }
             ?: Wherever we could.
                 Sure. <face:neu_grin>
-                That was what you would say, anyways. <face:soft_tgrin>
+                That was what you would say, anyway. <face:soft_tgrin>
                 Like you didn't care.
                 But you'd still hesitate, <face:devious_tgrin>
                 and pick somewhere that felt right.
@@ -241,8 +241,8 @@ The view of the city, the port in the distance...
             ?: By the window?
                 -> by_the_window
             ?: Wherever we could
-                 No... that's not right. <face:concern_sfrown>
-                Do you know where I am talking about? {
+                No... that's not right. <face:concern_sfrown>
+                Do you know what place I'm talking about? {
                     ?: Not really.
                 }
                 That's alright. <face:concern_tfrown>
@@ -268,7 +268,7 @@ Like you always did. <face:neu_smile> {
         It felt like ours.
         That is how I remember it.
         # Make this option key to unlocking confrontation?
-    ?: (Say Nothing)
+    ?: (Say nothing)
         ... <face:neu_smile>
         You remember.
         I know you do.
@@ -281,7 +281,7 @@ Or maybe just how it felt.
     =true
         I loved how the morning light would come in. <face:clo_grin>
         It brought our whole world to life.
-        Especially you, 
+        Especially you- 
         you would never close the blinds.
         Then each morning you'd spring up with the sun.
         That certainly made me a more lively person too...
@@ -393,7 +393,7 @@ Like we had already figured it out.
 Didn't have to think about anything.
 That was the nice part.
 Although... <face:soft_tgrin>
-Didn't start that way, haha. 
+It didn't start that way, haha. 
 Remember the first few nights?
 Nothing was really organized yet,
 just enough to pretend that we were settled.
