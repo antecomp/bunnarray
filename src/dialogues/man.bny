@@ -1,0 +1,127 @@
+# Just a test to see how naturally I can write DG-style dialogue in this format
+# Will use this to inform what changes need to be made.
+
+# Maybe use |...| for the speaker?
+# Should the speaker be a node annotation or a state machine (like how face currently works)?
+|VISUALIZER| His eyes dart and glimmer briefly behind his sunglasses - likely verifying my VLID.
+
+# Block for alternating?
+# This is likely going to be some sort of preprocess step, just annotate the children nodes before passing along?
+[alternate:MAN,ARDA]
+    What model VI-LINK do you have?
+    Why does it matter?
+    Could be the difference between your brain melting and not.
+    XA-3.
+    Damn. Fancy for someone like you. Doing this to rebel against your rich daddy? {
+        # How do I nicely have the full/summary text set up?
+        # This is certainly something to leave to late-implementation. Don't contort
+        # the bunnarray system to deal with this, just pass some formatted text to DG to handle on render.
+        ?: (Say Nothing : ...)
+            |VISUALIZER| His smirk fades as quickly as it appeared
+        # How do I indicate CAR (send player response) vs no CAR (just advance dialogue)?
+        ?: (Tell gim off : None of your fucking business.)
+            Like hell it isn't my business, I'm here to make sure you don't snitch right off the link.
+            I got what I needed from that response though-
+            Hold on to that angst, kid, it'll keep you going.
+    }
+[/alternate]
+|MAN| Here's the deal. This isn't a tour, and it's not like one of those schlocky sim-thrillers. 
+I hand off the mod, then you're on your own. Understand? {
+    ?: (Yes : Yeah, of course.)
+        Plus, I have your VLID, and you're the only client I've had in the past 3 weeks.
+        I will know it's you if Asuracom comes knocking on my door.
+        Don't think my team can't just as easily break your VI-LINK.
+        [alternate:ARDA,MAN]
+            Are you done threatening me so we can get on with it?
+            I'm not threatening you, just some... terms and conditions.
+            Right. Moving on.
+        [/alternate]
+        |VISUALIZER| He smirks, though it's hard to tell if it's out of amusement or annoyance.
+        |MAN| Moving on...
+        What you're getting isn't a patch or a plug-in, it's a permanent bypass. 
+        Burn once, firmware update, you know how it goes.
+    ?: (Questions : Can I ask some questions first?)
+        # Do I even bother with the one-time question shit? I feel like it's a lot of work for flair that does not matter.
+        If it's anything technical, no, I don't make the mods. {
+            ?: (Caught : What if I get caught with this thing?)
+                You never check the feeds? Or is this your idea of a joke?
+                Asuracom has an agreement with every country they serve.
+                Unauthorized VI-LINK modification is usually a federal offense and Fringe trespass is an aggravating circumstance.
+                Don't ask me something so dumb.
+                |VISUALIZER| He looks frustrated, almost to the point of suspicion; that you'd come in an ask him to explain the risks.
+            ?: Another question
+                sdfjkhjkdfshfjd
+            ?: (Done : No more questions.)
+        }
+        The only other warning I got for you is that this is a permanent bypass.
+        Burn once. Only way to get it to work. 
+}
+So... when you slot it, you're exposed. That clear? {
+    ?: (Ask a technical question : Is it disabling my daemonveil entirely? Sounds suicidal.)
+        |VISUALIZER| He raises an eyebrow, slightly, a hint you've said something outside his usual script.
+        |MAN| No. Not entirely. We're not trying to kill you.
+        Even if you're paying us "getting killed" rates.
+        |VISUALIZER| He shifts in his seat.
+        |MAN| It forces your DV into manual, just like how Agents have it.
+        The safety net's still there, but it's last-ditch stuff.
+        There's some basic automation here and there...
+        But if you depend on it, high odds it will get you killed.
+        You'll feel and see things almost as they are. Take care not to get too attached. 
+        |VISUALIZER| Behind his sunglasses, the glint suggests he is speaking from experience.
+        |MAN| But hey - your F-CH hits critical, it'll still yank you.
+        Just... no promises it'll be clean, or leave you whole. {
+            ?: F-CH?
+                Feedback Coherence.
+                Without getting too technical...
+                When rendering this place, your VI-LINK checks that what you see is, well, what it intended.
+                If you have a daemon, uh- interfering with your perception, the VI-LINK picks up on that as incoherence.
+                Too many discordant signals traveling through the VI-LINK into your brain-stem is obviously a problem.
+                I mean, that's the justifiable reason for your daemonveil existing at all. Keeping your brainwaves stable.
+                Asuracom just tunes it to be overzealous. {
+                    ?: (Guide, There's no documentation for manual mode...)
+                        -> manualmode
+                }
+        }
+    ?: Yes
+        I would envy your confidence if I didn't know it will get you killed.
+        Remember, your daemonveil will have to be manually controlled. Don't get too comfortable. {
+            ?: (Guide, There's no documentation for manual mode...)
+            -> manualmode
+        }
+    ?: (No : Not really.)
+        Look, if you don't know what the hell the mod is doing, I can't help you.
+        I'm only giving you that disclaimer out of good conscience.
+        I'm still selling, if you don't heed my warnings, it's your funeral.
+        In any case, you'll have to prove your worth to some degree to get the mod working anyway. {
+            ?: What does that mean?
+                -> decrypt
+        }
+}
+@manualmode
+|ARDA| No documentation for manual mode, at least anything public.
+Does this mod come with a guide?
+|VISUALIZER| He snorts.
+|MAN| You have to learn how to select sigils, and thread runes, on your own.
+If you aren't quick on the pickup, you aren't meant for the Fringe.
+|VISUALIZER| His tone shifts.
+|MAN| Daemons don't exactly make sigils, but whatever they send at you will be rendered as such.
+Try to build something that counteracts it.
+Closest thing I got a guide.
+|ARDA| Got it. Anything else I should know?
+|VISUALIZER| He exhales slowly, as if the question is an inconvenience.
+|MAN| Yeah, one more thing...
+@decrypt
+The cache is sealed. Encrypted, obfuscated - whatever term makes you feel smart.
+The point is, we don't open it. Keeps the chain clean.
+You need to crack it yourself. That's part of the entry.
+You solve it, mod works. You don't: deadlock, your fault. {
+    ?: (Insurance : For the amount I paid, I would hope there'd be some insurance)
+        |VISUALIZER| He lets out a dry, mirthless chuckle.
+        |MAN| Fringe net doesn't come with insurance.
+        Asuracom doesn't even bail out their own - company policy, or so I've heard.
+    ?: (Say nothing, ...)
+        You'll figure it out kid.
+}
+|VISUALIZER| He slides a small diskette across the table <signal:give_cache>
+|MAN| Enjoy your contraband. Next point of contact is on the diskette. <signal:return_camera>
+|VISUALIZER| Before you say anything more, the man abruptly rises out of his chair and departs. <signal:man_depart>
