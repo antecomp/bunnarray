@@ -1,9 +1,6 @@
-# The Conduit
-A short custom-built visual novel created for the Agora Road "Demo Disc Jam"
-Written in TypeScript using PixiJS, Chevrotain, Vite & Tauri.
-
-## Credits
-Character art was created using https://picrew.me/en/image_maker/2056087
+Forked from an earlier project for a game jam [here](https://github.com/antecomp/pixicrystal/tree/main)
+Wanted to continue development of this dialogue system but remove the overfitting to the game,
+I hope to make something more generic that can be used for my (and others) own projects!
 
 -------------------------------------------------------
 
@@ -264,13 +261,24 @@ The compile function returns the DialogueNode at the "start" of this graph corre
 -------------------------------------------------------
 
 ### TODO
+* Remove stuff specific to the game jam, change to generic tester.
+    * Remove Tauri and related deps, just keep this as plain Vite.
+    * Later on consider formatting this to be in a nicer modular "package" format you can easily integrate into projects.
+* Make the handler callbacks generic? Or some sort of system to make integration into any dialogue navigation implementation simple.
+* May be overfit to DG, but potentially add CAR support? (Or just make this responsibility of final parse from raw dialogue to that specific format)
 * Allow signals to pass simple values, remove clutter of so many listers.
+* Make directives generic, leave it up to the personal implementation of dialogue node to handle them.
+    * Ergo, make a good shape for some raw dialogue node that just provides all the directives. Up to the implementation to convert that into a runtime model.
 * Permit a "general" signal listener that can just receive all signals and do whatever with them, for arbitrary implementations/uses.
-* Move label collection to visitor to remove redundant second pass through dialogue tree.
+* Move label collection to visitor to remove redundant second pass through dialogue tree?
 * MORE TESTS. THERE ARE BUGS I CAN FEEL THEM CRAWLING AROUND AT NIGHT. I KNOW THEY ARE THERE.
 * After the game jam, maybe a "set" directive to have some default dialogue-owned stuff for matches without needing to set up a backend.
 * After the game jam, to make this general, add a "speaker" property to.
     * I think a `speaker: text` syntax for lines would work well here! Keep a similar inherit behavior to faces.
+    * Make it responsibility of implementor to figure out how to handle that speaker key to whatever visuals they want to show
+    * Consider having this replace "face"
+* Another DG specific thing, but I think I can make it general / up to implementor: nested questions **not** to create brand new (duplicate) node, but instead some sort of flagged "empty"
+    * The current clone implementation will cause duplicate messages to be sent in many implementations (including DG), so we should change it to not assume use-case.
 
 ## VS Code Syntax Highlighting
 
