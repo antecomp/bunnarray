@@ -3,17 +3,23 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="stylesheet" href="/src/styles.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Conduit</title>
+  <title>BunNarraY Demo</title>
   <script type="module" src="/src/main.ts" defer></script>
+  <style>
+    textarea {
+      width: 500px;
+      height: 450px;
+    }
+  </style>
 </head>
-<!-- 
-    Created by omni.vi March 2026 for the "Tales of Agora Road Demo Disc" Game Jam.
-    https://forum.agoraroad.com/index.php?threads/game-jam-tales-of-agora-road-demo-disc.8697/
 
-    Bundled with vite. Original Source Code @ https://github.com/antecomp/pixicrystal
--->
-<body></body>
+<body>
+    <textarea id="demo-textarea" width="500" height="450"></textarea>
+    <br>
+    <button id="compile-button">Compile</button>
+    <br>
+    <pre id="debug"></pre>
+</body>
 
 </html>
