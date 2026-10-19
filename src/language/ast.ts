@@ -1,4 +1,5 @@
 export type DialogueAST = {
+    type: 'dialogue';
     statements: Statement[];
 };
 
@@ -22,6 +23,7 @@ export type ChoiceStatement = {
 }
 
 export type ChoiceBranch = {
+    type: 'choiceBranch'
     text: string,
     statements: Statement[]
 }
@@ -33,7 +35,8 @@ export type MatchStatement = {
 }
 
 export type MatchBranch = {
-    value: string;
+    type: 'matchBranch'
+    case: string;
     statements: Statement[];
 }
 
