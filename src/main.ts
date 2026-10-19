@@ -12,5 +12,7 @@ function display(x: any) {
 
 demoTextarea.value = stock;
 compileButton.onclick = () => {
-    display(compile(demoTextarea.value))
+    display(
+        compile(demoTextarea.value)
+    );
 }

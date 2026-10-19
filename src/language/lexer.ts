@@ -51,13 +51,13 @@ export const MatchBlockClose = createToken({
 
 // --- Labels & Gotos ---
 
-export const Goto = createToken({
-    name: "Goto",
+export const GotoToken = createToken({
+    name: "GotoToken",
     pattern: /->[ \t]*/,
 });
 
-export const Label = createToken({
-    name: "Label",
+export const LabelToken = createToken({
+    name: "LabelToken",
     pattern: /@[ \t]*/
 });
 
@@ -89,8 +89,8 @@ export const allTokens = [
     MatchBlockOpen,
     MatchBlockClose,
     ChoiceToken,
-    Goto,
-    Label,
+    GotoToken,
+    LabelToken,
     Equals,
     CloseBracket,
     Text
