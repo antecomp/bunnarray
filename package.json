@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "chevrotain": "^12.0.0",
+    "vis-network": "^10.1.2",
     "vite-plugin-string": "^1.2.3"
   },
   "devDependencies": {
