@@ -18,11 +18,12 @@ export type SayStatement = {
 
 export type ChoiceStatement = {
     type: 'choice';
+    choices: ChoiceBranch[]
 }
 
 export type ChoiceBranch = {
     text: string,
-    statemenents: Statement[]
+    statements: Statement[]
 }
 
 export type MatchStatement = {

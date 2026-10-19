@@ -1,8 +1,10 @@
 import { DialogueLexer } from "../language/lexer";
 import { DialogueParser } from "../language/parser";
 import preprocess from "../language/preprocess";
+// import { DialogueVisitor } from "../language/vistor";
 
 const parser = new DialogueParser();
+// const visitor = new DialogueVisitor();
 
 export default function(raw: string) {
     console.log("𑣲₍ ᐢ. .ᐢ₎ : Compiling .bny dialogue...");
@@ -22,7 +24,10 @@ export default function(raw: string) {
         return null;
     }
 
+    // const ast = visitor.visit(cst);
+
     return {
+        // ast,
         lex,
         cst
     };
