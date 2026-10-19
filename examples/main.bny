@@ -99,7 +99,7 @@ I missed you. Where have you been? <face:neu_sfrown> {
             ?: I'm sorry.
                 @missedsorry
                 It's okay. <face:soft_tfrown>
-                # should be the only possible exit out of this block.
+                # should be the only possible exit out of this skip.
             ?: Have you been waiting this whole time?
                 Yes. <face:aclo_frown>
                 There is...
@@ -435,7 +435,7 @@ Hey, you know... <face:concern_smile>
 -> ending_lie
 
 # Confrontation, leads to true ending.
-[block:confront]
+[skip:confront]
     Why would you ask me that? <face:anger_sfrown> {
         ?: Humor me.
             [match:name_shared]
@@ -477,10 +477,10 @@ Hey, you know... <face:concern_smile>
                     }
             [/match]
     }
-[/block]
+[/skip]
 
 # Ending where you played into the delirium more...
-[block:ending_lie]
+[skip:ending_lie]
     It's been really nice talking to you. <face:concern_smile>
     I feel more like myself, now.
     Please, stay a little longer.
@@ -489,23 +489,23 @@ Hey, you know... <face:concern_smile>
         ?: Play again?
             -> intro
     }
-[/block]
+[/skip]
 
-[block:sculpt_end]
+[skip:sculpt_end]
     ENDING 3A: SCULPTURES <signal:ending> <face:error> {
         ?: Try again
             -> intro
     }
-[/block]
+[/skip]
 
-[block:sculpt_alt_end]
+[skip:sculpt_alt_end]
     ENDING 3B: SCULPTURES <signal:ending> <face:error> {
         ?: Try again
             -> intro
     }
-[/block]
+[/skip]
 
-[block:pc_name]
+[skip:pc_name]
     ...
     You're- <face:concern_grimace>
     ... <face:concern_sfrown>
@@ -513,9 +513,9 @@ Hey, you know... <face:concern_smile>
     I just-
     Why can't I...
     -> ending_truth
-[/block]
+[/skip]
 
-[block:ending_truth]
+[skip:ending_truth]
     ... <face:soft_frown>
     I don't remember your name.
     But I remember... you. <face:concern_smile>
@@ -542,7 +542,7 @@ Hey, you know... <face:concern_smile>
         ?: Try again
             -> intro
     }
-[/block]
+[/skip]
 
 # Capture for fallthroughs into gameover, hopefully we never see this
 # But I want to handle it gracefully just in case...

@@ -1,6 +1,8 @@
 import { DialogueLexer } from "../language/lexer";
+import { DialogueParser } from "../language/parser";
 import preprocess from "../language/preprocess";
 
+const parser = new DialogueParser();
 
 export default function(raw: string) {
     console.log("𑣲₍ ᐢ. .ᐢ₎ : Compiling .bny dialogue...");
@@ -13,5 +15,15 @@ export default function(raw: string) {
         return null;
     }
 
-    return JSON.stringify(lex, null, 2);
+    parser.input = lex.tokens;
+    const cst = parser.dialogue();
+    if (parser.errors.length > 0) {
+        console.error("Parse errors:", parser.errors);
+        return null;
+    }
+
+    return {
+        lex,
+        cst
+    };
 }

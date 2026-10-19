@@ -5,7 +5,7 @@
 # Should the speaker be a node annotation or a state machine (like how face currently works)?
 |VISUALIZER| His eyes dart and glimmer briefly behind his sunglasses - likely verifying my VLID.
 
-# Block for alternating?
+# skip for alternating?
 # This is likely going to be some sort of preprocess step, just annotate the children nodes before passing along?
 [alternate:MAN,ARDA]
     What model VI-LINK do you have?

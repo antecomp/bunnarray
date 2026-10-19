@@ -112,11 +112,11 @@ We should also make sure the match fallback inheritance also works when at the e
         [/match]
 }
 This is the fallback of the option, the match should still hit this.
-While we are here, we should also test the skip block
-[block:xxx]
+While we are here, we should also test the skip skip
+[skip:xxx]
 and this second
 ->xxxdone
-[/block]
+[/skip]
 You should see this first
 ->xxx
 @xxxdone

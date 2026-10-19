@@ -7,7 +7,7 @@ To have dialogue options (branching) you use curly braces {
     ?: Option 2
         Blah blah blah
 }
-Those dialogue streams will naturally fall into this line after the option block.
+Those dialogue streams will naturally fall into this line after the option skip.
 Unless you use a go-to.
 To use gotos you first label a line of text with an @
 @label_name
@@ -27,7 +27,7 @@ You can also use variables that are placed-in at runtime...
 using syntax like this: $variable
 # The dialogue "runner" as a setVar method for defining these.
 
-You can also branch based on game-state using a "match" block.
+You can also branch based on game-state using a "match" skip.
 They first have a "[match:on]" header where "on" is some function that returns a string.
 We read that return and choose where to go...
 [match:someFunc]

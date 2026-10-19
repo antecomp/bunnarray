@@ -7,7 +7,7 @@ const debugDiv = document.getElementById('debug') as HTMLPreElement;
 
 function display(x: any) {
     console.log(x);
-    debugDiv.innerHTML = x;
+    debugDiv.innerHTML = JSON.stringify(x, null, 2);
 }
 
 demoTextarea.value = stock;

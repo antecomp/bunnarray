@@ -3,7 +3,7 @@ Hey, $name. <face:neu_smile>
 How are you? <face:neu_grin> {
     ?: Doing well!
         That is great to hear. <face:clo_grin>
-        # will fall out of this block and hit "wrapup" goto
+        # will fall out of this skip and hit "wrapup" goto
     ?: Not great.
         @bad
         Sorry to hear that. <face:concern_tfrown>
@@ -36,9 +36,9 @@ Aaaaa
 # Well thats it for this test... <face:soft_frown> <signal:hitend> <signal:bonus>
 # Just always loop-back to the beginning so we can test the other options.
 
-[block:ta]
+[skip:ta]
 Blah blah blah
-[/block]
+[/skip]
 Fallback
 This will run a condition
 [match:check]
@@ -60,8 +60,8 @@ This will run a condition
     =rez
         Followup match detected rez.
 [/match]
-[block:tx]
+[skip:tx]
 Blah blah blah
-[/block]
+[/skip]
 This is a fallback, it should run regardless of match
 -> start
