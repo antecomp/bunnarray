@@ -1,5 +1,5 @@
 import stock from '../examples/test.bny?raw';
-import preprocess from './language/preprocess';
+import compile from './compiler/compile';
 
 const compileButton = document.getElementById('compile-button') as HTMLButtonElement;
 const demoTextarea = document.getElementById('demo-textarea') as HTMLTextAreaElement;
@@ -12,5 +12,5 @@ function display(x: any) {
 
 demoTextarea.value = stock;
 compileButton.onclick = () => {
-    display(preprocess(demoTextarea.value))
+    display(compile(demoTextarea.value))
 }
