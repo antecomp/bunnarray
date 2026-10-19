@@ -1,3 +1,4 @@
+import { DialogueAST } from "../language/ast";
 import { DialogueLexer } from "../language/lexer";
 import { DialogueParser } from "../language/parser";
 import preprocess from "../language/preprocess";
@@ -24,7 +25,7 @@ export default function(raw: string) {
         return null;
     }
 
-    const ast = visitor.visit(cst);
+    const ast = visitor.visit(cst) as DialogueAST;
 
     return {
         ast,

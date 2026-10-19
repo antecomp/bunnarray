@@ -1,6 +1,6 @@
 import { Network } from 'vis-network/standalone';
 import stock from '../examples/test.bny?raw';
-import compile from './compiler/compile';
+import build from './compiler/build';
 import { astToNetworkData } from './visualize/astToNetworkData';
 
 const compileButton = document.getElementById('compile-button') as HTMLButtonElement;
@@ -15,7 +15,7 @@ function display(x: any) {
 
 demoTextarea.value = stock;
 compileButton.onclick = () => {
-    const rez = compile(demoTextarea.value);
+    const rez = build(demoTextarea.value);
     astNetwork?.destroy();
     astNetwork = rez
         ? new Network(
