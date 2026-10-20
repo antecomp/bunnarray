@@ -44,7 +44,7 @@ export class DialogueVisitor extends BaseVisitor {
     choice(ctx: any): A.ChoiceStatement {
         return {
             type: 'choice',
-            choices: (ctx.choiceBranch ?? []).map((branch: any) => this.visit(branch))
+            branches: (ctx.choiceBranch ?? []).map((branch: any) => this.visit(branch))
         }
     }
 

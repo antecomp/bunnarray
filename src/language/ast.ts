@@ -19,8 +19,7 @@ export type SayStatement = {
 
 export type ChoiceStatement = {
     type: 'choice';
-    // TODO: refactor this to "branches"
-    choices: ChoiceBranch[]
+    branches: ChoiceBranch[]
 }
 
 export type ChoiceBranch = {

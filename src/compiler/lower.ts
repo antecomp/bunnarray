@@ -47,7 +47,7 @@ export default function (ast: DialogueAST): Program {
                 const currentChoice = instructions[choiceIndex] as Operation<'CHOICE'>
                 const exitJumps: Operation<'JUMP'>[] = [];
 
-                statement.choices.forEach(branch => {
+                statement.branches.forEach(branch => {
                     currentChoice.choices.push({
                         text: branch.text,
                         target: pos()

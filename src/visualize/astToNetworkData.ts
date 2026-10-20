@@ -54,7 +54,7 @@ export function astToNetworkData(ast: DialogueAST): Data {
                 node.statements.forEach(child => addNode(child, id));
                 break;
             case 'choice':
-                node.choices.forEach(child => addNode(child, id));
+                node.branches.forEach(child => addNode(child, id));
                 break;
             case 'match':
                 node.branches.forEach(child => addNode(child, id));
