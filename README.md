@@ -30,7 +30,7 @@ I hate you!
 ```
 
 ### Options (Branches)
-Options (branching dialogue based on player responses) are defined with a prompt text and curly braces like this;
+Options (branching dialogue based on player responses) are defined with curly braces. The text before the opening brace is the **prompt text**, displayed as dialogue. The text after each `?:` is the **option text**, which the player selects:
 ```
 prompt {
     ?: option text
@@ -39,20 +39,39 @@ prompt {
         ...
 }
 ```
-within that `...` can be essentially anything, more normal lines of text, followup nested options, and any of the other syntax described below.
+Within that `...` can be essentially anything: more normal lines of text, followup nested options, and any of the other syntax described below. Option text is a selectable response; it does not become a new prompt.
 
-> As a bonus trick, you can actually create nested options without any additional prompt like this;
-> ```
-> prompt {
->    ?: {
->        ?: Inner Option
->            ...
->        ?: Another Inner Option
->    }
->    ...
->}
->```
-> This nested option with no text provided will inherit the prompt text from the parent and use that instead.
+A nested question can supply its own prompt:
+```
+How are you? {
+    ?: Good
+        What made today good? {
+            ?: The weather
+                Lovely!
+            ?: Seeing you
+                Aw!
+        }
+    ?: Bad
+        Sorry to hear that.
+}
+```
+
+To present another set of choices without displaying a new prompt, put a bare choice block inside an option:
+```
+How are you? {
+    ?: Good
+        {
+            ?: Really good
+                Wonderful!
+            ?: Mostly good
+                Glad to hear it.
+        }
+    ?: Bad
+        Sorry to hear that.
+}
+```
+Selecting "Good" goes directly to the inner choices. 
+> Every `?:` still needs option text; `?: {` is not valid syntax.
 
 ### Labels and Gotos
 A line of text (or prompt) can be 'labeled' if it proceeded by a line of the format `@label`. For example:
@@ -104,17 +123,17 @@ Well, anyways... the dialogue continues here...
 ### Skip Blocks
 Skip blocks allow you to define a sequence of dialogue that will be skipped over when running through linearly, and instead required an explicit goto to get into. It allows you to optionally preface text or perform other actions where you want to conditionally show certain chunks in a sequence. They take the form:
 ```
-[block:label]
+[skip:label]
 ...
-[/block]
+[/skip]
 ```
 Where `label` is the label you will use to get into this block with a goto. For example;
 ```
 Lets test the skip block...
-[block:xxx]
+[skip:xxx]
     and this second
     ->xxxdone
-[/block]
+[/skip]
 You should see this first
 ->xxx
 @xxxdone
