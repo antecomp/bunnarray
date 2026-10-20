@@ -3,37 +3,37 @@ import { DialogueLexer } from "../language/lexer";
 import { DialogueParser } from "../language/parser";
 import preprocess from "../language/preprocess";
 import { DialogueVisitor } from "../language/vistor";
+import { Program } from "./instructions";
 import lower from "./lower";
 
 const parser = new DialogueParser();
 const visitor = new DialogueVisitor();
 
-export default function(raw: string) {
+export default function build(raw: string): Program {
+    const begin = performance.now();
     console.log("𑣲₍ ᐢ. .ᐢ₎ : Compiling .bny dialogue...");
 
     const normalized = preprocess(raw);
     const lex = DialogueLexer.tokenize(normalized);
-    
+
     if (lex.errors.length > 0) {
         console.error("Lex errors:", lex.errors);
-        return null;
+        throw new Error('Lex errors');
     }
 
     parser.input = lex.tokens;
     const cst = parser.dialogue();
     if (parser.errors.length > 0) {
         console.error("Parse errors:", parser.errors);
-        return null;
+        throw new Error('Parse errors');
     }
 
     const ast = visitor.visit(cst) as DialogueAST;
 
-    const ir = lower(ast);
+    const program = lower(ast);
 
-    return {
-        ir,
-        ast,
-        cst,
-        lex
-    };
+    const end = performance.now();
+    console.log(`𑣲₍ ᐢ. .ᐢ₎ : Compiled in ${end - begin}ms!`);
+
+    return program;
 }

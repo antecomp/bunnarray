@@ -1,6 +1,6 @@
 import { Network } from 'vis-network/standalone';
 import stock from '../examples/test.bny?raw';
-import build from './compiler/build';
+import build from './compiler/testbuild';
 import { astToNetworkData } from './visualize/astToNetworkData';
 import formatIR from './visualize/formatIR';
 
