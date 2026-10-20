@@ -3,14 +3,12 @@
  * Takes our Dialogue AST and "lowers" it into a linear set of instructions.
  */
 
-import * as A from '../language/ast';
+import {DialogueAST, Statement} from '../language/ast';
 import { INS, Instruction, Operation, Program } from "./instructions";
 
 const UNRESOLVED = -1;
 
-export default function (ast: A.DialogueAST): Program {
-    // todo
-
+export default function (ast: DialogueAST): Program {
     const instructions: Instruction[] = [];
     const labels: Record<string, number> = Object.create(null); // <- removes prototype names.
     const unresolvedGotos: { fromIndex: number, target: string }[] = [];
@@ -24,11 +22,11 @@ export default function (ast: A.DialogueAST): Program {
         labels[name] = pos();
     }
 
-    function compileSequence(statements: A.Statement[]) {
+    function compileSequence(statements: Statement[]) {
         statements.forEach(compileStatement);
     }
 
-    function compileStatement(statement: A.Statement) {
+    function compileStatement(statement: Statement) {
         switch (statement.type) {
             case 'say':
                 emit(INS('SAY', { text: statement.text }));

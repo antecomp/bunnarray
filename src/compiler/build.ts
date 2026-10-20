@@ -3,6 +3,7 @@ import { DialogueLexer } from "../language/lexer";
 import { DialogueParser } from "../language/parser";
 import preprocess from "../language/preprocess";
 import { DialogueVisitor } from "../language/vistor";
+import lower from "./lower";
 
 const parser = new DialogueParser();
 const visitor = new DialogueVisitor();
@@ -27,7 +28,10 @@ export default function(raw: string) {
 
     const ast = visitor.visit(cst) as DialogueAST;
 
+    const ir = lower(ast);
+
     return {
+        ir,
         ast,
         cst,
         lex
