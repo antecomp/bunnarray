@@ -10,12 +10,12 @@
     ]
   },
   "Skip Block": {
-    "prefix": "block",
+    "prefix": "skip",
     "description": "Insert a BNY skip block",
     "body": [
-      "[block:${1:label}]",
+      "[skip:${1:label}]",
       "    $0",
-      "[/block]"
+      "[/skip]"
     ]
   }
 }

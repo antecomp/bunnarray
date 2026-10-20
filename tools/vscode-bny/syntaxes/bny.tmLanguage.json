@@ -9,7 +9,7 @@
       "include": "#variable"
     },
     {
-      "include": "#block-tag"
+      "include": "#skip-tag"
     },
     {
       "include": "#match-tag"
@@ -66,17 +66,17 @@
         }
       ]
     },
-    "block-tag": {
+    "skip-tag": {
       "patterns": [
         {
           "name": "meta.block.skip.begin.bny",
-          "match": "^(\\s*)(\\[)(block)(:)([^\\]\\n]+)(\\])\\s*$",
+          "match": "^(\\s*)(\\[)(skip)(:)([^\\]\\n]+)(\\])\\s*$",
           "captures": {
             "2": {
               "name": "punctuation.definition.tag.begin.bny"
             },
             "3": {
-              "name": "keyword.control.block.bny"
+              "name": "keyword.control.skip.bny"
             },
             "4": {
               "name": "punctuation.separator.key-value.bny"
@@ -91,13 +91,13 @@
         },
         {
           "name": "meta.block.skip.end.bny",
-          "match": "^(\\s*)(\\[\\/)(block)(\\])\\s*$",
+          "match": "^(\\s*)(\\[\\/)(skip)(\\])\\s*$",
           "captures": {
             "2": {
               "name": "punctuation.definition.tag.begin.bny"
             },
             "3": {
-              "name": "keyword.control.block.bny"
+              "name": "keyword.control.skip.bny"
             },
             "4": {
               "name": "punctuation.definition.tag.end.bny"

@@ -6,7 +6,7 @@ Included:
 
 - syntax highlighting for comments, labels, gotos, option markers, skip blocks, match blocks, match cases, braces, directives, and `$variables`
 - bracket matching and auto-closing for `{}` and `<>`
-- snippets for `match` and `block`
+- snippets for `match` and `skip`
 - `.bny` file association
 
 ## Use it locally
