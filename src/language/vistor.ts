@@ -37,7 +37,7 @@ export class DialogueVisitor extends BaseVisitor {
     say(ctx: any): A.SayStatement {
         return {
             type: 'say',
-            text: ctx.Text[0].image
+            text: ctx.Text[0].image.trim()
         }
     }
 
@@ -51,7 +51,7 @@ export class DialogueVisitor extends BaseVisitor {
     choiceBranch(ctx: any): A.ChoiceBranch {
         return {
             type: 'choiceBranch',
-            text: ctx.Text[0].image,
+            text: ctx.Text[0].image.trim(),
             statements: (ctx.statement ?? []).map((s: any) => this.visit(s))
         }
     }
@@ -59,7 +59,7 @@ export class DialogueVisitor extends BaseVisitor {
     match(ctx: any): A.MatchStatement {
         return {
             type: 'match',
-            on: ctx.Text[0].image,
+            on: ctx.Text[0].image.trim(),
             branches: (ctx.matchBranch ?? []).map((branch: any) => this.visit(branch))
         }
     }
@@ -67,7 +67,7 @@ export class DialogueVisitor extends BaseVisitor {
     matchBranch(ctx: any): A.MatchBranch {
         return {
             type: 'matchBranch',
-            case: ctx.Text[0].image,
+            case: ctx.Text[0].image.trim(),
             statements: (ctx.statement ?? []).map((s: any) => this.visit(s))
         }
     }
@@ -75,7 +75,7 @@ export class DialogueVisitor extends BaseVisitor {
     skip(ctx: any): A.SkipStatement {
         return {
             type: 'skip',
-            label: ctx.Text[0].image,
+            label: ctx.Text[0].image.trim(),
             statements: (ctx.statement ?? []).map((s: any) => this.visit(s))
         }
     }
@@ -83,14 +83,14 @@ export class DialogueVisitor extends BaseVisitor {
     label(ctx: any): A.LabelStatement {
         return {
             type: 'label',
-            name: ctx.Text[0].image
+            name: ctx.Text[0].image.trim()
         }
     }
 
     goto(ctx: any): A.GotoStatement {
         return {
             type: 'goto',
-            target: ctx.Text[0].image
+            target: ctx.Text[0].image.trim()
         }
     }
 }

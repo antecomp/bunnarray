@@ -55,7 +55,6 @@ how has life been treating you?`, [
 
     describe('options and fallbacks', () => {
         it('compiles the prompt and makes both branches fall through after the choice', () => {
-            // The text token retains the space before an inline opening brace.
             expectIR(`How are you? {
                 ?: good
                     cool.
@@ -63,7 +62,7 @@ how has life been treating you?`, [
                     not cool
             }
             Well, anyways... the dialogue continues here...`, [
-                { op: 'SAY', text: 'How are you? ' },
+                { op: 'SAY', text: 'How are you?' },
                 { op: 'CHOICE', choices: [
                     { text: 'good', target: 2 },
                     { text: 'bad', target: 4 },
@@ -147,7 +146,7 @@ how has life been treating you?`, [
                     Sorry to hear that.
             }
             Goodbye!`, [
-                { op: 'SAY', text: 'How are you? ' },
+                { op: 'SAY', text: 'How are you?' },
                 { op: 'CHOICE', choices: [
                     { text: 'Good', target: 2 },
                     { text: 'Bad', target: 8 },
@@ -167,6 +166,41 @@ how has life been treating you?`, [
                 { op: 'END' },
             ]);
         });
+    });
+
+    describe('chained choices', () => {
+        it.each(['\n', ' ', '\t   '])(
+            'trims inline prompts and options and ignores whitespace between blocks: %j',
+            separator => {
+                expectIR(`How are you? {
+                    ?: Good   {
+                        ?: Really good
+                            Wonderful!
+                        ?: Mostly good
+                            Glad to hear it.
+                    }
+                }${separator}{
+                    ?: How about you?
+                        Oh! I am just great, personally!
+                }`, [
+                    { op: 'SAY', text: 'How are you?' },
+                    { op: 'CHOICE', choices: [{ text: 'Good', target: 2 }] },
+                    { op: 'CHOICE', choices: [
+                        { text: 'Really good', target: 3 },
+                        { text: 'Mostly good', target: 5 },
+                    ] },
+                    { op: 'SAY', text: 'Wonderful!' },
+                    { op: 'JUMP', target: 7 },
+                    { op: 'SAY', text: 'Glad to hear it.' },
+                    { op: 'JUMP', target: 7 },
+                    { op: 'JUMP', target: 8 },
+                    { op: 'CHOICE', choices: [{ text: 'How about you?', target: 9 }] },
+                    { op: 'SAY', text: 'Oh! I am just great, personally!' },
+                    { op: 'JUMP', target: 11 },
+                    { op: 'END' },
+                ]);
+            },
+        );
     });
 
     describe('labels and gotos', () => {

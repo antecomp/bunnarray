@@ -69,6 +69,14 @@ export const Equals = createToken({
 
 
 // -- Remaining text ---
+// Ignore whitespace between syntax tokens (for example, the gap in `} {`).
+// Spaces inside a Text token are consumed by Text and remain part of its image.
+export const Whitespace = createToken({
+    name: "Whitespace",
+    pattern: /[ \t]+/,
+    group: Lexer.SKIPPED,
+});
+
 // Consumes all characters up excluding \n, [] and {}
 export const Text = createToken({
     name: "Text",
@@ -93,6 +101,7 @@ export const allTokens = [
     LabelToken,
     Equals,
     CloseBracket,
+    Whitespace,
     Text
 ]
 
