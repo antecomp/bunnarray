@@ -51,9 +51,29 @@ how has life been treating you?`, [
                 { op: 'END' },
             ]);
         });
+
+        it('decodes bracket escapes after parsing and preserves escaped ampersands', () => {
+            expectIR('Say &lbrack;yes&rbrack; and &lbrace;maybe&rbrace;. Write &amp;lbrace; literally.', [
+                { op: 'SAY', text: 'Say [yes] and {maybe}. Write &lbrace; literally.' },
+                { op: 'END' },
+            ]);
+        });
     });
 
     describe('options and fallbacks', () => {
+        it('decodes escapes in prompts and option text without treating them as syntax', () => {
+            expectIR(`Choose &lbrace;one&rbrace; {
+                ?: &lbrack;yes&rbrack;
+                    Done.
+            }`, [
+                { op: 'SAY', text: 'Choose {one}' },
+                { op: 'CHOICE', choices: [{ text: '[yes]', target: 2 }] },
+                { op: 'SAY', text: 'Done.' },
+                { op: 'JUMP', target: 4 },
+                { op: 'END' },
+            ]);
+        });
+
         it('compiles the prompt and makes both branches fall through after the choice', () => {
             expectIR(`How are you? {
                 ?: good

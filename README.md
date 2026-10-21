@@ -16,10 +16,11 @@ The syntax is pretty simple...
 
 ### Basic Text
 Normal lines of text all create individual dialogue nodes in the tree. New lines make them distinct new 'messages.'
-Square brackets (`[` and `]`) and curly braces (`{` and `}`) are reserved for language syntax. They cannot appear as literal characters in dialogue text, including prompts and option text. There are no escape sequences for them yet.
+Square brackets (`[` and `]`) and curly braces (`{` and `}`) are reserved for language syntax. To include them literally in text, use `&lbrack;`, `&rbrack;`, `&lbrace;`, and `&rbrace;`, respectively. These escapes also work in option text and other text fields. Use `&amp;` to write a literal escape sequence, such as `&amp;lbrace;` for the text `&lbrace;`.
 ```
 Hello, it has been a while,
 how has life been treating you?
+The answer is &lbrace;maybe&rbrace;.
 ```
 
 ### Comments
