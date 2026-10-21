@@ -26,7 +26,6 @@ export default function createVM(program: Program) {
     const pending: PresentationState = { text: null };
     let pc: number = 0;
 
-    // Initial run should store and continue until we hit a natural yield point
     const init = once(_run);
 
     function _run(): Yield {
