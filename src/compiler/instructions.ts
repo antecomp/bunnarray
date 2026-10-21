@@ -30,5 +30,5 @@ export function INS<O extends Opcode>(
 
 export type Program = {
     instructions: Instruction[]
-    // memory?
+    // debug symbols?
 }
