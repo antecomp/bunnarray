@@ -19,7 +19,7 @@ function expectChoice(step: Step, text: string | null, choices: string[]) {
 describe('VM', () => {
     it('ends an empty program immediately', () => {
         const vm = createVM({ instructions: [{ op: 'END' }] });
-        expect(vm.init()).toEqual({ kind: 'end' });
+        expect(vm.init()).toEqual({ kind: 'end', text: null });
     });
 
     it('shows the last line before ending', () => {
@@ -28,8 +28,7 @@ describe('VM', () => {
             { op: 'END' },
         ] });
 
-        const line = expectSay(vm.init(), 'Only line');
-        expect(line.resume()).toEqual({ kind: 'end' });
+        expect(vm.init()).toEqual({ kind: 'end', text: 'Only line' });
     });
 
     it('shows consecutive lines in order, each exactly once', () => {
@@ -42,8 +41,7 @@ describe('VM', () => {
 
         const first = expectSay(vm.init(), 'First');
         const second = expectSay(first.resume(), 'Second');
-        const third = expectSay(second.resume(), 'Third');
-        expect(third.resume()).toEqual({ kind: 'end' });
+        expect(second.resume()).toEqual({ kind: 'end', text: 'Third' });
     });
 
     it('jumps to its target without executing the skipped instruction', () => {
@@ -54,7 +52,7 @@ describe('VM', () => {
             { op: 'END' },
         ] });
 
-        expect(expectSay(vm.init(), 'Reached').resume()).toEqual({ kind: 'end' });
+        expect(vm.init()).toEqual({ kind: 'end', text: 'Reached' });
     });
 
     it.each([
@@ -77,8 +75,7 @@ describe('VM', () => {
 
         const choice = expectChoice(createVM(program).init(), 'Pick one', ['left', 'right']);
         const branch = expectSay(choice.resume(index), branchText);
-        const after = expectSay(branch.resume(), 'After choice');
-        expect(after.resume()).toEqual({ kind: 'end' });
+        expect(branch.resume()).toEqual({ kind: 'end', text: 'After choice' });
     });
 
     it('supports a choice without a preceding prompt', () => {
@@ -89,7 +86,7 @@ describe('VM', () => {
         ] });
 
         const choice = expectChoice(vm.init(), null, ['go']);
-        expect(expectSay(choice.resume(0), 'Going').resume()).toEqual({ kind: 'end' });
+        expect(choice.resume(0)).toEqual({ kind: 'end', text: 'Going' });
     });
 
     it('rejects repeated initialization and repeated resumes', () => {
@@ -101,7 +98,7 @@ describe('VM', () => {
 
         const first = expectSay(vm.init(), 'One');
         expect(() => vm.init()).toThrow('Resume callback already consumed');
-        expectSay(first.resume(), 'Two');
+        expect(first.resume()).toEqual({ kind: 'end', text: 'Two' });
         expect(() => first.resume()).toThrow('Resume callback already consumed');
     });
 

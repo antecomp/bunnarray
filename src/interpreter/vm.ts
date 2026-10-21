@@ -15,6 +15,7 @@ type Yield =
     }
     | {
         kind: "end";
+        text: string | null;
     };
 
 type PresentationState = {
@@ -37,18 +38,9 @@ export default function createVM(program: Program) {
                     pc = ins.target;
                     continue;
                 case 'END':
-                    if (pending.text !== null) return {
-                        kind: 'say',
-                        text: pending.text,
-                        // TODO: this will make it so we accidentally indicate there's
-                        // one last continue (with no signal of it being to an end)
-                        // consider instead having end carry the pending text so we know
-                        // to display it and terminate.
-                        resume: once(() => ({ kind: 'end' }))
-                    }
-
                     return {
                         kind: 'end',
+                        text: pending.text,
                     };
                 case 'SAY': {
                     const previous = pending.text;

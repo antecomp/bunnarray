@@ -8,7 +8,7 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
     const vm = createVM(program);
 
     function render(step: Step): void {
-        if (step.kind === 'end') return;
+        if (step.kind === 'end' && step.text === null) return;
 
         const entry = document.createElement('div');
         entry.className = 'dialogue-entry';
@@ -33,7 +33,7 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
                 render(next);
             });
             actions.append(button);
-        } else {
+        } else if (step.kind === 'choice') {
             step.choices.forEach((choice, index) => {
                 const button = document.createElement('button');
                 button.type = 'button';
@@ -47,7 +47,7 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
             });
         }
 
-        entry.append(actions);
+        if (step.kind !== 'end') entry.append(actions);
         stack.append(entry);
     }
 
