@@ -7,5 +7,5 @@ export default function preprocess(raw: string) {
         .filter(line => line.trim() !== '') // remove blank lines
         .map(line => line.trim()) // trim every line
         .filter(line => line.charAt(0) !== '#') // remove line comments
-        .join('\n');
+        .join('\n') + '\n';
 }
