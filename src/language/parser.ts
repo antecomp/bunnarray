@@ -12,7 +12,7 @@ statement ->
 say -> Text Newline?
 
 choice ->
-    CurlyBraceOpen Newline?
+    CurlyBraceOpen Newline
         choiceBranch+
     CurlyBraceClose Newline?
 

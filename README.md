@@ -16,6 +16,7 @@ The syntax is pretty simple...
 
 ### Basic Text
 Normal lines of text all create individual dialogue nodes in the tree. New lines make them distinct new 'messages.'
+Square brackets (`[` and `]`) and curly braces (`{` and `}`) are reserved for language syntax. They cannot appear as literal characters in dialogue text, including prompts and option text. There are no escape sequences for them yet.
 ```
 Hello, it has been a while,
 how has life been treating you?
