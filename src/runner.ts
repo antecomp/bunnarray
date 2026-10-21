@@ -8,15 +8,15 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
     const vm = createVM(program);
 
     function render(step: Step): void {
-        if (step.kind === 'end' && step.text === null) return;
+        if (step.kind === 'end' && step.presentation === null) return;
 
         const entry = document.createElement('div');
         entry.className = 'dialogue-entry';
 
-        if (step.text !== null) {
+        if (step.presentation !== null) {
             const text = document.createElement('p');
             text.className = 'dialogue-text';
-            text.textContent = step.text;
+            text.textContent = step.presentation.text;
             entry.append(text);
         }
 

@@ -1,30 +1,30 @@
 import { Program } from "../compiler/instructions";
 import once from "../util/once";
 
+type Presentation = {
+    text: string;
+    // speaker, eventually
+};
+
 type Yield =
     | {
         kind: "say";
-        text: string;
+        presentation: Presentation;
         resume: () => Yield;
     }
     | {
         kind: "choice";
-        text: string | null;
+        presentation: Presentation | null;
         choices: string[];
         resume: (index: number) => Yield;
     }
     | {
         kind: "end";
-        text: string | null;
+        presentation: Presentation | null;
     };
 
-type PresentationState = {
-    text: string | null
-    // speaker, eventually, consider hoisting the "| null" up when that happens.
-}
-
 export default function createVM(program: Program) {
-    const pending: PresentationState = { text: null };
+    let pending: Presentation | null = null;
     let pc: number = 0;
 
     const init = once(_run);
@@ -40,17 +40,17 @@ export default function createVM(program: Program) {
                 case 'END':
                     return {
                         kind: 'end',
-                        text: pending.text,
+                        presentation: pending,
                     };
                 case 'SAY': {
-                    const previous = pending.text;
-                    pending.text = ins.text;
+                    const previous = pending;
+                    pending = { text: ins.text };
                     pc++;
 
                     if (previous !== null) {
                         return {
                             kind: 'say',
-                            text: previous,
+                            presentation: previous,
                             resume: once(_run),
                         };
                     }
@@ -59,13 +59,13 @@ export default function createVM(program: Program) {
                 case 'CHOICE':
                     return {
                         kind: 'choice',
-                        text: pending.text,
+                        presentation: pending,
                         choices: ins.choices.map(choice => choice.text),
                         resume: once((index) => {
                             if (!ins.choices[index]) throw new Error('Invalid choice index: ' + index);
                             pc = ins.choices[index].target
                             // reset pending, branch should emit prompt once
-                            pending.text = null;
+                            pending = null;
                             return _run();
                         })
                     }
