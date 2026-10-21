@@ -12,7 +12,7 @@
       height: 450px;
     }
 
-    button {
+    #compile-button {
       padding: 10px;
       font-size: 1.5em;
     }
@@ -26,6 +26,29 @@
     #IR {
       background: #e6e6e6;
     }
+
+    #dialogue-stack {
+      max-width: 600px;
+    }
+
+    .dialogue-entry {
+      margin: 16px 0;
+    }
+
+    .dialogue-text {
+      white-space: pre-wrap;
+    }
+
+    .dialogue-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .dialogue-actions button.is-selected {
+      background: #355a9d;
+      color: white;
+    }
   </style>
 </head>
 
@@ -34,6 +57,7 @@
     <br>
     <button id="compile-button">Compile</button>
     <br>
+    <div id="dialogue-stack" aria-live="polite"></div>
     <pre id="IR"></pre>
     <div id="ast-graph"></div>
     <pre id="debug"></pre>

@@ -40,6 +40,10 @@ export default function createVM(program: Program) {
                     if (pending.text !== null) return {
                         kind: 'say',
                         text: pending.text,
+                        // TODO: this will make it so we accidentally indicate there's
+                        // one last continue (with no signal of it being to an end)
+                        // consider instead having end carry the pending text so we know
+                        // to display it and terminate.
                         resume: once(() => ({ kind: 'end' }))
                     }
 

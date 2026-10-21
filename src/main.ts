@@ -3,11 +3,13 @@ import stock from '../examples/test.bny?raw';
 import build from './compiler/testbuild';
 import { astToNetworkData } from './visualize/astToNetworkData';
 import formatIR from './visualize/formatIR';
+import runDialogue from './runner';
 
 const compileButton = document.getElementById('compile-button') as HTMLButtonElement;
 const demoTextarea = document.getElementById('demo-textarea') as HTMLTextAreaElement;
 const debugDiv = document.getElementById('debug') as HTMLPreElement;
 const IRVis = document.getElementById('IR') as HTMLPreElement;
+const dialogueStack = document.getElementById('dialogue-stack') as HTMLDivElement;
 let astNetwork: Network | undefined;
 
 function display(x: any) {
@@ -17,6 +19,7 @@ function display(x: any) {
 
 demoTextarea.value = stock;
 compileButton.onclick = () => {
+    dialogueStack.replaceChildren();
     const rez = build(demoTextarea.value);
     astNetwork?.destroy();
     astNetwork = rez
@@ -46,5 +49,8 @@ compileButton.onclick = () => {
     display(
         rez
     );
-    if(rez) IRVis.innerText = formatIR(rez.ir);
+    if (rez) {
+        IRVis.innerText = formatIR(rez.ir);
+        runDialogue(rez.ir, dialogueStack);
+    }
 }
