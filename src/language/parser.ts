@@ -109,10 +109,10 @@ export class DialogueParser extends CstParser {
         this.CONSUME(SkipBlockOpen);
         this.CONSUME(Text);
         this.CONSUME(CloseBracket);
-        this.CONSUME(Newline)
+        this.OPTION(() => this.CONSUME1(Newline))
         this.MANY(() => this.SUBRULE(this.statement));
         this.CONSUME(SkipBlockClose);
-        this.OPTION(() => this.CONSUME1(Newline)); 
+        this.OPTION2(() => this.CONSUME2(Newline)); 
     });
 
     label = this.RULE('label', () => {
