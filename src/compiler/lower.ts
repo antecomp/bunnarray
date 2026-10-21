@@ -69,7 +69,7 @@ export default function (ast: DialogueAST): Program {
             case 'match': {
                 const matchIndex = emit(INS('MATCH', {
                     on: statement.on,
-                    cases: {},
+                    cases: Object.create(null),
                     fallback: UNRESOLVED
                 }));
                 const currentMatch = instructions[matchIndex] as Operation<'MATCH'>;

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Program } from '../../compiler/instructions';
+import build from '../../compiler/build';
 import createVM from '../vm';
 
 type Step = ReturnType<ReturnType<typeof createVM>['init']>;
@@ -113,14 +114,88 @@ describe('VM', () => {
         expect(() => choice.resume(0)).toThrow('Resume callback already consumed');
     });
 
-    it('reports MATCH as unsupported until VM memory is implemented', () => {
-        // TODO: Replace with case and fallback execution tests when MATCH is supported.
-        const vm = createVM({ instructions: [
-            { op: 'MATCH', on: 'state', cases: { ready: 1 }, fallback: 2 },
+    describe('MATCH', () => {
+        const program: Program = { instructions: [
+            { op: 'MATCH', on: 'state', cases: { ready: 1, waiting: 3, '': 5 }, fallback: 7 },
             { op: 'SAY', text: 'Ready' },
+            { op: 'JUMP', target: 7 },
+            { op: 'SAY', text: 'Waiting' },
+            { op: 'JUMP', target: 7 },
+            { op: 'SAY', text: 'Empty value' },
+            { op: 'JUMP', target: 7 },
+            { op: 'SAY', text: 'After match' },
             { op: 'END' },
-        ] });
+        ] };
 
-        expect(() => vm.init()).toThrow('Match currently unsupported');
+        it.each([
+            ['ready', 'Ready'],
+            ['waiting', 'Waiting'],
+            ['', 'Empty value'],
+        ])('executes case %j and rejoins at the fallback', (value, text) => {
+            const vm = createVM(program, { memory: { state: value } });
+            const branch = expectSay(vm.init(), text);
+            expect(branch.resume()).toEqual({ kind: 'end', presentation: { text: 'After match' } });
+        });
+
+        it.each<Record<string, string> | undefined>([
+            undefined,
+            {},
+            { state: 'unknown' },
+            { state: 'READY' },
+        ])('falls back for missing or unmatched memory %j', memory => {
+            const vm = createVM(program, { memory });
+            expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'After match' } });
+        });
+
+        it('accepts zero as a case target', () => {
+            const vm = createVM({ instructions: [
+                { op: 'CHOICE', choices: [{ text: 'Check again', target: 1 }] },
+                { op: 'MATCH', on: 'state', cases: { ready: 0 }, fallback: 2 },
+                { op: 'END' },
+            ] }, { memory: { state: 'ready' } });
+
+            const choice = expectChoice(vm.init(), null, ['Check again']);
+            expectChoice(choice.resume(0), null, ['Check again']);
+        });
+
+        it.each(['set', 'delete'] as const)('reads memory after %s while paused at a choice', action => {
+            const vm = createVM({ instructions: [
+                { op: 'CHOICE', choices: [{ text: 'Go', target: 1 }] },
+                { op: 'MATCH', on: 'state', cases: { ready: 2 }, fallback: 4 },
+                { op: 'SAY', text: 'Ready' },
+                { op: 'END' },
+                { op: 'SAY', text: 'Fallback' },
+                { op: 'END' },
+            ] }, { memory: { state: 'ready' } });
+
+            const choice = expectChoice(vm.init(), null, ['Go']);
+            if (action === 'set') vm.memory.set('state', 'unknown');
+            else vm.memory.delete('state');
+
+            expect(choice.resume(0)).toEqual({ kind: 'end', presentation: { text: 'Fallback' } });
+        });
+
+        it.each(['toString', 'constructor', '__proto__'])('falls back for undeclared prototype name %s in compiled programs', value => {
+            const compiled = build(`[match:state]
+                = ready
+                    Ready
+            [/match]
+            Fallback`);
+
+            const vm = createVM(compiled, { memory: { state: value } });
+            expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'Fallback' } });
+        });
+
+        it.each(['toString', 'constructor', '__proto__'])('executes a declared prototype-name case %s in compiled programs', value => {
+            const compiled = build(`[match:state]
+                = ${value}
+                    Matched
+            [/match]
+            Fallback`);
+
+            const vm = createVM(compiled, { memory: { state: value } });
+            const branch = expectSay(vm.init(), 'Matched');
+            expect(branch.resume()).toEqual({ kind: 'end', presentation: { text: 'Fallback' } });
+        });
     });
 });

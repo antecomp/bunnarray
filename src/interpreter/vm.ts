@@ -1,5 +1,6 @@
 import { Program } from "../compiler/instructions";
 import once from "../util/once";
+import createMemory from "./mem";
 
 type Presentation = {
     text: string;
@@ -23,9 +24,17 @@ type Yield =
         presentation: Presentation | null;
     };
 
-export default function createVM(program: Program) {
+type VMOptions = {
+    memory?: Record<string, string>
+}
+
+export default function createVM(
+    program: Program,
+    options: VMOptions = {}
+) {
     let pending: Presentation | null = null;
     let pc: number = 0;
+    const memory = createMemory(options.memory);
 
     const init = once(_run);
 
@@ -70,13 +79,19 @@ export default function createVM(program: Program) {
                         })
                     }
                 case 'MATCH':
-                    // TODO: Need VM memory for this to work
-                    throw new Error('Match currently unsupported');
+                    const value = memory.get(ins.on);
+
+                    pc = value !== undefined
+                        ? (ins.cases[value] ?? ins.fallback)
+                        : ins.fallback;
+                    
+                    continue;
             }
         }
     }
 
     return {
-        init
+        init,
+        memory
     }
 }
