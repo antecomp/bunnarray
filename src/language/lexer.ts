@@ -84,11 +84,43 @@ export const Text = createToken({
 });
 
 
+// --- SET LOGIC ---
+
+export const Identifier = createToken({
+    name: 'Identifier',
+    pattern: /[a-zA-Z_][a-zA-Z0-9_]*/
+});
+
+export const SetKeyword = createToken({
+    name: 'SetKeyword',
+    pattern: /:SET\b/,
+    push_mode: 'setHeader'
+});
+
+export const SetEquals = createToken({
+    name: 'SetEquals',
+    pattern: /=[ \t]*/,
+    pop_mode: true,
+    push_mode: 'setValue'
+});
+
+// TODO: Consider using just Text, so {}, [] isn't magically usable in these contexts...
+export const SetValue = createToken({
+    name: "SetValue",
+    pattern: /[^\n]+/
+});
+
+export const SetNewline = createToken({
+    name: "SetNewline",
+    pattern: /\n/,
+    pop_mode: true
+})
+
 
 // --- Lexer ---
 // Order is priority, first match wins.
 
-export const allTokens = [
+const normalTokens = [
     Newline,
     CurlyBraceOpen,
     CurlyBraceClose,
@@ -99,10 +131,26 @@ export const allTokens = [
     ChoiceToken,
     GotoToken,
     LabelToken,
+    SetKeyword,
     Equals,
     CloseBracket,
     Whitespace,
-    Text
-]
+    Text,
+];
 
-export const DialogueLexer = new Lexer(allTokens);
+export const allTokens = [
+    ...normalTokens,
+    Identifier,
+    SetEquals,
+    SetValue,
+    SetNewline,
+];
+
+export const DialogueLexer = new Lexer({
+    defaultMode: "normal",
+    modes: {
+        normal: normalTokens,
+        setHeader: [Whitespace, Identifier, SetEquals, SetNewline],
+        setValue: [SetValue, SetNewline],
+    },
+});

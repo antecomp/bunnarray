@@ -42,7 +42,7 @@ export class DialogueVisitor extends BaseVisitor {
     statement(ctx: any): A.Statement {
         const node =
             ctx.say?.[0] ?? ctx.choice?.[0] ?? ctx.match?.[0] ??
-            ctx.skip?.[0] ?? ctx.label?.[0] ?? ctx.goto?.[0];
+            ctx.skip?.[0] ?? ctx.label?.[0] ?? ctx.goto?.[0] ?? ctx.set?.[0];
 
         return this.visit(node);
     }
@@ -90,6 +90,14 @@ export class DialogueVisitor extends BaseVisitor {
             type: 'skip',
             label: decodeText(ctx.Text[0].image.trim()),
             statements: (ctx.statement ?? []).map((s: any) => this.visit(s))
+        }
+    }
+
+    set(ctx: any): A.SetStatement {
+        return {
+            type: 'set',
+            identifier: (ctx.Identifier[0].image.trim()),
+            value: (ctx.SetValue?.[0]?.image ?? undefined)
         }
     }
 

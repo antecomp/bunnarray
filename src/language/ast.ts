@@ -8,6 +8,7 @@ export type Statement =
     | ChoiceStatement
     | MatchStatement
     | SkipStatement
+    | SetStatement
     | LabelStatement
     | GotoStatement;
 
@@ -38,6 +39,12 @@ export type MatchBranch = {
     type: 'matchBranch'
     case: string;
     statements: Statement[];
+}
+
+export type SetStatement = {
+    type: 'set';
+    identifier: string,
+    value: string | undefined
 }
 
 export type SkipStatement = {

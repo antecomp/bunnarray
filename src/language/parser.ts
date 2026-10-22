@@ -8,6 +8,7 @@ statement ->
     | skip
     | label
     | goto
+    | set
 
 say -> Text Newline?
 
@@ -34,6 +35,8 @@ skip ->
         statement*
     SkipBlockClose Newline?
 
+set -> SetKeyword Identifier (SetEquals SetValue)? SetNewline
+
 label -> LabelToken Text Newline?
 goto -> GotoToken Text Newline?
 
@@ -44,7 +47,10 @@ import {
     Newline, CurlyBraceOpen, CurlyBraceClose, SkipBlockOpen,
     SkipBlockClose, MatchBlockOpen, MatchBlockClose, ChoiceToken,
     GotoToken, LabelToken, Equals, CloseBracket, Text,
-    allTokens
+
+    SetKeyword, Identifier, SetEquals, SetValue, SetNewline,
+
+    allTokens,
 } from './lexer'
 
 export class DialogueParser extends CstParser {
@@ -65,6 +71,7 @@ export class DialogueParser extends CstParser {
             { ALT: () => this.SUBRULE(this.skip) },
             { ALT: () => this.SUBRULE(this.label) },
             { ALT: () => this.SUBRULE(this.goto) },
+            { ALT: () => this.SUBRULE(this.set) }
         ])
     });
 
@@ -85,7 +92,7 @@ export class DialogueParser extends CstParser {
         this.CONSUME(ChoiceToken);
         this.CONSUME(Text);
         this.OPTION(() => this.CONSUME(Newline));
-        this.MANY( () => this.SUBRULE(this.statement))
+        this.MANY(() => this.SUBRULE(this.statement))
     })
 
     match = this.RULE('match', () => {
@@ -112,13 +119,23 @@ export class DialogueParser extends CstParser {
         this.OPTION(() => this.CONSUME1(Newline))
         this.MANY(() => this.SUBRULE(this.statement));
         this.CONSUME(SkipBlockClose);
-        this.OPTION2(() => this.CONSUME2(Newline)); 
+        this.OPTION2(() => this.CONSUME2(Newline));
     });
+
+    set = this.RULE('set', () => {
+        this.CONSUME(SetKeyword);
+        this.CONSUME(Identifier);
+        this.OPTION(() => {
+            this.CONSUME(SetEquals)
+            this.CONSUME(SetValue) // consider just making text
+        });
+        this.CONSUME(SetNewline);
+    })
 
     label = this.RULE('label', () => {
         this.CONSUME(LabelToken);
         this.CONSUME(Text);
-        this.OPTION(() => this.CONSUME(Newline)); 
+        this.OPTION(() => this.CONSUME(Newline));
     });
 
     goto = this.RULE('goto', () => {

@@ -19,6 +19,8 @@ export default function(raw: string) {
         return null;
     }
 
+    console.log('lex', lex);
+
     parser.input = lex.tokens;
     const cst = parser.dialogue();
     if (parser.errors.length > 0) {
@@ -26,9 +28,15 @@ export default function(raw: string) {
         return null;
     }
 
+    console.log('cst', cst);
+
     const ast = visitor.visit(cst) as DialogueAST;
 
+    console.log('ast', ast);
+
     const ir = lower(ast);
+
+    console.log(ir)
 
     return {
         ir,
