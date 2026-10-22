@@ -100,6 +100,14 @@ export default function (ast: DialogueAST): Program {
                 (instructions[skipLoc] as Operation<'JUMP'>).target = pos();
                 break;
             }
+
+            case 'set': {
+                emit(INS('SET', {
+                    identifier: statement.identifier,
+                    value: statement.value
+                }));
+                break;
+            }
         }
     }
 

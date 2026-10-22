@@ -86,6 +86,15 @@ export default function createVM(
                         : ins.fallback;
                     
                     continue;
+
+                case 'SET':
+                    if (ins.value === undefined) {
+                        memory.delete(ins.identifier);
+                    } else {
+                        memory.set(ins.identifier, ins.value);
+                    }
+                    pc++;
+                    continue;
             }
         }
     }

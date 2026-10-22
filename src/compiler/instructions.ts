@@ -14,11 +14,15 @@ export type Instruction =
         fallback: number // no match
     }
     | { op: 'JUMP'; target: number }
+    | { op: 'SET'; 
+        identifier: string, 
+        value: string | undefined 
+    }
     | { op: 'END' };
 
 export type Opcode = Instruction['op'];
 
-export type Operation<O extends Opcode> = Extract<Instruction, {op: O}>
+export type Operation<O extends Opcode> = Extract<Instruction, { op: O }>
 
 /** Construct an Instruction */
 export function INS<O extends Opcode>(
