@@ -36,6 +36,12 @@ export default function createVM(
     let pc: number = 0;
     const memory = createMemory(options.memory);
 
+    function insertVariables(line: string): string {
+        return line.replace(
+            /\$([A-Za-z_][A-Za-z0-9_]*)/g,
+            (_, identifier: string) => memory.get(identifier) ?? '');
+    }
+
     const init = once(_run);
 
     function _run(): Yield {
@@ -53,7 +59,7 @@ export default function createVM(
                     };
                 case 'SAY': {
                     const previous = pending;
-                    pending = { text: ins.text };
+                    pending = { text: insertVariables(ins.text) };
                     pc++;
 
                     if (previous !== null) {
@@ -84,14 +90,14 @@ export default function createVM(
                     pc = value !== undefined
                         ? (ins.cases[value] ?? ins.fallback)
                         : ins.fallback;
-                    
+
                     continue;
 
                 case 'SET':
                     if (ins.value === undefined) {
                         memory.delete(ins.identifier);
                     } else {
-                        memory.set(ins.identifier, ins.value);
+                        memory.set(ins.identifier, insertVariables(ins.value));
                     }
                     pc++;
                     continue;
