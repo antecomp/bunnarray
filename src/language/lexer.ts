@@ -135,7 +135,7 @@ export const SignalDelim = createToken({
     pattern: /:[ \t]*/,
     pop_mode: true,
     push_mode: 'signalValue'
-})
+});
 
 
 // --- Lexer ---
@@ -155,17 +155,19 @@ const normalTokens = [
     SetKeyword,
     SpeakerKeyword,
     AlternateKeyword,
+    SignalKeyword,
     Equals,
     CloseBracket,
     Whitespace,
-    Text
+    Text,
 ];
 
 export const allTokens = [
     ...normalTokens,
     Identifier,
     SetEquals,
-    DirectiveNewline
+    SignalDelim,
+    DirectiveNewline,
 ];
 
 export const DialogueLexer = new Lexer({
@@ -173,6 +175,8 @@ export const DialogueLexer = new Lexer({
     modes: {
         normal: normalTokens,
         setHeader: [Whitespace, Identifier, SetEquals, DirectiveNewline],
-        setValue: [Text, DirectiveNewline]
+        setValue: [Text, DirectiveNewline],
+        signalHeader: [Whitespace, Identifier, SignalDelim, DirectiveNewline],
+        signalValue: [Text, DirectiveNewline]
     }
 });

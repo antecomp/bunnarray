@@ -38,6 +38,7 @@ skip ->
     SkipBlockClose Newline?
 
 set -> SetKeyword Identifier (SetEquals Text)? DirectiveNewline
+signal -> SignalKeyword Identifier (SignalDelim Text)? DirectiveNewline
 
 label -> LabelToken Text Newline?
 goto -> GotoToken Text Newline?
@@ -54,7 +55,8 @@ import {
     GotoToken, LabelToken, Equals, CloseBracket, Text, SpeakerKeyword,
     AlternateKeyword,
 
-    SetKeyword, Identifier, SetEquals, DirectiveNewline,
+    SetKeyword, Identifier, SetEquals, DirectiveNewline, 
+    SignalKeyword, SignalDelim,
 
     allTokens
 } from './lexer';
@@ -78,6 +80,7 @@ export class DialogueParser extends CstParser {
             { ALT: () => this.SUBRULE(this.label) },
             { ALT: () => this.SUBRULE(this.goto) },
             { ALT: () => this.SUBRULE(this.set) },
+            { ALT: () => this.SUBRULE(this.signal) },
             { ALT: () => this.SUBRULE(this.speaker) },
             { ALT: () => this.SUBRULE(this.alternate) }
         ]);
@@ -162,6 +165,16 @@ export class DialogueParser extends CstParser {
         this.CONSUME(AlternateKeyword);
         this.OPTION(() => this.CONSUME(Text));
         this.CONSUME(Newline);
+    });
+
+    signal = this.RULE('signal', () => {
+        this.CONSUME(SignalKeyword);
+        this.CONSUME(Identifier);
+        this.OPTION(() => {
+            this.CONSUME(SignalDelim);
+            this.CONSUME(Text);
+        });
+        this.CONSUME(DirectiveNewline);
     });
 
 }

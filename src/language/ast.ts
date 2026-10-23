@@ -9,6 +9,7 @@ export type Statement =
     | MatchStatement
     | SkipStatement
     | SetStatement
+    | SignalStatement
     | LabelStatement
     | GotoStatement
     | SpeakerStatement
@@ -48,6 +49,12 @@ export type SetStatement = {
     identifier: string,
     value: string | undefined
 };
+
+export type SignalStatement = {
+    type: 'signal';
+    identifier: string,
+    value: string | undefined
+}
 
 export type SkipStatement = {
     type: 'skip';
