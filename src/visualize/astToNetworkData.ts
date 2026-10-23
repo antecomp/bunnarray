@@ -40,6 +40,19 @@ export function astToNetworkData(ast: DialogueAST): Data {
             case 'goto':
                 nodes.push({ id, label: `goto: ${node.target}` });
                 break;
+            case 'signal':
+                nodes.push({
+                    id,
+                    label: `signal: ${node.identifier}${node.value === undefined ? '' : ` = ${JSON.stringify(node.value)}`}`
+                });
+                break;
+            case 'set':
+                nodes.push({
+                    id,
+                    label: `set: ${node.identifier}${node.value === undefined ? '' : ` = ${JSON.stringify(node.value)}`}`
+                });
+                break;
+            // TODO alternate & speaker
         }
 
         if (parentId !== undefined) {

@@ -7,6 +7,18 @@ type Step = ReturnType<ReturnType<typeof createVM>['init']>;
 export default function runDialogue(program: Program, stack: HTMLDivElement): void {
     const vm = createVM(program);
 
+    vm.signals.subscribe(({ identifier, value }) => {
+        const entry = document.createElement('div');
+        entry.className = 'dialogue-entry';
+
+        const text = document.createElement('p');
+        text.className = 'dialogue-text';
+        text.textContent = `Signal emitted: ${identifier}${value === undefined ? '' : `: ${value}`}`;
+        entry.append(text);
+
+        stack.append(entry);
+    });
+
     function render(step: Step): void {
         if (step.kind === 'end' && step.presentation === null) return;
 
