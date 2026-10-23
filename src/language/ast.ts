@@ -11,7 +11,8 @@ export type Statement =
     | SetStatement
     | LabelStatement
     | GotoStatement
-    | SpeakerStatement;
+    | SpeakerStatement
+    | AlternateStatement;
 
 export type SayStatement = {
     type: 'say';
@@ -68,3 +69,8 @@ export type SpeakerStatement = {
     type: 'speaker';
     value: string | null;
 }
+
+export type AlternateStatement = {
+    type: 'alternate';
+    speakers: string[];
+};

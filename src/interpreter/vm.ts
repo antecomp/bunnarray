@@ -35,6 +35,8 @@ export default function createVM(
     let pending: Presentation | null = null;
     let pc: number = 0;
     let speaker: string | null = null;
+    let alternateSpeakers: string[] = [];
+    let nextSpeakerIndex = 0;
     const memory = createMemory(options.memory);
 
     function insertVariables(line: string): string {
@@ -60,6 +62,10 @@ export default function createVM(
                     };
                 case 'SAY': {
                     const previous = pending;
+                    if (alternateSpeakers.length > 0) {
+                        speaker = alternateSpeakers[nextSpeakerIndex];
+                        nextSpeakerIndex = (nextSpeakerIndex + 1) % alternateSpeakers.length;
+                    }
                     pending = { text: insertVariables(ins.text), speaker };
                     pc++;
 
@@ -105,6 +111,14 @@ export default function createVM(
 
                 case 'SPEAKER':
                     speaker = ins.value;
+                    alternateSpeakers = [];
+                    nextSpeakerIndex = 0;
+                    pc++;
+                    continue;
+
+                case 'ALTERNATE':
+                    alternateSpeakers = ins.speakers;
+                    nextSpeakerIndex = 0;
                     pc++;
                     continue;
             }

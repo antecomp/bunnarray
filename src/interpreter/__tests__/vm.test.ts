@@ -138,6 +138,64 @@ Narration`));
         expect(hi.resume()).toEqual({ kind: 'end', presentation: { text: 'Narration', speaker: null } });
     });
 
+    it('cycles speakers on each spoken line and keeps the last one when alternation stops', () => {
+        const vm = createVM(build(`:ALTERNATE Alice; Bob Smith; Carol
+First
+Second
+Third
+Fourth
+:ALTERNATE
+After`));
+
+        let step = vm.init();
+        for (const [text, speaker] of [
+            ['First', 'Alice'],
+            ['Second', 'Bob Smith'],
+            ['Third', 'Carol'],
+            ['Fourth', 'Alice'],
+        ]) {
+            expect(step).toMatchObject({ kind: 'say', presentation: { text, speaker } });
+            if (step.kind !== 'say') throw new Error('Expected a say yield');
+            step = step.resume();
+        }
+
+        expect(step).toEqual({ kind: 'end', presentation: { text: 'After', speaker: 'Alice' } });
+    });
+
+    it('lets SPEAKER override alternation and a later ALTERNATE restart it', () => {
+        const vm = createVM(build(`:ALTERNATE Alice; Bob
+First
+:SPEAKER Manual
+Second
+:ALTERNATE Carol; Dave
+Third
+Fourth`));
+
+        const first = expectSay(vm.init(), 'First');
+        expect(first.presentation.speaker).toBe('Alice');
+        const second = expectSay(first.resume(), 'Second');
+        expect(second.presentation.speaker).toBe('Manual');
+        const third = expectSay(second.resume(), 'Third');
+        expect(third.presentation.speaker).toBe('Carol');
+        expect(third.resume()).toEqual({ kind: 'end', presentation: { text: 'Fourth', speaker: 'Dave' } });
+    });
+
+    it.each([0, 1])('only advances alternation for spoken choice branch %i', index => {
+        const vm = createVM(build(`:ALTERNATE Alice; Bob
+{
+?: left
+Left
+?: right
+Right
+}
+After`));
+
+        const choice = expectChoice(vm.init(), null, ['left', 'right']);
+        const branch = expectSay(choice.resume(index), index === 0 ? 'Left' : 'Right');
+        expect(branch.presentation.speaker).toBe('Alice');
+        expect(branch.resume()).toEqual({ kind: 'end', presentation: { text: 'After', speaker: 'Bob' } });
+    });
+
     describe('MATCH', () => {
         const program: Program = { instructions: [
             { op: 'MATCH', on: 'state', cases: { ready: 1, waiting: 3, '': 5 }, fallback: 7 },

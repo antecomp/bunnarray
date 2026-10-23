@@ -21,6 +21,9 @@ export type Instruction =
     | { op: 'SPEAKER';
         value: string | null;
     }
+    | { op: 'ALTERNATE';
+        speakers: string[];
+    }
     | { op: 'END' };
 
 export type Opcode = Instruction['op'];

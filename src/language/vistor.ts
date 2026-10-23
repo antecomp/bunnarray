@@ -17,6 +17,21 @@ function decodeText(text: string): string {
         (_, name: string) => escapedCharacters[name]);
 }
 
+function splitSpeakerNames(text: string): string[] {
+    const names: string[] = [];
+    let start = 0;
+
+    // Escape sequences also end in semicolons, including literal ones like &amp;lbrace;.
+    for (const match of text.matchAll(/&(?:amp;)?[A-Za-z][A-Za-z0-9]*;|;/g)) {
+        if (match[0] !== ';') continue;
+        names.push(decodeText(text.slice(start, match.index).trim()));
+        start = match.index + 1;
+    }
+
+    names.push(decodeText(text.slice(start).trim()));
+    return names;
+}
+
 /* visit looks at the node type (name) and calls the corresponding function
 this function is passed the children of that node (coventially called ctx)
 
@@ -43,7 +58,7 @@ export class DialogueVisitor extends BaseVisitor {
         const node =
             ctx.say?.[0] ?? ctx.choice?.[0] ?? ctx.match?.[0] ??
             ctx.skip?.[0] ?? ctx.label?.[0] ?? ctx.goto?.[0] ?? 
-            ctx.set?.[0] ?? ctx.speaker?.[0];
+            ctx.set?.[0] ?? ctx.speaker?.[0] ?? ctx.alternate?.[0];
 
         return this.visit(node);
     }
@@ -122,6 +137,20 @@ export class DialogueVisitor extends BaseVisitor {
             type: 'speaker',
             value: im ? decodeText(im) : null
         }
+    }
+
+    alternate(ctx: any): A.AlternateStatement {
+        const text: string | undefined = ctx.Text?.[0]?.image;
+        const speakers = text === undefined
+            ? []
+            : splitSpeakerNames(text);
+
+        // TODO: Consider making this use narrator (null) instead?
+        if (speakers.some(name => name.length === 0)) {
+            throw new Error('ALTERNATE requires a speaker between each semicolon');
+        }
+
+        return { type: 'alternate', speakers };
     }
 }
 

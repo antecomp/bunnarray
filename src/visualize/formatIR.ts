@@ -28,6 +28,8 @@ export default function formatIR(program: Program): string {
                 return `${prefix} ${instruction.identifier} = ${instruction.value}\n`;
             case 'SPEAKER':
                 return `${prefix} ${instruction.value}\n`;
+            case 'ALTERNATE':
+                return `${prefix} ${JSON.stringify(instruction.speakers)}\n`;
         }
     }).join('');
 }

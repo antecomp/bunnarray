@@ -115,6 +115,13 @@ export default function (ast: DialogueAST): Program {
                 }));
                 break;
             }
+
+            case 'alternate': {
+                emit(INS('ALTERNATE', {
+                    speakers: statement.speakers
+                }));
+                break;
+            }
         }
     }
 

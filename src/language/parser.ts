@@ -10,6 +10,7 @@ statement ->
     | goto
     | set
     | speaker
+    | alternate
 
 say -> Text Newline?
 
@@ -41,7 +42,8 @@ set -> SetKeyword Identifier (SetEquals SetValue)? SetNewline
 label -> LabelToken Text Newline?
 goto -> GotoToken Text Newline?
 
-speaker -> SpeakerKeyword Text Newline
+speaker -> SpeakerKeyword Text? Newline
+alternate -> AlternateKeyword Text? Newline
 
 */
 
@@ -50,6 +52,7 @@ import {
     Newline, CurlyBraceOpen, CurlyBraceClose, SkipBlockOpen,
     SkipBlockClose, MatchBlockOpen, MatchBlockClose, ChoiceToken,
     GotoToken, LabelToken, Equals, CloseBracket, Text, SpeakerKeyword,
+    AlternateKeyword,
 
     SetKeyword, Identifier, SetEquals, SetValue, SetNewline,
 
@@ -75,7 +78,8 @@ export class DialogueParser extends CstParser {
             { ALT: () => this.SUBRULE(this.label) },
             { ALT: () => this.SUBRULE(this.goto) },
             { ALT: () => this.SUBRULE(this.set) },
-            { ALT: () => this.SUBRULE(this.speaker) }
+            { ALT: () => this.SUBRULE(this.speaker) },
+            { ALT: () => this.SUBRULE(this.alternate) }
         ])
     });
 
@@ -150,6 +154,12 @@ export class DialogueParser extends CstParser {
 
     speaker = this.RULE('speaker', () => {
         this.CONSUME(SpeakerKeyword);
+        this.OPTION(() => this.CONSUME(Text));
+        this.CONSUME(Newline);
+    });
+
+    alternate = this.RULE('alternate', () => {
+        this.CONSUME(AlternateKeyword);
         this.OPTION(() => this.CONSUME(Text));
         this.CONSUME(Newline);
     });

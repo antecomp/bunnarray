@@ -123,6 +123,11 @@ export const SpeakerKeyword = createToken({
     pattern: /:SPEAKER\b/
 });
 
+export const AlternateKeyword = createToken({
+    name: 'AlternateKeyword',
+    pattern: /:ALTERNATE\b/
+});
+
 
 // --- Lexer ---
 // Order is priority, first match wins.
@@ -140,6 +145,7 @@ const normalTokens = [
     LabelToken,
     SetKeyword,
     SpeakerKeyword,
+    AlternateKeyword,
     Equals,
     CloseBracket,
     Whitespace,

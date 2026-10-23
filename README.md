@@ -34,6 +34,18 @@ The story continues.
 ```
 The runtime presentation includes the speaker name, or `null` for the narrator.
 
+Use `:ALTERNATE` with semicolon-separated names to rotate speakers on each dialogue line. Names may contain spaces. A bare `:ALTERNATE` stops the rotation and leaves the last speaker in place. `:SPEAKER` also stops the rotation and sets a new speaker.
+```
+:ALTERNATE Alice; Bob Smith
+Hello!
+Hi!
+Hello again!
+:ALTERNATE
+Still Alice speaking.
+```
+The first three lines are spoken by Alice, Bob Smith, and Alice, respectively.
+Empty names, such as in `:ALTERNATE Alice;;Bob`, are invalid.
+
 ### Comments
 I only have line comments right now becuase they are easier 
 to parse lol. Use `#` at the start of a line to comment it out.

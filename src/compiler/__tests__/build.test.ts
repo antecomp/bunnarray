@@ -60,6 +60,33 @@ how has life been treating you?`, [
         });
     });
 
+    describe('alternating speakers', () => {
+        it('splits semicolon-separated names and accepts a bare directive to stop', () => {
+            expectIR(':ALTERNATE Alice; Bob Smith ;Carol\n:SPEAKER Other\n:ALTERNATE', [
+                { op: 'ALTERNATE', speakers: ['Alice', 'Bob Smith', 'Carol'] },
+                { op: 'SPEAKER', value: 'Other' },
+                { op: 'ALTERNATE', speakers: [] },
+                { op: 'END' },
+            ]);
+        });
+
+        it('keeps text escapes inside speaker names', () => {
+            expectIR(':ALTERNATE Alice &amp; Bob; &lbrack;Guard&rbrack;; &amp;lbrace;', [
+                { op: 'ALTERNATE', speakers: ['Alice & Bob', '[Guard]', '&lbrace;'] },
+                { op: 'END' },
+            ]);
+        });
+
+        it.each([
+            ':ALTERNATE ;Alice',
+            ':ALTERNATE Alice;;Bob',
+            ':ALTERNATE Alice; ;Bob',
+            ':ALTERNATE Alice;',
+        ])('rejects an empty speaker in %j', source => {
+            expect(() => build(source)).toThrow('ALTERNATE requires a speaker between each semicolon');
+        });
+    });
+
     describe('options and fallbacks', () => {
         it('decodes escapes in prompts and option text without treating them as syntax', () => {
             expectIR(`Choose &lbrace;one&rbrace; {
