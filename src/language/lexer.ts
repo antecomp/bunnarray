@@ -104,12 +104,6 @@ export const SetEquals = createToken({
     push_mode: 'setValue'
 });
 
-// TODO: Consider using just Text, so {}, [] isn't magically usable in these contexts...
-export const SetValue = createToken({
-    name: 'SetValue',
-    pattern: /[^\n]+/
-});
-
 export const DirectiveNewline = createToken({
     name: 'DirectiveNewline',
     pattern: /\n/,
@@ -171,7 +165,6 @@ export const allTokens = [
     ...normalTokens,
     Identifier,
     SetEquals,
-    SetValue,
     DirectiveNewline
 ];
 
@@ -180,6 +173,6 @@ export const DialogueLexer = new Lexer({
     modes: {
         normal: normalTokens,
         setHeader: [Whitespace, Identifier, SetEquals, DirectiveNewline],
-        setValue: [SetValue, DirectiveNewline]
+        setValue: [Text, DirectiveNewline]
     }
 });

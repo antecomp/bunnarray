@@ -37,7 +37,7 @@ skip ->
         statement*
     SkipBlockClose Newline?
 
-set -> SetKeyword Identifier (SetEquals SetValue)? DirectiveNewline
+set -> SetKeyword Identifier (SetEquals Text)? DirectiveNewline
 
 label -> LabelToken Text Newline?
 goto -> GotoToken Text Newline?
@@ -54,7 +54,7 @@ import {
     GotoToken, LabelToken, Equals, CloseBracket, Text, SpeakerKeyword,
     AlternateKeyword,
 
-    SetKeyword, Identifier, SetEquals, SetValue, DirectiveNewline,
+    SetKeyword, Identifier, SetEquals, DirectiveNewline,
 
     allTokens
 } from './lexer';
@@ -135,7 +135,7 @@ export class DialogueParser extends CstParser {
         this.CONSUME(Identifier);
         this.OPTION(() => {
             this.CONSUME(SetEquals);
-            this.CONSUME(SetValue); // consider just making text
+            this.CONSUME(Text);
         });
         this.CONSUME(DirectiveNewline);
     });

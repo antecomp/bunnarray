@@ -113,7 +113,7 @@ export class DialogueVisitor extends BaseVisitor {
         return {
             type: 'set',
             identifier: (ctx.Identifier[0].image.trim()),
-            value: (ctx.SetValue?.[0]?.image ?? undefined)
+            value: (ctx.Text?.[0]?.image ?? undefined)
         };
     }
 
