@@ -112,18 +112,20 @@ export class DialogueVisitor extends BaseVisitor {
     }
 
     set(ctx: any): A.SetStatement {
+        const value: string | undefined = ctx.Text?.[0]?.image;
         return {
             type: 'set',
             identifier: (ctx.Identifier[0].image.trim()),
-            value: (ctx.Text?.[0]?.image ?? undefined)
+            value: value === undefined ? undefined : decodeText(value)
         };
     }
 
     signal(ctx: any): A.SignalStatement {
+        const value: string | undefined = ctx.Text?.[0]?.image;
         return {
             type: 'signal',
             identifier: (ctx.Identifier[0].image.trim()),
-            value: (ctx.Text?.[0]?.image ?? undefined)
+            value: value === undefined ? undefined : decodeText(value)
         }
     }
 
