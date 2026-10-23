@@ -16,7 +16,7 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
         if (step.presentation !== null) {
             const text = document.createElement('p');
             text.className = 'dialogue-text';
-            text.textContent = step.presentation.text;
+            text.textContent = (step.presentation.speaker ?? '(NARRATOR)') + ': ' + step.presentation.text;
             entry.append(text);
         }
 

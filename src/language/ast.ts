@@ -10,7 +10,8 @@ export type Statement =
     | SkipStatement
     | SetStatement
     | LabelStatement
-    | GotoStatement;
+    | GotoStatement
+    | SpeakerStatement;
 
 export type SayStatement = {
     type: 'say';
@@ -62,3 +63,8 @@ export type GotoStatement = {
     type: 'goto';
     target: string;
 };
+
+export type SpeakerStatement = {
+    type: 'speaker';
+    value: string | null;
+}

@@ -25,7 +25,9 @@ export default function formatIR(program: Program): string {
             case 'END':
                 return `${prefix}\n`;
             case 'SET':
-                return `${prefix} ${instruction.identifier} = ${instruction.value}\n`
+                return `${prefix} ${instruction.identifier} = ${instruction.value}\n`;
+            case 'SPEAKER':
+                return `${prefix} ${instruction.value}\n`;
         }
     }).join('');
 }

@@ -42,7 +42,8 @@ export class DialogueVisitor extends BaseVisitor {
     statement(ctx: any): A.Statement {
         const node =
             ctx.say?.[0] ?? ctx.choice?.[0] ?? ctx.match?.[0] ??
-            ctx.skip?.[0] ?? ctx.label?.[0] ?? ctx.goto?.[0] ?? ctx.set?.[0];
+            ctx.skip?.[0] ?? ctx.label?.[0] ?? ctx.goto?.[0] ?? 
+            ctx.set?.[0] ?? ctx.speaker?.[0];
 
         return this.visit(node);
     }
@@ -112,6 +113,14 @@ export class DialogueVisitor extends BaseVisitor {
         return {
             type: 'goto',
             target: decodeText(ctx.Text[0].image.trim())
+        }
+    }
+
+    speaker(ctx: any): A.SpeakerStatement {
+        const im = ctx.Text?.[0]?.image
+        return {
+            type: 'speaker',
+            value: im ? decodeText(im) : null
         }
     }
 }

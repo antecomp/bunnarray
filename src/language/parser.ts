@@ -9,6 +9,7 @@ statement ->
     | label
     | goto
     | set
+    | speaker
 
 say -> Text Newline?
 
@@ -40,13 +41,15 @@ set -> SetKeyword Identifier (SetEquals SetValue)? SetNewline
 label -> LabelToken Text Newline?
 goto -> GotoToken Text Newline?
 
+speaker -> SpeakerKeyword Text Newline
+
 */
 
 import { CstParser } from "chevrotain";
 import {
     Newline, CurlyBraceOpen, CurlyBraceClose, SkipBlockOpen,
     SkipBlockClose, MatchBlockOpen, MatchBlockClose, ChoiceToken,
-    GotoToken, LabelToken, Equals, CloseBracket, Text,
+    GotoToken, LabelToken, Equals, CloseBracket, Text, SpeakerKeyword,
 
     SetKeyword, Identifier, SetEquals, SetValue, SetNewline,
 
@@ -71,7 +74,8 @@ export class DialogueParser extends CstParser {
             { ALT: () => this.SUBRULE(this.skip) },
             { ALT: () => this.SUBRULE(this.label) },
             { ALT: () => this.SUBRULE(this.goto) },
-            { ALT: () => this.SUBRULE(this.set) }
+            { ALT: () => this.SUBRULE(this.set) },
+            { ALT: () => this.SUBRULE(this.speaker) }
         ])
     });
 
@@ -142,6 +146,12 @@ export class DialogueParser extends CstParser {
         this.CONSUME(GotoToken);
         this.CONSUME(Text);
         this.OPTION(() => this.CONSUME(Newline));
+    });
+
+    speaker = this.RULE('speaker', () => {
+        this.CONSUME(SpeakerKeyword);
+        this.OPTION(() => this.CONSUME(Text));
+        this.CONSUME(Newline);
     });
 
 }

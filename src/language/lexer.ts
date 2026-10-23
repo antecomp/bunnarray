@@ -84,7 +84,7 @@ export const Text = createToken({
 });
 
 
-// --- SET LOGIC ---
+// --- Set Logic ---
 
 export const Identifier = createToken({
     name: 'Identifier',
@@ -114,7 +114,14 @@ export const SetNewline = createToken({
     name: "SetNewline",
     pattern: /\n/,
     pop_mode: true
-})
+});
+
+
+// --- Speaker Logic ---
+export const SpeakerKeyword = createToken({
+    name: 'SpeakerKeyword',
+    pattern: /:SPEAKER\b/
+});
 
 
 // --- Lexer ---
@@ -132,6 +139,7 @@ const normalTokens = [
     GotoToken,
     LabelToken,
     SetKeyword,
+    SpeakerKeyword,
     Equals,
     CloseBracket,
     Whitespace,

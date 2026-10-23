@@ -18,6 +18,9 @@ export type Instruction =
         identifier: string, 
         value: string | undefined 
     }
+    | { op: 'SPEAKER';
+        value: string | null;
+    }
     | { op: 'END' };
 
 export type Opcode = Instruction['op'];

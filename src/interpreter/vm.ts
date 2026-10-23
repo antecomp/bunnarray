@@ -4,7 +4,7 @@ import createMemory from "./mem";
 
 type Presentation = {
     text: string;
-    // speaker, eventually
+    speaker: string | null;
 };
 
 type Yield =
@@ -34,6 +34,7 @@ export default function createVM(
 ) {
     let pending: Presentation | null = null;
     let pc: number = 0;
+    let speaker: string | null = null;
     const memory = createMemory(options.memory);
 
     function insertVariables(line: string): string {
@@ -59,7 +60,7 @@ export default function createVM(
                     };
                 case 'SAY': {
                     const previous = pending;
-                    pending = { text: insertVariables(ins.text) };
+                    pending = { text: insertVariables(ins.text), speaker };
                     pc++;
 
                     if (previous !== null) {
@@ -99,6 +100,11 @@ export default function createVM(
                     } else {
                         memory.set(ins.identifier, insertVariables(ins.value));
                     }
+                    pc++;
+                    continue;
+
+                case 'SPEAKER':
+                    speaker = ins.value;
                     pc++;
                     continue;
             }

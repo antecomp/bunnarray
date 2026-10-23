@@ -108,6 +108,13 @@ export default function (ast: DialogueAST): Program {
                 }));
                 break;
             }
+
+            case 'speaker': {
+                emit(INS('SPEAKER', {
+                    value: statement.value
+                }));
+                break;
+            }
         }
     }
 
