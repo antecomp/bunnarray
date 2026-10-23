@@ -23,6 +23,17 @@ how has life been treating you?
 The answer is &lbrace;maybe&rbrace;.
 ```
 
+### Speakers
+Use `:SPEAKER name` on its own line to set the speaker for the following dialogue lines. The name carries forward until another `:SPEAKER` line changes it. Use `:SPEAKER` by itself to return to the narrator.
+```
+:SPEAKER Alice
+Hello!
+Still Alice speaking.
+:SPEAKER
+The story continues.
+```
+The runtime presentation includes the speaker name, or `null` for the narrator.
+
 ### Comments
 I only have line comments right now becuase they are easier 
 to parse lol. Use `#` at the start of a line to comment it out.
@@ -294,10 +305,6 @@ The compile function returns the DialogueNode at the "start" of this graph corre
 * Move label collection to visitor to remove redundant second pass through dialogue tree?
 * MORE TESTS. THERE ARE BUGS I CAN FEEL THEM CRAWLING AROUND AT NIGHT. I KNOW THEY ARE THERE.
 * After the game jam, maybe a "set" directive to have some default dialogue-owned stuff for matches without needing to set up a backend.
-* After the game jam, to make this general, add a "speaker" property to.
-    * I think a `speaker: text` syntax for lines would work well here! Keep a similar inherit behavior to faces.
-    * Make it responsibility of implementor to figure out how to handle that speaker key to whatever visuals they want to show
-    * Consider having this replace "face"
 * Another DG specific thing, but I think I can make it general / up to implementor: nested questions **not** to create brand new (duplicate) node, but instead some sort of flagged "empty"
     * The current clone implementation will cause duplicate messages to be sent in many implementations (including DG), so we should change it to not assume use-case.
 

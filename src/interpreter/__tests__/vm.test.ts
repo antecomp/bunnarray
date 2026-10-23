@@ -29,7 +29,7 @@ describe('VM', () => {
             { op: 'END' },
         ] });
 
-        expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'Only line' } });
+        expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'Only line', speaker: null } });
     });
 
     it('shows consecutive lines in order, each exactly once', () => {
@@ -42,7 +42,7 @@ describe('VM', () => {
 
         const first = expectSay(vm.init(), 'First');
         const second = expectSay(first.resume(), 'Second');
-        expect(second.resume()).toEqual({ kind: 'end', presentation: { text: 'Third' } });
+        expect(second.resume()).toEqual({ kind: 'end', presentation: { text: 'Third', speaker: null } });
     });
 
     it('jumps to its target without executing the skipped instruction', () => {
@@ -53,7 +53,7 @@ describe('VM', () => {
             { op: 'END' },
         ] });
 
-        expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'Reached' } });
+        expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'Reached', speaker: null } });
     });
 
     it.each([
@@ -76,7 +76,7 @@ describe('VM', () => {
 
         const choice = expectChoice(createVM(program).init(), 'Pick one', ['left', 'right']);
         const branch = expectSay(choice.resume(index), branchText);
-        expect(branch.resume()).toEqual({ kind: 'end', presentation: { text: 'After choice' } });
+        expect(branch.resume()).toEqual({ kind: 'end', presentation: { text: 'After choice', speaker: null } });
     });
 
     it('supports a choice without a preceding prompt', () => {
@@ -87,7 +87,7 @@ describe('VM', () => {
         ] });
 
         const choice = expectChoice(vm.init(), null, ['go']);
-        expect(choice.resume(0)).toEqual({ kind: 'end', presentation: { text: 'Going' } });
+        expect(choice.resume(0)).toEqual({ kind: 'end', presentation: { text: 'Going', speaker: null } });
     });
 
     it('rejects repeated initialization and repeated resumes', () => {
@@ -99,7 +99,7 @@ describe('VM', () => {
 
         const first = expectSay(vm.init(), 'One');
         expect(() => vm.init()).toThrow('Resume callback already consumed');
-        expect(first.resume()).toEqual({ kind: 'end', presentation: { text: 'Two' } });
+        expect(first.resume()).toEqual({ kind: 'end', presentation: { text: 'Two', speaker: null } });
         expect(() => first.resume()).toThrow('Resume callback already consumed');
     });
 
@@ -112,6 +112,30 @@ describe('VM', () => {
         const choice = expectChoice(vm.init(), null, ['go']);
         expect(() => choice.resume(1)).toThrow('Invalid choice index: 1');
         expect(() => choice.resume(0)).toThrow('Resume callback already consumed');
+    });
+
+    it('sets, inherits, changes, and clears the speaker from dialogue source', () => {
+        const vm = createVM(build(`:SPEAKER Alice
+Hello
+Still me
+:SPEAKER Bob
+Hi
+:SPEAKER
+Narration`));
+
+        const hello = vm.init();
+        expect(hello).toMatchObject({ kind: 'say', presentation: { text: 'Hello', speaker: 'Alice' } });
+        if (hello.kind !== 'say') throw new Error('Expected a say yield');
+
+        const stillMe = hello.resume();
+        expect(stillMe).toMatchObject({ kind: 'say', presentation: { text: 'Still me', speaker: 'Alice' } });
+        if (stillMe.kind !== 'say') throw new Error('Expected a say yield');
+
+        const hi = stillMe.resume();
+        expect(hi).toMatchObject({ kind: 'say', presentation: { text: 'Hi', speaker: 'Bob' } });
+        if (hi.kind !== 'say') throw new Error('Expected a say yield');
+
+        expect(hi.resume()).toEqual({ kind: 'end', presentation: { text: 'Narration', speaker: null } });
     });
 
     describe('MATCH', () => {
@@ -134,7 +158,7 @@ describe('VM', () => {
         ])('executes case %j and rejoins at the fallback', (value, text) => {
             const vm = createVM(program, { memory: { state: value } });
             const branch = expectSay(vm.init(), text);
-            expect(branch.resume()).toEqual({ kind: 'end', presentation: { text: 'After match' } });
+            expect(branch.resume()).toEqual({ kind: 'end', presentation: { text: 'After match', speaker: null } });
         });
 
         it.each<Record<string, string> | undefined>([
@@ -144,7 +168,7 @@ describe('VM', () => {
             { state: 'READY' },
         ])('falls back for missing or unmatched memory %j', memory => {
             const vm = createVM(program, { memory });
-            expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'After match' } });
+            expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'After match', speaker: null } });
         });
 
         it('accepts zero as a case target', () => {
@@ -172,7 +196,7 @@ describe('VM', () => {
             if (action === 'set') vm.memory.set('state', 'unknown');
             else vm.memory.delete('state');
 
-            expect(choice.resume(0)).toEqual({ kind: 'end', presentation: { text: 'Fallback' } });
+            expect(choice.resume(0)).toEqual({ kind: 'end', presentation: { text: 'Fallback', speaker: null } });
         });
 
         it.each(['toString', 'constructor', '__proto__'])('falls back for undeclared prototype name %s in compiled programs', value => {
@@ -183,7 +207,7 @@ describe('VM', () => {
             Fallback`);
 
             const vm = createVM(compiled, { memory: { state: value } });
-            expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'Fallback' } });
+            expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'Fallback', speaker: null } });
         });
 
         it.each(['toString', 'constructor', '__proto__'])('executes a declared prototype-name case %s in compiled programs', value => {
@@ -195,7 +219,7 @@ describe('VM', () => {
 
             const vm = createVM(compiled, { memory: { state: value } });
             const branch = expectSay(vm.init(), 'Matched');
-            expect(branch.resume()).toEqual({ kind: 'end', presentation: { text: 'Fallback' } });
+            expect(branch.resume()).toEqual({ kind: 'end', presentation: { text: 'Fallback', speaker: null } });
         });
     });
 });
