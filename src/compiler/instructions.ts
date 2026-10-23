@@ -18,6 +18,10 @@ export type Instruction =
         identifier: string, 
         value: string | undefined 
     }
+    | { op: 'SIGNAL';
+        identifier: string,
+        value: string | undefined
+    }
     | { op: 'SPEAKER';
         value: string | null;
     }
