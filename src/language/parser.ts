@@ -47,7 +47,7 @@ alternate -> AlternateKeyword Text? Newline
 
 */
 
-import { CstParser } from "chevrotain";
+import { CstParser } from 'chevrotain';
 import {
     Newline, CurlyBraceOpen, CurlyBraceClose, SkipBlockOpen,
     SkipBlockClose, MatchBlockOpen, MatchBlockClose, ChoiceToken,
@@ -56,8 +56,8 @@ import {
 
     SetKeyword, Identifier, SetEquals, SetValue, SetNewline,
 
-    allTokens,
-} from './lexer'
+    allTokens
+} from './lexer';
 
 export class DialogueParser extends CstParser {
     constructor() {
@@ -80,37 +80,37 @@ export class DialogueParser extends CstParser {
             { ALT: () => this.SUBRULE(this.set) },
             { ALT: () => this.SUBRULE(this.speaker) },
             { ALT: () => this.SUBRULE(this.alternate) }
-        ])
+        ]);
     });
 
     say = this.RULE('say', () => {
         this.CONSUME(Text);
         this.OPTION(() => this.CONSUME(Newline));
-    })
+    });
 
     choice = this.RULE('choice', () => {
         this.CONSUME(CurlyBraceOpen);
         this.CONSUME(Newline);
-        this.AT_LEAST_ONE(() => this.SUBRULE(this.choiceBranch))
+        this.AT_LEAST_ONE(() => this.SUBRULE(this.choiceBranch));
         this.CONSUME(CurlyBraceClose);
         this.OPTION(() => this.CONSUME1(Newline));
-    })
+    });
 
     choiceBranch = this.RULE('choiceBranch', () => {
         this.CONSUME(ChoiceToken);
         this.CONSUME(Text);
         this.OPTION(() => this.CONSUME(Newline));
-        this.MANY(() => this.SUBRULE(this.statement))
-    })
+        this.MANY(() => this.SUBRULE(this.statement));
+    });
 
     match = this.RULE('match', () => {
         this.CONSUME(MatchBlockOpen);
         this.CONSUME(Text);
         this.CONSUME(CloseBracket);
         this.CONSUME(Newline);
-        this.AT_LEAST_ONE(() => this.SUBRULE(this.matchBranch))
+        this.AT_LEAST_ONE(() => this.SUBRULE(this.matchBranch));
         this.CONSUME(MatchBlockClose);
-        this.OPTION(() => this.CONSUME1(Newline))
+        this.OPTION(() => this.CONSUME1(Newline));
     });
 
     matchBranch = this.RULE('matchBranch', () => {
@@ -124,7 +124,7 @@ export class DialogueParser extends CstParser {
         this.CONSUME(SkipBlockOpen);
         this.CONSUME(Text);
         this.CONSUME(CloseBracket);
-        this.OPTION(() => this.CONSUME1(Newline))
+        this.OPTION(() => this.CONSUME1(Newline));
         this.MANY(() => this.SUBRULE(this.statement));
         this.CONSUME(SkipBlockClose);
         this.OPTION2(() => this.CONSUME2(Newline));
@@ -134,11 +134,11 @@ export class DialogueParser extends CstParser {
         this.CONSUME(SetKeyword);
         this.CONSUME(Identifier);
         this.OPTION(() => {
-            this.CONSUME(SetEquals)
-            this.CONSUME(SetValue) // consider just making text
+            this.CONSUME(SetEquals);
+            this.CONSUME(SetValue); // consider just making text
         });
         this.CONSUME(SetNewline);
-    })
+    });
 
     label = this.RULE('label', () => {
         this.CONSUME(LabelToken);

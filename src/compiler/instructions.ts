@@ -28,7 +28,7 @@ export type Instruction =
 
 export type Opcode = Instruction['op'];
 
-export type Operation<O extends Opcode> = Extract<Instruction, { op: O }>
+export type Operation<O extends Opcode> = Extract<Instruction, { op: O }>;
 
 /** Construct an Instruction */
 export function INS<O extends Opcode>(
@@ -41,4 +41,4 @@ export function INS<O extends Opcode>(
 export type Program = {
     instructions: Instruction[]
     // debug symbols?
-}
+};

@@ -1,4 +1,4 @@
-import { createToken, Lexer } from "chevrotain";
+import { createToken, Lexer } from 'chevrotain';
 
 export const Newline = createToken({
     name: 'Newline',
@@ -8,63 +8,63 @@ export const Newline = createToken({
 // --- Question Blocks ---
 
 export const CurlyBraceOpen = createToken({
-    name: "CurlyBraceOpen",
-    pattern: /\{/,
+    name: 'CurlyBraceOpen',
+    pattern: /\{/
 });
 
 export const CurlyBraceClose = createToken({
-    name: "CurlyBraceClose",
-    pattern: /\}/,
+    name: 'CurlyBraceClose',
+    pattern: /\}/
 });
 
 export const ChoiceToken = createToken({
-    name: "ChoiceToken",
-    pattern: /\?:[ \t]*/,
+    name: 'ChoiceToken',
+    pattern: /\?:[ \t]*/
 });
 
 // --- Other Blocks ---
 
 export const CloseBracket = createToken({
-    name: "CloseBracket",
-    pattern: /\]/,
+    name: 'CloseBracket',
+    pattern: /\]/
 });
 
 export const SkipBlockOpen = createToken({
-    name: "SkipBlockOpen",
-    pattern: /\[skip:/,
+    name: 'SkipBlockOpen',
+    pattern: /\[skip:/
 });
 
 export const SkipBlockClose = createToken({
-    name: "SkipBlockClose",
-    pattern: /\[\/skip\]/,
+    name: 'SkipBlockClose',
+    pattern: /\[\/skip\]/
 });
 
 export const MatchBlockOpen = createToken({
-    name: "MatchBlockOpen",
-    pattern: /\[match:/,
+    name: 'MatchBlockOpen',
+    pattern: /\[match:/
 });
 
 export const MatchBlockClose = createToken({
-    name: "MatchBlockClose",
-    pattern: /\[\/match\]/,
+    name: 'MatchBlockClose',
+    pattern: /\[\/match\]/
 });
 
 // --- Labels & Gotos ---
 
 export const GotoToken = createToken({
-    name: "GotoToken",
-    pattern: /->[ \t]*/,
+    name: 'GotoToken',
+    pattern: /->[ \t]*/
 });
 
 export const LabelToken = createToken({
-    name: "LabelToken",
+    name: 'LabelToken',
     pattern: /@[ \t]*/
 });
 
 // --- Other junk ---
 export const Equals = createToken({
-    name: "Equals",
-    pattern: /=[ \t]*/,
+    name: 'Equals',
+    pattern: /=[ \t]*/
 });
 
 
@@ -72,14 +72,14 @@ export const Equals = createToken({
 // Ignore whitespace between syntax tokens (for example, the gap in `} {`).
 // Spaces inside a Text token are consumed by Text and remain part of its image.
 export const Whitespace = createToken({
-    name: "Whitespace",
+    name: 'Whitespace',
     pattern: /[ \t]+/,
-    group: Lexer.SKIPPED,
+    group: Lexer.SKIPPED
 });
 
 // Consumes all characters up excluding \n, [] and {}
 export const Text = createToken({
-    name: "Text",
+    name: 'Text',
     pattern: /[^\n{}\[\]]+/
 });
 
@@ -106,12 +106,12 @@ export const SetEquals = createToken({
 
 // TODO: Consider using just Text, so {}, [] isn't magically usable in these contexts...
 export const SetValue = createToken({
-    name: "SetValue",
+    name: 'SetValue',
     pattern: /[^\n]+/
 });
 
 export const SetNewline = createToken({
-    name: "SetNewline",
+    name: 'SetNewline',
     pattern: /\n/,
     pop_mode: true
 });
@@ -149,7 +149,7 @@ const normalTokens = [
     Equals,
     CloseBracket,
     Whitespace,
-    Text,
+    Text
 ];
 
 export const allTokens = [
@@ -157,14 +157,14 @@ export const allTokens = [
     Identifier,
     SetEquals,
     SetValue,
-    SetNewline,
+    SetNewline
 ];
 
 export const DialogueLexer = new Lexer({
-    defaultMode: "normal",
+    defaultMode: 'normal',
     modes: {
         normal: normalTokens,
         setHeader: [Whitespace, Identifier, SetEquals, SetNewline],
-        setValue: [SetValue, SetNewline],
-    },
+        setValue: [SetValue, SetNewline]
+    }
 });

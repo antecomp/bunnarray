@@ -3,7 +3,7 @@ import type {
     ChoiceBranch,
     DialogueAST,
     MatchBranch,
-    Statement,
+    Statement
 } from '../language/ast';
 
 type AstNode = DialogueAST | Statement | ChoiceBranch | MatchBranch;

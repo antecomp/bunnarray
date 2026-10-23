@@ -18,36 +18,36 @@ export type SayStatement = {
     type: 'say';
     text: string;
     // direcives: Record<string, string>;
-}
+};
 
 export type ChoiceStatement = {
     type: 'choice';
     branches: ChoiceBranch[]
-}
+};
 
 export type ChoiceBranch = {
     type: 'choiceBranch'
     text: string,
     statements: Statement[]
-}
+};
 
 export type MatchStatement = {
     type: 'match',
     on: string,
     branches: MatchBranch[]
-}
+};
 
 export type MatchBranch = {
     type: 'matchBranch'
     case: string;
     statements: Statement[];
-}
+};
 
 export type SetStatement = {
     type: 'set';
     identifier: string,
     value: string | undefined
-}
+};
 
 export type SkipStatement = {
     type: 'skip';
@@ -68,7 +68,7 @@ export type GotoStatement = {
 export type SpeakerStatement = {
     type: 'speaker';
     value: string | null;
-}
+};
 
 export type AlternateStatement = {
     type: 'alternate';

@@ -5,7 +5,7 @@ export default function createMemory(init: Record<string, string> = {}) {
         key: string,
         prev: string | undefined;
         value: string | undefined
-    }
+    };
 
     const listeners = new Set<(update: UpdateNotification) => void>();
 
@@ -21,7 +21,7 @@ export default function createMemory(init: Record<string, string> = {}) {
         // if (previous === value) return;
 
         values.set(key, value);
-        notify({key, value, prev})
+        notify({ key, value, prev });
     }
 
     function del(key: string) {
@@ -30,7 +30,7 @@ export default function createMemory(init: Record<string, string> = {}) {
         const prev = values.get(key);
         values.delete(key);
 
-        notify({key, value: undefined, prev});
+        notify({ key, value: undefined, prev });
         return true;
     }
 
@@ -46,5 +46,5 @@ export default function createMemory(init: Record<string, string> = {}) {
             listeners.add(fn);
             return () => listeners.delete(fn);
         }
-    }
+    };
 }

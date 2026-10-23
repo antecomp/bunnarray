@@ -16,7 +16,7 @@ export default function once<T extends unknown[], R>(
 
     return (...args) => {
         if (used) {
-            throw new Error("Resume callback already consumed");
+            throw new Error('Resume callback already consumed');
         }
 
         used = true;

@@ -1,6 +1,6 @@
-import { Program } from "../compiler/instructions";
-import once from "../util/once";
-import createMemory from "./mem";
+import { Program } from '../compiler/instructions';
+import once from '../util/once';
+import createMemory from './mem';
 
 type Presentation = {
     text: string;
@@ -9,24 +9,24 @@ type Presentation = {
 
 type Yield =
     | {
-        kind: "say";
+        kind: 'say';
         presentation: Presentation;
         resume: () => Yield;
     }
     | {
-        kind: "choice";
+        kind: 'choice';
         presentation: Presentation | null;
         choices: string[];
         resume: (index: number) => Yield;
     }
     | {
-        kind: "end";
+        kind: 'end';
         presentation: Presentation | null;
     };
 
 type VMOptions = {
     memory?: Record<string, string>
-}
+};
 
 export default function createVM(
     program: Program,
@@ -58,7 +58,7 @@ export default function createVM(
                 case 'END':
                     return {
                         kind: 'end',
-                        presentation: pending,
+                        presentation: pending
                     };
                 case 'SAY': {
                     const previous = pending;
@@ -73,7 +73,7 @@ export default function createVM(
                         return {
                             kind: 'say',
                             presentation: previous,
-                            resume: once(_run),
+                            resume: once(_run)
                         };
                     }
                     continue;
@@ -83,14 +83,14 @@ export default function createVM(
                         kind: 'choice',
                         presentation: pending,
                         choices: ins.choices.map(choice => choice.text),
-                        resume: once((index) => {
+                        resume: once(index => {
                             if (!ins.choices[index]) throw new Error('Invalid choice index: ' + index);
-                            pc = ins.choices[index].target
+                            pc = ins.choices[index].target;
                             // reset pending, branch should emit prompt once
                             pending = null;
                             return _run();
                         })
-                    }
+                    };
                 case 'MATCH':
                     const value = memory.get(ins.on);
 
@@ -128,5 +128,5 @@ export default function createVM(
     return {
         init,
         memory
-    }
+    };
 }

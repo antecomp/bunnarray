@@ -26,7 +26,7 @@ describe('VM', () => {
     it('shows the last line before ending', () => {
         const vm = createVM({ instructions: [
             { op: 'SAY', text: 'Only line' },
-            { op: 'END' },
+            { op: 'END' }
         ] });
 
         expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'Only line', speaker: null } });
@@ -37,7 +37,7 @@ describe('VM', () => {
             { op: 'SAY', text: 'First' },
             { op: 'SAY', text: 'Second' },
             { op: 'SAY', text: 'Third' },
-            { op: 'END' },
+            { op: 'END' }
         ] });
 
         const first = expectSay(vm.init(), 'First');
@@ -50,7 +50,7 @@ describe('VM', () => {
             { op: 'JUMP', target: 2 },
             { op: 'SAY', text: 'Skipped' },
             { op: 'SAY', text: 'Reached' },
-            { op: 'END' },
+            { op: 'END' }
         ] });
 
         expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'Reached', speaker: null } });
@@ -58,20 +58,20 @@ describe('VM', () => {
 
     it.each([
         [0, 'Left'],
-        [1, 'Right'],
+        [1, 'Right']
     ])('follows choice %i and rejoins after its branch', (index, branchText) => {
         const program: Program = { instructions: [
             { op: 'SAY', text: 'Pick one' },
             { op: 'CHOICE', choices: [
                 { text: 'left', target: 2 },
-                { text: 'right', target: 4 },
+                { text: 'right', target: 4 }
             ] },
             { op: 'SAY', text: 'Left' },
             { op: 'JUMP', target: 6 },
             { op: 'SAY', text: 'Right' },
             { op: 'JUMP', target: 6 },
             { op: 'SAY', text: 'After choice' },
-            { op: 'END' },
+            { op: 'END' }
         ] };
 
         const choice = expectChoice(createVM(program).init(), 'Pick one', ['left', 'right']);
@@ -83,7 +83,7 @@ describe('VM', () => {
         const vm = createVM({ instructions: [
             { op: 'CHOICE', choices: [{ text: 'go', target: 1 }] },
             { op: 'SAY', text: 'Going' },
-            { op: 'END' },
+            { op: 'END' }
         ] });
 
         const choice = expectChoice(vm.init(), null, ['go']);
@@ -94,7 +94,7 @@ describe('VM', () => {
         const vm = createVM({ instructions: [
             { op: 'SAY', text: 'One' },
             { op: 'SAY', text: 'Two' },
-            { op: 'END' },
+            { op: 'END' }
         ] });
 
         const first = expectSay(vm.init(), 'One');
@@ -106,7 +106,7 @@ describe('VM', () => {
     it('rejects an invalid choice index and a repeated choice resume', () => {
         const vm = createVM({ instructions: [
             { op: 'CHOICE', choices: [{ text: 'go', target: 1 }] },
-            { op: 'END' },
+            { op: 'END' }
         ] });
 
         const choice = expectChoice(vm.init(), null, ['go']);
@@ -152,7 +152,7 @@ After`));
             ['First', 'Alice'],
             ['Second', 'Bob Smith'],
             ['Third', 'Carol'],
-            ['Fourth', 'Alice'],
+            ['Fourth', 'Alice']
         ]) {
             expect(step).toMatchObject({ kind: 'say', presentation: { text, speaker } });
             if (step.kind !== 'say') throw new Error('Expected a say yield');
@@ -206,13 +206,13 @@ After`));
             { op: 'SAY', text: 'Empty value' },
             { op: 'JUMP', target: 7 },
             { op: 'SAY', text: 'After match' },
-            { op: 'END' },
+            { op: 'END' }
         ] };
 
         it.each([
             ['ready', 'Ready'],
             ['waiting', 'Waiting'],
-            ['', 'Empty value'],
+            ['', 'Empty value']
         ])('executes case %j and rejoins at the fallback', (value, text) => {
             const vm = createVM(program, { memory: { state: value } });
             const branch = expectSay(vm.init(), text);
@@ -223,7 +223,7 @@ After`));
             undefined,
             {},
             { state: 'unknown' },
-            { state: 'READY' },
+            { state: 'READY' }
         ])('falls back for missing or unmatched memory %j', memory => {
             const vm = createVM(program, { memory });
             expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'After match', speaker: null } });
@@ -233,7 +233,7 @@ After`));
             const vm = createVM({ instructions: [
                 { op: 'CHOICE', choices: [{ text: 'Check again', target: 1 }] },
                 { op: 'MATCH', on: 'state', cases: { ready: 0 }, fallback: 2 },
-                { op: 'END' },
+                { op: 'END' }
             ] }, { memory: { state: 'ready' } });
 
             const choice = expectChoice(vm.init(), null, ['Check again']);
@@ -247,7 +247,7 @@ After`));
                 { op: 'SAY', text: 'Ready' },
                 { op: 'END' },
                 { op: 'SAY', text: 'Fallback' },
-                { op: 'END' },
+                { op: 'END' }
             ] }, { memory: { state: 'ready' } });
 
             const choice = expectChoice(vm.init(), null, ['Go']);

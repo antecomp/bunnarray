@@ -1,6 +1,6 @@
-import type * as A from './ast'
+import type * as A from './ast';
 
-import { DialogueParser } from "./parser";
+import { DialogueParser } from './parser';
 const parser = new DialogueParser();
 const BaseVisitor = parser.getBaseCstVisitorConstructor();
 
@@ -9,7 +9,7 @@ const escapedCharacters: Record<string, string> = {
     rbrack: ']',
     lbrace: '{',
     rbrace: '}',
-    amp: '&',
+    amp: '&'
 };
 
 function decodeText(text: string): string {
@@ -67,14 +67,14 @@ export class DialogueVisitor extends BaseVisitor {
         return {
             type: 'say',
             text: decodeText(ctx.Text[0].image.trim())
-        }
+        };
     }
 
     choice(ctx: any): A.ChoiceStatement {
         return {
             type: 'choice',
             branches: (ctx.choiceBranch ?? []).map((branch: any) => this.visit(branch))
-        }
+        };
     }
 
     choiceBranch(ctx: any): A.ChoiceBranch {
@@ -82,7 +82,7 @@ export class DialogueVisitor extends BaseVisitor {
             type: 'choiceBranch',
             text: decodeText(ctx.Text[0].image.trim()),
             statements: (ctx.statement ?? []).map((s: any) => this.visit(s))
-        }
+        };
     }
 
     match(ctx: any): A.MatchStatement {
@@ -90,7 +90,7 @@ export class DialogueVisitor extends BaseVisitor {
             type: 'match',
             on: decodeText(ctx.Text[0].image.trim()),
             branches: (ctx.matchBranch ?? []).map((branch: any) => this.visit(branch))
-        }
+        };
     }
 
     matchBranch(ctx: any): A.MatchBranch {
@@ -98,7 +98,7 @@ export class DialogueVisitor extends BaseVisitor {
             type: 'matchBranch',
             case: decodeText(ctx.Text[0].image.trim()),
             statements: (ctx.statement ?? []).map((s: any) => this.visit(s))
-        }
+        };
     }
 
     skip(ctx: any): A.SkipStatement {
@@ -106,7 +106,7 @@ export class DialogueVisitor extends BaseVisitor {
             type: 'skip',
             label: decodeText(ctx.Text[0].image.trim()),
             statements: (ctx.statement ?? []).map((s: any) => this.visit(s))
-        }
+        };
     }
 
     set(ctx: any): A.SetStatement {
@@ -114,29 +114,29 @@ export class DialogueVisitor extends BaseVisitor {
             type: 'set',
             identifier: (ctx.Identifier[0].image.trim()),
             value: (ctx.SetValue?.[0]?.image ?? undefined)
-        }
+        };
     }
 
     label(ctx: any): A.LabelStatement {
         return {
             type: 'label',
             name: decodeText(ctx.Text[0].image.trim())
-        }
+        };
     }
 
     goto(ctx: any): A.GotoStatement {
         return {
             type: 'goto',
             target: decodeText(ctx.Text[0].image.trim())
-        }
+        };
     }
 
     speaker(ctx: any): A.SpeakerStatement {
-        const im = ctx.Text?.[0]?.image
+        const im = ctx.Text?.[0]?.image;
         return {
             type: 'speaker',
             value: im ? decodeText(im) : null
-        }
+        };
     }
 
     alternate(ctx: any): A.AlternateStatement {

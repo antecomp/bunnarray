@@ -14,14 +14,14 @@ describe('build', () => {
 how has life been treating you?`, [
                 { op: 'SAY', text: 'Hello, it has been a while,' },
                 { op: 'SAY', text: 'how has life been treating you?' },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
 
         it.each(['', '\n  \n', '# Only a comment\n    # Another comment'])
-            ('terminates an empty or comment-only script: %j', source => {
-                expectIR(source, [{ op: 'END' }]);
-            });
+        ('terminates an empty or comment-only script: %j', source => {
+            expectIR(source, [{ op: 'END' }]);
+        });
 
         it('removes blank lines, indentation, and whole-line comments', () => {
             expectIR(`
@@ -33,7 +33,7 @@ how has life been treating you?`, [
             `, [
                 { op: 'SAY', text: 'I hate you!' },
                 { op: 'SAY', text: 'Go away!' },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
 
@@ -41,21 +41,21 @@ how has life been treating you?`, [
             expectIR('First.\r\n\r\n  Second.  \r\n', [
                 { op: 'SAY', text: 'First.' },
                 { op: 'SAY', text: 'Second.' },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
 
         it('keeps a hash within dialogue text', () => {
             expectIR('The key is #1.', [
                 { op: 'SAY', text: 'The key is #1.' },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
 
         it('decodes bracket escapes after parsing and preserves escaped ampersands', () => {
             expectIR('Say &lbrack;yes&rbrack; and &lbrace;maybe&rbrace;. Write &amp;lbrace; literally.', [
                 { op: 'SAY', text: 'Say [yes] and {maybe}. Write &lbrace; literally.' },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
     });
@@ -66,14 +66,14 @@ how has life been treating you?`, [
                 { op: 'ALTERNATE', speakers: ['Alice', 'Bob Smith', 'Carol'] },
                 { op: 'SPEAKER', value: 'Other' },
                 { op: 'ALTERNATE', speakers: [] },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
 
         it('keeps text escapes inside speaker names', () => {
             expectIR(':ALTERNATE Alice &amp; Bob; &lbrack;Guard&rbrack;; &amp;lbrace;', [
                 { op: 'ALTERNATE', speakers: ['Alice & Bob', '[Guard]', '&lbrace;'] },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
 
@@ -81,7 +81,7 @@ how has life been treating you?`, [
             ':ALTERNATE ;Alice',
             ':ALTERNATE Alice;;Bob',
             ':ALTERNATE Alice; ;Bob',
-            ':ALTERNATE Alice;',
+            ':ALTERNATE Alice;'
         ])('rejects an empty speaker in %j', source => {
             expect(() => build(source)).toThrow('ALTERNATE requires a speaker between each semicolon');
         });
@@ -97,7 +97,7 @@ how has life been treating you?`, [
                 { op: 'CHOICE', choices: [{ text: '[yes]', target: 2 }] },
                 { op: 'SAY', text: 'Done.' },
                 { op: 'JUMP', target: 4 },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
 
@@ -112,14 +112,14 @@ how has life been treating you?`, [
                 { op: 'SAY', text: 'How are you?' },
                 { op: 'CHOICE', choices: [
                     { text: 'good', target: 2 },
-                    { text: 'bad', target: 4 },
+                    { text: 'bad', target: 4 }
                 ] },
                 { op: 'SAY', text: 'cool.' },
                 { op: 'JUMP', target: 6 },
                 { op: 'SAY', text: 'not cool' },
                 { op: 'JUMP', target: 6 },
                 { op: 'SAY', text: 'Well, anyways... the dialogue continues here...' },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
 
@@ -133,13 +133,13 @@ how has life been treating you?`, [
                 { op: 'SAY', text: 'Choose' },
                 { op: 'CHOICE', choices: [
                     { text: 'nothing', target: 2 },
-                    { text: 'something', target: 3 },
+                    { text: 'something', target: 3 }
                 ] },
                 { op: 'JUMP', target: 6 },
                 { op: 'SAY', text: 'One line.' },
                 { op: 'SAY', text: 'Another line.' },
                 { op: 'JUMP', target: 6 },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
 
@@ -160,12 +160,12 @@ how has life been treating you?`, [
                 { op: 'SAY', text: 'Outer' },
                 { op: 'CHOICE', choices: [
                     { text: 'explore', target: 2 },
-                    { text: 'leave', target: 10 },
+                    { text: 'leave', target: 10 }
                 ] },
                 { op: 'SAY', text: 'Inner' },
                 { op: 'CHOICE', choices: [
                     { text: 'left', target: 4 },
-                    { text: 'right', target: 6 },
+                    { text: 'right', target: 6 }
                 ] },
                 { op: 'SAY', text: 'Left path.' },
                 { op: 'JUMP', target: 8 },
@@ -176,7 +176,7 @@ how has life been treating you?`, [
                 { op: 'SAY', text: 'Leaving.' },
                 { op: 'JUMP', target: 12 },
                 { op: 'SAY', text: 'Goodbye!' },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
 
@@ -196,11 +196,11 @@ how has life been treating you?`, [
                 { op: 'SAY', text: 'How are you?' },
                 { op: 'CHOICE', choices: [
                     { text: 'Good', target: 2 },
-                    { text: 'Bad', target: 8 },
+                    { text: 'Bad', target: 8 }
                 ] },
                 { op: 'CHOICE', choices: [
                     { text: 'Really good', target: 3 },
-                    { text: 'Mostly good', target: 5 },
+                    { text: 'Mostly good', target: 5 }
                 ] },
                 { op: 'SAY', text: 'Wonderful!' },
                 { op: 'JUMP', target: 7 },
@@ -210,7 +210,7 @@ how has life been treating you?`, [
                 { op: 'SAY', text: 'Sorry to hear that.' },
                 { op: 'JUMP', target: 10 },
                 { op: 'SAY', text: 'Goodbye!' },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
     });
@@ -234,7 +234,7 @@ how has life been treating you?`, [
                     { op: 'CHOICE', choices: [{ text: 'Good', target: 2 }] },
                     { op: 'CHOICE', choices: [
                         { text: 'Really good', target: 3 },
-                        { text: 'Mostly good', target: 5 },
+                        { text: 'Mostly good', target: 5 }
                     ] },
                     { op: 'SAY', text: 'Wonderful!' },
                     { op: 'JUMP', target: 7 },
@@ -244,9 +244,9 @@ how has life been treating you?`, [
                     { op: 'CHOICE', choices: [{ text: 'How about you?', target: 9 }] },
                     { op: 'SAY', text: 'Oh! I am just great, personally!' },
                     { op: 'JUMP', target: 11 },
-                    { op: 'END' },
+                    { op: 'END' }
                 ]);
-            },
+            }
         );
     });
 
@@ -264,7 +264,7 @@ how has life been treating you?`, [
                 { op: 'JUMP', target: 3 },
                 { op: 'SAY', text: 'How are you?' },
                 { op: 'JUMP', target: 1 },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
 
@@ -282,7 +282,7 @@ how has life been treating you?`, [
                 { op: 'CHOICE', choices: [{ text: 'good', target: 4 }] },
                 { op: 'SAY', text: 'Great!' },
                 { op: 'JUMP', target: 6 },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
 
@@ -302,7 +302,7 @@ how has life been treating you?`, [
                 { op: 'SAY', text: 'Where to?' },
                 { op: 'CHOICE', choices: [
                     { text: 'weather', target: 2 },
-                    { text: 'ask me how I am', target: 4 },
+                    { text: 'ask me how I am', target: 4 }
                 ] },
                 { op: 'JUMP', target: 8 },
                 { op: 'JUMP', target: 7 },
@@ -312,7 +312,7 @@ how has life been treating you?`, [
                 { op: 'SAY', text: 'Common fallback.' },
                 { op: 'SAY', text: 'Lovely weather!' },
                 { op: 'SAY', text: 'How are you?' },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
     });
@@ -335,7 +335,7 @@ how has life been treating you?`, [
                 { op: 'SAY', text: 'You should see this first' },
                 { op: 'JUMP', target: 2 },
                 { op: 'SAY', text: "And finally we're here." },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
 
@@ -349,7 +349,7 @@ how has life been treating you?`, [
                 { op: 'JUMP', target: 3 },
                 { op: 'SAY', text: 'Optional preface.' },
                 { op: 'SAY', text: 'Main dialogue.' },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
     });
@@ -375,7 +375,7 @@ how has life been treating you?`, [
                 { op: 'SAY', text: 'Please slay the dragon and come back later' },
                 { op: 'JUMP', target: 8 },
                 { op: 'SAY', text: 'Goodbye!' },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
 
@@ -399,7 +399,7 @@ how has life been treating you?`, [
                 { op: 'MATCH', on: 'conditionTwo', cases: { noodles: 6 }, fallback: 8 },
                 { op: 'SAY', text: 'Yum!' },
                 { op: 'JUMP', target: 8 },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
 
@@ -423,7 +423,7 @@ how has life been treating you?`, [
                 { op: 'SAY', text: 'Goodbye!' },
                 { op: 'JUMP', target: 8 },
                 { op: 'SAY', text: 'Here is all of my money!!!' },
-                { op: 'END' },
+                { op: 'END' }
             ]);
         });
     });

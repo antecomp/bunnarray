@@ -3,8 +3,8 @@
  * Takes our Dialogue AST and "lowers" it into a linear set of instructions.
  */
 
-import {DialogueAST, Statement} from '../language/ast';
-import { INS, Instruction, Operation, Program } from "./instructions";
+import { DialogueAST, Statement } from '../language/ast';
+import { INS, Instruction, Operation, Program } from './instructions';
 
 const UNRESOLVED = -1;
 
@@ -18,7 +18,7 @@ export default function (ast: DialogueAST): Program {
     const pos = () => instructions.length;
 
     function defineLabel(name: string) {
-        if (labels[name] !== undefined) throw new Error("duplicate label");
+        if (labels[name] !== undefined) throw new Error('duplicate label');
         labels[name] = pos();
     }
 
@@ -39,12 +39,12 @@ export default function (ast: DialogueAST): Program {
                 unresolvedGotos.push({
                     fromIndex: jumpIndex,
                     target: statement.target
-                })
+                });
                 break;
             }
             case 'choice': {
                 const choiceIndex = emit(INS('CHOICE', { choices: [] }));
-                const currentChoice = instructions[choiceIndex] as Operation<'CHOICE'>
+                const currentChoice = instructions[choiceIndex] as Operation<'CHOICE'>;
                 const exitJumps: Operation<'JUMP'>[] = [];
 
                 statement.branches.forEach(branch => {
@@ -76,7 +76,7 @@ export default function (ast: DialogueAST): Program {
                 const exitJumps: Operation<'JUMP'>[] = [];
 
                 statement.branches.forEach(branch => {
-                    if (currentMatch.cases[branch.case]) throw new Error("duplicate cases in branch");
+                    if (currentMatch.cases[branch.case]) throw new Error('duplicate cases in branch');
                     currentMatch.cases[branch.case] = pos();
 
                     compileSequence(branch.statements);
@@ -132,8 +132,8 @@ export default function (ast: DialogueAST): Program {
         if(labels[pending.target] === undefined) throw new Error('encountered goto to unknown label ' + pending.target);
 
         (instructions[pending.fromIndex] as Operation<'JUMP'>).target = labels[pending.target];
-    })
+    });
 
 
-    return { instructions }
+    return { instructions };
 }

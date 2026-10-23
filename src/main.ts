@@ -30,7 +30,7 @@ compileButton.onclick = () => {
                 nodes: {
                     shape: 'box',
                     widthConstraint: 180,
-                    margin: { top: 12, right: 12, bottom: 12, left: 12 },
+                    margin: { top: 12, right: 12, bottom: 12, left: 12 }
                 },
                 edges: { smooth: false },
                 layout: {
@@ -39,10 +39,10 @@ compileButton.onclick = () => {
                         direction: 'UD',
                         sortMethod: 'directed',
                         levelSeparation: 160,
-                        nodeSpacing: 220,
-                    },
+                        nodeSpacing: 220
+                    }
                 },
-                physics: { enabled: false },
+                physics: { enabled: false }
             }
         )
         : undefined;
@@ -53,4 +53,4 @@ compileButton.onclick = () => {
         IRVis.innerText = formatIR(rez.ir);
         runDialogue(rez.ir, dialogueStack);
     }
-}
+};
