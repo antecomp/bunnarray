@@ -1,6 +1,8 @@
 import { Program } from '../compiler/instructions';
 import once from '../util/once';
 import createMemory from './mem';
+import type { SignalNotification } from './signals';
+import createSubscriptions from './subscriptions';
 
 type Presentation = {
     text: string;
@@ -38,6 +40,7 @@ export default function createVM(
     let alternateSpeakers: string[] = [];
     let nextSpeakerIndex = 0;
     const memory = createMemory(options.memory);
+    const signals = createSubscriptions<SignalNotification>();
 
     function insertVariables(line: string): string {
         return line.replace(
@@ -109,6 +112,11 @@ export default function createVM(
                     pc++;
                     continue;
 
+                case 'SIGNAL':
+                    signals.notify({ identifier: ins.identifier, value: ins.value });
+                    pc++;
+                    continue;
+
                 case 'SPEAKER':
                     speaker = ins.value;
                     alternateSpeakers = [];
@@ -127,6 +135,7 @@ export default function createVM(
 
     return {
         init,
-        memory
+        memory,
+        signals: { subscribe: signals.subscribe }
     };
 }

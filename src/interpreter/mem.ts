@@ -1,3 +1,5 @@
+import createSubscriptions from './subscriptions';
+
 export default function createMemory(init: Record<string, string> = {}) {
     const values = new Map(Object.entries(init));
 
@@ -7,13 +9,7 @@ export default function createMemory(init: Record<string, string> = {}) {
         value: string | undefined
     };
 
-    const listeners = new Set<(update: UpdateNotification) => void>();
-
-    function notify(update: UpdateNotification) {
-        for(const listener of [...listeners]) {
-            listener(update);
-        }
-    }
+    const { notify, subscribe } = createSubscriptions<UpdateNotification>();
 
     function set(key: string, value: string) {
         const prev = values.get(key);
@@ -42,9 +38,6 @@ export default function createMemory(init: Record<string, string> = {}) {
 
         snapshot: () => Object.fromEntries(values),
 
-        subscribe(fn: (update: UpdateNotification) => void) {
-            listeners.add(fn);
-            return () => listeners.delete(fn);
-        }
+        subscribe
     };
 }

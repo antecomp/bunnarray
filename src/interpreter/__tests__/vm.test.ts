@@ -56,6 +56,47 @@ describe('VM', () => {
         expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'Reached', speaker: null } });
     });
 
+    it('broadcasts signal identifier/value pairs to subscribers until they unsubscribe', () => {
+        const vm = createVM({ instructions: [
+            { op: 'SIGNAL', identifier: 'opened', value: undefined },
+            { op: 'CHOICE', choices: [{ text: 'continue', target: 2 }] },
+            { op: 'SIGNAL', identifier: 'closed', value: 'done' },
+            { op: 'END' }
+        ] });
+        const first: unknown[] = [];
+        const second: unknown[] = [];
+        vm.signals.subscribe(signal => first.push(signal));
+        const unsubscribe = vm.signals.subscribe(signal => second.push(signal));
+
+        const choice = expectChoice(vm.init(), null, ['continue']);
+        expect(first).toEqual([{ identifier: 'opened', value: undefined }]);
+        expect(second).toEqual(first);
+
+        unsubscribe();
+        expect(choice.resume(0)).toEqual({ kind: 'end', presentation: null });
+        expect(first).toEqual([
+            { identifier: 'opened', value: undefined },
+            { identifier: 'closed', value: 'done' }
+        ]);
+        expect(second).toEqual([{ identifier: 'opened', value: undefined }]);
+    });
+
+    it('keeps memory subscriptions working for changes and deletions', () => {
+        const vm = createVM({ instructions: [{ op: 'END' }] });
+        const updates: unknown[] = [];
+        const unsubscribe = vm.memory.subscribe(update => updates.push(update));
+
+        vm.memory.set('key', 'value');
+        vm.memory.delete('key');
+        unsubscribe();
+        vm.memory.set('key', 'later');
+
+        expect(updates).toEqual([
+            { key: 'key', prev: undefined, value: 'value' },
+            { key: 'key', prev: 'value', value: undefined }
+        ]);
+    });
+
     it.each([
         [0, 'Left'],
         [1, 'Right']
