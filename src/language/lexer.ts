@@ -137,6 +137,24 @@ export const SignalDelim = createToken({
     push_mode: 'signalValue'
 });
 
+// --- Branches and Conditionals ---
+export const BranchBlockOpen = createToken({
+    name: 'BranchBlockOpen',
+    pattern: /\[branch]/
+});
+
+export const BranchBlockClose = createToken({
+    name: 'BranchBlockClose',
+    pattern: /\[\/branch\]/
+});
+
+// TODO: NEED TO ADD A MODE FOR THIS SO THE SUBSEQUENT IDENTIFIER IS CAPTURED INSTEAD OF TEXT
+// WILL ALSO NEED A SPECIAL EQUALS TOKEN TO POP THAT MODE.
+export const WhenStatementOpen = createToken({
+    name: 'WhenStatementOpen',
+    pattern: /\[when:/
+});
+
 
 // --- Lexer ---
 // Order is priority, first match wins.
@@ -149,6 +167,9 @@ const normalTokens = [
     SkipBlockClose,
     MatchBlockOpen,
     MatchBlockClose,
+    BranchBlockOpen,
+    BranchBlockClose,
+    WhenStatementOpen,
     ChoiceToken,
     GotoToken,
     LabelToken,

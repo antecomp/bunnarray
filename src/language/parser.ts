@@ -11,6 +11,7 @@ statement ->
     | set
     | speaker
     | alternate
+    | branch
 
 say -> Text Newline?
 
@@ -31,6 +32,13 @@ match ->
 matchBranch ->
     Equals Text Newline
         statement*
+
+branch ->
+    BranchBlockOpen CloseBracket Newline
+    (when Newline? statement*)*
+    BranchBlockClose
+
+when -> WhenStatementOpen Identifier Equals Text CloseBracket
 
 skip ->
     SkipBlockOpen Text CloseBracket Newline
@@ -56,7 +64,8 @@ import {
     AlternateKeyword,
 
     SetKeyword, Identifier, SetEquals, DirectiveNewline, 
-    SignalKeyword, SignalDelim,
+    SignalKeyword, SignalDelim, BranchBlockOpen, BranchBlockClose,
+    WhenStatementOpen,
 
     allTokens
 } from './lexer';
@@ -76,6 +85,7 @@ export class DialogueParser extends CstParser {
             { ALT: () => this.SUBRULE(this.say) },
             { ALT: () => this.SUBRULE(this.choice) },
             { ALT: () => this.SUBRULE(this.match) },
+            { ALT: () => this.SUBRULE(this.branch)},
             { ALT: () => this.SUBRULE(this.skip) },
             { ALT: () => this.SUBRULE(this.label) },
             { ALT: () => this.SUBRULE(this.goto) },
@@ -122,6 +132,27 @@ export class DialogueParser extends CstParser {
         this.CONSUME(Newline);
         this.MANY(() => this.SUBRULE(this.statement));
     });
+
+    branch = this.RULE('branch', () => {
+        this.CONSUME(BranchBlockOpen);
+        this.CONSUME(CloseBracket);
+        this.CONSUME(Newline);
+        this.AT_LEAST_ONE(() => {
+            this.SUBRULE(this.when);
+            this.OPTION(() => this.CONSUME1(Newline));
+            this.MANY(() => this.SUBRULE(this.statement));
+        });
+        this.CONSUME(BranchBlockClose);
+        this.OPTION(() => this.CONSUME(Newline));
+    });
+
+    when = this.RULE('when', () => {
+        this.CONSUME(WhenStatementOpen);
+        this.CONSUME(Identifier);
+        this.CONSUME(Equals);
+        this.CONSUME(Text);
+        this.CONSUME(CloseBracket);
+    })
 
     skip = this.RULE('skip', () => {
         this.CONSUME(SkipBlockOpen);
