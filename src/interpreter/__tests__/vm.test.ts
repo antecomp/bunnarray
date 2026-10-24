@@ -19,12 +19,12 @@ function expectChoice(step: Step, text: string | null, choices: string[]) {
 
 describe('VM', () => {
     it('ends an empty program immediately', () => {
-        const vm = createVM({ instructions: [{ op: 'END' }] });
+        const vm = createVM({ version: 'indev', instructions: [{ op: 'END' }] });
         expect(vm.init()).toEqual({ kind: 'end', presentation: null });
     });
 
     it('shows the last line before ending', () => {
-        const vm = createVM({ instructions: [
+        const vm = createVM({ version: 'indev', instructions: [
             { op: 'SAY', text: 'Only line' },
             { op: 'END' }
         ] });
@@ -33,7 +33,7 @@ describe('VM', () => {
     });
 
     it('shows consecutive lines in order, each exactly once', () => {
-        const vm = createVM({ instructions: [
+        const vm = createVM({ version: 'indev', instructions: [
             { op: 'SAY', text: 'First' },
             { op: 'SAY', text: 'Second' },
             { op: 'SAY', text: 'Third' },
@@ -46,7 +46,7 @@ describe('VM', () => {
     });
 
     it('jumps to its target without executing the skipped instruction', () => {
-        const vm = createVM({ instructions: [
+        const vm = createVM({ version: 'indev', instructions: [
             { op: 'JUMP', target: 2 },
             { op: 'SAY', text: 'Skipped' },
             { op: 'SAY', text: 'Reached' },
@@ -57,7 +57,7 @@ describe('VM', () => {
     });
 
     it('broadcasts signal identifier/value pairs to subscribers until they unsubscribe', () => {
-        const vm = createVM({ instructions: [
+        const vm = createVM({ version: 'indev', instructions: [
             { op: 'SIGNAL', identifier: 'opened', value: undefined },
             { op: 'CHOICE', choices: [{ text: 'continue', target: 2 }] },
             { op: 'SIGNAL', identifier: 'closed', value: 'done' },
@@ -82,7 +82,7 @@ describe('VM', () => {
     });
 
     it('keeps memory subscriptions working for changes and deletions', () => {
-        const vm = createVM({ instructions: [{ op: 'END' }] });
+        const vm = createVM({ version: 'indev', instructions: [{ op: 'END' }] });
         const updates: unknown[] = [];
         const unsubscribe = vm.memory.subscribe(update => updates.push(update));
 
@@ -101,7 +101,7 @@ describe('VM', () => {
         [0, 'Left'],
         [1, 'Right']
     ])('follows choice %i and rejoins after its branch', (index, branchText) => {
-        const program: Program = { instructions: [
+        const program: Program = { version: 'indev', instructions: [
             { op: 'SAY', text: 'Pick one' },
             { op: 'CHOICE', choices: [
                 { text: 'left', target: 2 },
@@ -121,7 +121,7 @@ describe('VM', () => {
     });
 
     it('supports a choice without a preceding prompt', () => {
-        const vm = createVM({ instructions: [
+        const vm = createVM({ version: 'indev', instructions: [
             { op: 'CHOICE', choices: [{ text: 'go', target: 1 }] },
             { op: 'SAY', text: 'Going' },
             { op: 'END' }
@@ -132,7 +132,7 @@ describe('VM', () => {
     });
 
     it('rejects repeated initialization and repeated resumes', () => {
-        const vm = createVM({ instructions: [
+        const vm = createVM({ version: 'indev', instructions: [
             { op: 'SAY', text: 'One' },
             { op: 'SAY', text: 'Two' },
             { op: 'END' }
@@ -145,7 +145,7 @@ describe('VM', () => {
     });
 
     it('rejects an invalid choice index and a repeated choice resume', () => {
-        const vm = createVM({ instructions: [
+        const vm = createVM({ version: 'indev', instructions: [
             { op: 'CHOICE', choices: [{ text: 'go', target: 1 }] },
             { op: 'END' }
         ] });
@@ -238,7 +238,7 @@ After`));
     });
 
     describe('MATCH', () => {
-        const program: Program = { instructions: [
+        const program: Program = { version: 'indev', instructions: [
             { op: 'MATCH', on: 'state', cases: { ready: 1, waiting: 3, '': 5 }, fallback: 7 },
             { op: 'SAY', text: 'Ready' },
             { op: 'JUMP', target: 7 },
@@ -271,7 +271,7 @@ After`));
         });
 
         it('accepts zero as a case target', () => {
-            const vm = createVM({ instructions: [
+            const vm = createVM({ version: 'indev', instructions: [
                 { op: 'CHOICE', choices: [{ text: 'Check again', target: 1 }] },
                 { op: 'MATCH', on: 'state', cases: { ready: 0 }, fallback: 2 },
                 { op: 'END' }
@@ -282,7 +282,7 @@ After`));
         });
 
         it.each(['set', 'delete'] as const)('reads memory after %s while paused at a choice', action => {
-            const vm = createVM({ instructions: [
+            const vm = createVM({ version: 'indev', instructions: [
                 { op: 'CHOICE', choices: [{ text: 'Go', target: 1 }] },
                 { op: 'MATCH', on: 'state', cases: { ready: 2 }, fallback: 4 },
                 { op: 'SAY', text: 'Ready' },
@@ -319,6 +319,76 @@ After`));
             const vm = createVM(compiled, { memory: { state: value } });
             const branch = expectSay(vm.init(), 'Matched');
             expect(branch.resume()).toEqual({ kind: 'end', presentation: { text: 'Fallback', speaker: null } });
+        });
+    });
+
+    describe('BRANCH', () => {
+        const program = build(`[branch]
+            [when:first=yes]
+                First
+            [when:second=yes]
+                Second
+        [/branch]
+        After`);
+
+        it.each([
+            { name: 'first when both match', memory: { first: 'yes', second: 'yes' }, text: 'First' },
+            { name: 'later when the first fails', memory: { first: 'no', second: 'yes' }, text: 'Second' }
+        ])('executes the $name and rejoins after the block', ({ memory, text }) => {
+            const vm = createVM(program, { memory });
+            const branch = expectSay(vm.init(), text);
+            expect(branch.resume()).toEqual({ kind: 'end', presentation: { text: 'After', speaker: null } });
+        });
+
+        it.each<Record<string, string>>([
+            {},
+            { first: 'no', second: 'no' }
+        ])('falls through when no condition matches: %j', memory => {
+            const vm = createVM(program, { memory });
+            expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'After', speaker: null } });
+        });
+
+        it('reads current memory after a choice resumes', () => {
+            const vm = createVM({ version: 'indev', instructions: [
+                { op: 'CHOICE', choices: [{ text: 'Go', target: 1 }] },
+                { op: 'BRANCH', cases: [
+                    { condition: { identifier: 'state', value: 'ready' }, target: 2 }
+                ], fallback: 4 },
+                { op: 'SAY', text: 'Ready' },
+                { op: 'END' },
+                { op: 'SAY', text: 'Fallback' },
+                { op: 'END' }
+            ] }, { memory: { state: 'ready' } });
+
+            const choice = expectChoice(vm.init(), null, ['Go']);
+            vm.memory.set('state', 'waiting');
+            expect(choice.resume(0)).toEqual({ kind: 'end', presentation: { text: 'Fallback', speaker: null } });
+        });
+
+        it('returns from nested branches and lets a goto bypass the fallback', () => {
+            const nested = build(`[branch]
+                [when:outer=yes]
+                    [branch]
+                        [when:inner=yes]
+                            Both
+                    [/branch]
+                    Outer
+                [when:jump=yes]
+                    ->done
+            [/branch]
+            After
+            ->end
+            @done
+            Done
+            @end`);
+
+            const vm = createVM(nested, { memory: { outer: 'yes', inner: 'yes' } });
+            const both = expectSay(vm.init(), 'Both');
+            const outer = expectSay(both.resume(), 'Outer');
+            expect(outer.resume()).toEqual({ kind: 'end', presentation: { text: 'After', speaker: null } });
+
+            const jumped = createVM(nested, { memory: { jump: 'yes' } });
+            expect(jumped.init()).toEqual({ kind: 'end', presentation: { text: 'Done', speaker: null } });
         });
     });
 });

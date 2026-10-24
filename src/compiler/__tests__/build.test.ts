@@ -4,7 +4,7 @@ import build from '../build';
 import type { Instruction } from '../instructions';
 
 function expectIR(source: string, instructions: Instruction[]) {
-    expect(build(source)).toEqual({ instructions });
+    expect(build(source)).toEqual({ version: 'indev', instructions });
 }
 
 describe('build', () => {
@@ -423,6 +423,48 @@ how has life been treating you?`, [
                 { op: 'SAY', text: 'Goodbye!' },
                 { op: 'JUMP', target: 8 },
                 { op: 'SAY', text: 'Here is all of my money!!!' },
+                { op: 'END' }
+            ]);
+        });
+    });
+
+    describe('branch blocks', () => {
+        it('compiles ordered conditions on different identifiers and joins cases at the fallback', () => {
+            expectIR(`[branch]
+                [when:flag = yes]
+                    First.
+                [when:other=go]
+                    Second.
+            [/branch]
+            After.`, [
+                { op: 'BRANCH', cases: [
+                    { condition: { identifier: 'flag', value: 'yes' }, target: 1 },
+                    { condition: { identifier: 'other', value: 'go' }, target: 3 }
+                ], fallback: 5 },
+                { op: 'SAY', text: 'First.' },
+                { op: 'JUMP', target: 5 },
+                { op: 'SAY', text: 'Second.' },
+                { op: 'JUMP', target: 5 },
+                { op: 'SAY', text: 'After.' },
+                { op: 'END' }
+            ]);
+        });
+
+        it('decodes condition values and lets an empty case fall through', () => {
+            expectIR(`[branch]
+                [when:state=&lbrack;ready&rbrack;]
+                [when:other=yes]
+                    Second.
+            [/branch]
+            After.`, [
+                { op: 'BRANCH', cases: [
+                    { condition: { identifier: 'state', value: '[ready]' }, target: 1 },
+                    { condition: { identifier: 'other', value: 'yes' }, target: 2 }
+                ], fallback: 4 },
+                { op: 'JUMP', target: 4 },
+                { op: 'SAY', text: 'Second.' },
+                { op: 'JUMP', target: 4 },
+                { op: 'SAY', text: 'After.' },
                 { op: 'END' }
             ]);
         });
