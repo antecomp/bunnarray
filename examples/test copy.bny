@@ -1,27 +1,26 @@
 # This is a comment
 @start
-Hello, friend. <face:smile>
+Hello, friend. 
 How are you? {
     ?: Doing well!
         @doingwell
-        That is great to hear. <face:pleased>
+        That is great to hear. 
     ?: Doing bad.
         Sorry to hear that.
         -> elsewhere
     ?: Meh.
-        # edge case, goto directly from question!
         -> elsewhere
     ?: I won't tell
         Why is that? {
             ?: I do not like you.
-            Okay, be that way, punk. <face:weary>
+            Okay, be that way, punk. 
             ?: Just kidding, im good
             -> doingwell
         }
         This should be an inner fallback.
 
     ?: Can a fallback be a goto?
-        I am going mad <face:weary> {
+        I am not sure.  {
             ?: Let us find out
             Yes, lets
         }
@@ -46,12 +45,12 @@ How are you? {
         }
     }
 }
-Fallback, we continue here. <face:smile>
+Fallback, we continue here. 
 Then we keep going.
 ->skipelsewhere
 @elsewhere
 We jumped here via goto.
 And continue from this tag.
 @skipelsewhere
-Hopefully my dialogue system loops here <face:weary>
+Hopefully my dialogue system loops here 
 -> start

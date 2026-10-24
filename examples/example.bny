@@ -7,7 +7,7 @@ To have dialogue options (branching) you use curly braces {
     ?: Option 2
         Blah blah blah
 }
-Those dialogue streams will naturally fall into this line after the option skip.
+Those dialogue streams will naturally fall into this line after the options.
 Unless you use a go-to.
 To use gotos you first label a line of text with an @
 @label_name
