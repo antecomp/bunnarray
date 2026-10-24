@@ -70,33 +70,6 @@ export default function (ast: DialogueAST): Program {
                 break;
             }
 
-            case 'match': {
-                const matchIndex = emit(INS('MATCH', {
-                    on: statement.on,
-                    cases: Object.create(null),
-                    fallback: UNRESOLVED
-                }));
-                const currentMatch = instructions[matchIndex] as Operation<'MATCH'>;
-                const exitJumps: Operation<'JUMP'>[] = [];
-
-                statement.branches.forEach(branch => {
-                    if (currentMatch.cases[branch.case]) throw new Error('duplicate cases in branch');
-                    currentMatch.cases[branch.case] = pos();
-
-                    compileSequence(branch.statements);
-
-                    const exit = INS('JUMP', { target: UNRESOLVED });
-                    exitJumps.push(exit);
-                    emit(exit);
-                });
-
-                const end = pos();
-                currentMatch.fallback = end;
-                exitJumps.forEach(jump => jump.target = end);
-
-                break;
-            }
-
             case 'branch': {
                 const branchIndex = emit(INS('BRANCH', { cases: [], fallback: UNRESOLVED }));
                 const currentBranch = instructions[branchIndex] as Operation<'BRANCH'>;

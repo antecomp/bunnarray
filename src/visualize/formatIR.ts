@@ -14,12 +14,6 @@ export default function formatIR(program: Program): string {
                     : `${prefix}\n${instruction.choices.map(choice =>
                         `    ${JSON.stringify(choice.text)} -> ${choice.target}\n`
                     ).join('')}`;
-            case 'MATCH':
-                return `${prefix} on ${JSON.stringify(instruction.on)}\n`
-                    + Object.entries(instruction.cases).map(([value, target]) =>
-                        `    ${JSON.stringify(value)} -> ${target}\n`
-                    ).join('')
-                    + `    fallback -> ${instruction.fallback}\n`;
             case 'BRANCH':
                 return `${prefix}\n`
                     + instruction.cases.map(({ condition, target }) =>

@@ -27,16 +27,16 @@ You can also use variables that are placed-in at runtime...
 using syntax like this: $variable
 # The dialogue "runner" as a setVar method for defining these.
 
-You can also branch based on game-state using a "match" skip.
-They first have a "[match:on]" header where "on" is some function that returns a string.
-We read that return and choose where to go...
-[match:someFunc]
-    =result1
+You can also branch based on game state using a branch block.
+Each when case compares a memory identifier with a string value.
+The first true case determines where to go...
+[branch]
+    [when:someFunc=result1]
         Some nested dialogue here
-    =result2
+    [when:someFunc=result2]
         Different dialogue
-    =result3
+    [when:someFunc=result3]
         -> label_name
-[/match]
-If the match doesn't have any results, or the results nested sequences fall-through,
+[/branch]
+If no branch case passes, or the chosen sequence falls through,
 we land here!

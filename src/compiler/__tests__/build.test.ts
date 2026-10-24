@@ -1,5 +1,9 @@
 /** End-to-end checks from BunNarraY source through preprocessing, parsing, and IR lowering. */
 import { describe, expect, it } from 'vitest';
+import example from '../../../examples/example.bny?raw';
+import main from '../../../examples/main.bny?raw';
+import simple from '../../../examples/simple.bny?raw';
+import testbranch from '../../../examples/testbranch.bny?raw';
 import build from '../build';
 import type { Instruction } from '../instructions';
 
@@ -8,6 +12,16 @@ function expectIR(source: string, instructions: Instruction[]) {
 }
 
 describe('build', () => {
+    it.each([
+        ['example.bny', example],
+        ['main.bny', main],
+        ['simple.bny', simple],
+        ['testbranch.bny', testbranch]
+    ])('compiles migrated example %s', (_name, source) => {
+        const { instructions } = build(source);
+        expect(instructions[instructions.length - 1]).toEqual({ op: 'END' });
+    });
+
     describe('basic text and comments', () => {
         it('emits a SAY per line and terminates with END', () => {
             expectIR(`Hello, it has been a while,
@@ -354,68 +368,47 @@ how has life been treating you?`, [
         });
     });
 
-    describe('match blocks', () => {
-        it('maps return strings to case entries and joins cases and unmatched results at the fallback', () => {
-            expectIR(`Well, that depends on if the dragon is slain...
-                [match:dragon]
-                    =slain
-                        What? The dragon is slain? That is fantastic!
-                        Here is all of my money!!!
-                    =notslain
-                        The dragon is still alive and I live in fear.
-                        Please slay the dragon and come back later
-                [/match]
-                Goodbye!`, [
-                { op: 'SAY', text: 'Well, that depends on if the dragon is slain...' },
-                { op: 'MATCH', on: 'dragon', cases: { slain: 2, notslain: 5 }, fallback: 8 },
-                { op: 'SAY', text: 'What? The dragon is slain? That is fantastic!' },
-                { op: 'SAY', text: 'Here is all of my money!!!' },
-                { op: 'JUMP', target: 8 },
-                { op: 'SAY', text: 'The dragon is still alive and I live in fear.' },
-                { op: 'SAY', text: 'Please slay the dragon and come back later' },
-                { op: 'JUMP', target: 8 },
-                { op: 'SAY', text: 'Goodbye!' },
-                { op: 'END' }
-            ]);
-        });
-
-        it('compiles nested conditions and chains their fallbacks into the next match', () => {
-            expectIR(`[match:conditionOne]
-                =a
-                    [match:nestedCondition]
-                        =yes
+    describe('branch blocks', () => {
+        it('compiles nested branches followed by another branch', () => {
+            expectIR(`[branch]
+                [when:conditionOne=a]
+                    [branch]
+                        [when:nestedCondition=yes]
                             Both conditions passed.
-                    [/match]
-            [/match]
-            [match:conditionTwo]
-                =noodles
+                    [/branch]
+            [/branch]
+            [branch]
+                [when:conditionTwo=noodles]
                     Yum!
-            [/match]`, [
-                { op: 'MATCH', on: 'conditionOne', cases: { a: 1 }, fallback: 5 },
-                { op: 'MATCH', on: 'nestedCondition', cases: { yes: 2 }, fallback: 4 },
+            [/branch]`, [
+                { op: 'BRANCH', cases: [{ condition: { identifier: 'conditionOne', value: 'a' }, target: 1 }], fallback: 5 },
+                { op: 'BRANCH', cases: [{ condition: { identifier: 'nestedCondition', value: 'yes' }, target: 2 }], fallback: 4 },
                 { op: 'SAY', text: 'Both conditions passed.' },
                 { op: 'JUMP', target: 4 },
                 { op: 'JUMP', target: 5 },
-                { op: 'MATCH', on: 'conditionTwo', cases: { noodles: 6 }, fallback: 8 },
+                { op: 'BRANCH', cases: [{ condition: { identifier: 'conditionTwo', value: 'noodles' }, target: 6 }], fallback: 8 },
                 { op: 'SAY', text: 'Yum!' },
                 { op: 'JUMP', target: 8 },
                 { op: 'END' }
             ]);
         });
 
-        it('allows a case goto to bypass the match fallback', () => {
-            expectIR(`[match:dragon]
-                =slain
+        it('allows a case goto to bypass the branch fallback', () => {
+            expectIR(`[branch]
+                [when:dragon=slain]
                     ->reward
-                =notslain
+                [when:dragon=notslain]
                     Please slay the dragon.
-            [/match]
+            [/branch]
             Goodbye!
             ->done
             @reward
             Here is all of my money!!!
             @done`, [
-                { op: 'MATCH', on: 'dragon', cases: { slain: 1, notslain: 3 }, fallback: 5 },
+                { op: 'BRANCH', cases: [
+                    { condition: { identifier: 'dragon', value: 'slain' }, target: 1 },
+                    { condition: { identifier: 'dragon', value: 'notslain' }, target: 3 }
+                ], fallback: 5 },
                 { op: 'JUMP', target: 7 },
                 { op: 'JUMP', target: 5 },
                 { op: 'SAY', text: 'Please slay the dragon.' },
@@ -426,9 +419,7 @@ how has life been treating you?`, [
                 { op: 'END' }
             ]);
         });
-    });
 
-    describe('branch blocks', () => {
         it('compiles ordered conditions on different identifiers and joins cases at the fallback', () => {
             expectIR(`[branch]
                 [when:flag = yes]

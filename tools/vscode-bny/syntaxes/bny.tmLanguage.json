@@ -12,10 +12,10 @@
       "include": "#skip-tag"
     },
     {
-      "include": "#match-tag"
+      "include": "#branch-tag"
     },
     {
-      "include": "#match-branch"
+      "include": "#branch-case"
     },
     {
       "include": "#label"
@@ -106,38 +106,32 @@
         }
       ]
     },
-    "match-tag": {
+    "branch-tag": {
       "patterns": [
         {
-          "name": "meta.match.begin.bny",
-          "match": "^(\\s*)(\\[)(match)(:)([^\\]\\n]+)(\\])\\s*$",
+          "name": "meta.branch.begin.bny",
+          "match": "^(\\s*)(\\[)(branch)(\\])\\s*$",
           "captures": {
             "2": {
               "name": "punctuation.definition.tag.begin.bny"
             },
             "3": {
-              "name": "keyword.control.match.bny"
+              "name": "keyword.control.branch.bny"
             },
             "4": {
-              "name": "punctuation.separator.key-value.bny"
-            },
-            "5": {
-              "name": "entity.name.function.match.bny"
-            },
-            "6": {
               "name": "punctuation.definition.tag.end.bny"
             }
           }
         },
         {
-          "name": "meta.match.end.bny",
-          "match": "^(\\s*)(\\[\\/)(match)(\\])\\s*$",
+          "name": "meta.branch.end.bny",
+          "match": "^(\\s*)(\\[\\/)(branch)(\\])\\s*$",
           "captures": {
             "2": {
               "name": "punctuation.definition.tag.begin.bny"
             },
             "3": {
-              "name": "keyword.control.match.bny"
+              "name": "keyword.control.branch.bny"
             },
             "4": {
               "name": "punctuation.definition.tag.end.bny"
@@ -146,17 +140,32 @@
         }
       ]
     },
-    "match-branch": {
+    "branch-case": {
       "patterns": [
         {
-          "name": "meta.match.branch.bny",
-          "match": "^(\\s*)(=)(\\s*)([^#{}\\[\\]\\n].*?)\\s*$",
+          "name": "meta.branch.case.bny",
+          "match": "^(\\s*)(\\[)(when)(:)([A-Za-z_][A-Za-z0-9_]*)(\\s*=\\s*)([^\\]\\n]+)(\\])\\s*$",
           "captures": {
             "2": {
-              "name": "keyword.control.match-case.bny"
+              "name": "punctuation.definition.tag.begin.bny"
+            },
+            "3": {
+              "name": "keyword.control.branch-case.bny"
             },
             "4": {
-              "name": "constant.other.match-case.bny"
+              "name": "punctuation.separator.key-value.bny"
+            },
+            "5": {
+              "name": "variable.other.bny"
+            },
+            "6": {
+              "name": "keyword.operator.assignment.bny"
+            },
+            "7": {
+              "name": "constant.other.branch-value.bny"
+            },
+            "8": {
+              "name": "punctuation.definition.tag.end.bny"
             }
           }
         }

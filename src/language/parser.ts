@@ -4,7 +4,6 @@ dialogue -> statement*
 statement ->
     | say
     | choice
-    | match
     | skip
     | label
     | goto
@@ -22,15 +21,6 @@ choice ->
 
 choiceBranch ->
     ChoiceToken Text Newline
-        statement*
-
-match ->
-    MatchBlockOpen Text CloseBracket Newline
-        matchBranch+
-    MatchBlockClose Newline?
-
-matchBranch ->
-    Equals Text Newline
         statement*
 
 branch ->
@@ -62,8 +52,8 @@ alternate -> AlternateKeyword Text? Newline
 import { CstParser } from 'chevrotain';
 import {
     Newline, CurlyBraceOpen, CurlyBraceClose, SkipBlockOpen,
-    SkipBlockClose, MatchBlockOpen, MatchBlockClose, ChoiceToken,
-    GotoToken, LabelToken, Equals, CloseBracket, Text, SpeakerKeyword,
+    SkipBlockClose, ChoiceToken,
+    GotoToken, LabelToken, CloseBracket, Text, SpeakerKeyword,
     AlternateKeyword,
 
     SetKeyword, Identifier, SetEquals, DirectiveNewline,
@@ -87,7 +77,6 @@ export class DialogueParser extends CstParser {
         this.OR([
             { ALT: () => this.SUBRULE(this.say) },
             { ALT: () => this.SUBRULE(this.choice) },
-            { ALT: () => this.SUBRULE(this.match) },
             { ALT: () => this.SUBRULE(this.branch) },
             { ALT: () => this.SUBRULE(this.skip) },
             { ALT: () => this.SUBRULE(this.label) },
@@ -119,23 +108,6 @@ export class DialogueParser extends CstParser {
         this.MANY(() => this.SUBRULE(this.statement));
     });
 
-    match = this.RULE('match', () => {
-        this.CONSUME(MatchBlockOpen);
-        this.CONSUME(Text);
-        this.CONSUME(CloseBracket);
-        this.CONSUME(Newline);
-        this.AT_LEAST_ONE(() => this.SUBRULE(this.matchBranch));
-        this.CONSUME(MatchBlockClose);
-        this.OPTION(() => this.CONSUME1(Newline));
-    });
-
-    matchBranch = this.RULE('matchBranch', () => {
-        this.CONSUME(Equals);
-        this.CONSUME(Text);
-        this.CONSUME(Newline);
-        this.MANY(() => this.SUBRULE(this.statement));
-    });
-
     branch = this.RULE('branch', () => {
         this.CONSUME(BranchBlockOpen);
         this.CONSUME(Newline);
@@ -148,7 +120,7 @@ export class DialogueParser extends CstParser {
         this.SUBRULE(this.when);
         this.OPTION(() => this.CONSUME1(Newline));
         this.MANY(() => this.SUBRULE(this.statement));
-    })
+    });
 
     when = this.RULE('when', () => {
         this.CONSUME(WhenStatementOpen);
@@ -156,7 +128,7 @@ export class DialogueParser extends CstParser {
         this.CONSUME(WhenEquals);
         this.CONSUME(Text);
         this.CONSUME(CloseBracket);
-    })
+    });
 
     skip = this.RULE('skip', () => {
         this.CONSUME(SkipBlockOpen);

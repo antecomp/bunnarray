@@ -8,12 +8,6 @@ export type Instruction =
         }[]
     }
     | {
-        op: 'MATCH'
-        on: string
-        cases: Record<string, number>
-        fallback: number // no match
-    }
-    | {
         op: 'BRANCH',
         cases: {
             condition: {

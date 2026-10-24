@@ -94,15 +94,6 @@ export default function createVM(
                             return _run();
                         })
                     };
-                case 'MATCH':
-                    const value = memory.get(ins.on);
-
-                    pc = value !== undefined
-                        ? (ins.cases[value] ?? ins.fallback)
-                        : ins.fallback;
-
-                    continue;
-
                 case 'BRANCH':
                     pc = ins.cases.find(branchCase =>
                         memory.get(branchCase.condition.identifier) === branchCase.condition.value

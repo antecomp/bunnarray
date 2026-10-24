@@ -56,7 +56,7 @@ export class DialogueVisitor extends BaseVisitor {
 
     statement(ctx: any): A.Statement {
         const node =
-            ctx.say?.[0] ?? ctx.choice?.[0] ?? ctx.match?.[0] ??
+            ctx.say?.[0] ?? ctx.choice?.[0] ??
             ctx.skip?.[0] ?? ctx.label?.[0] ?? ctx.goto?.[0] ??
             ctx.set?.[0] ?? ctx.speaker?.[0] ?? ctx.alternate?.[0] ??
             ctx.signal?.[0] ?? ctx.branch?.[0]
@@ -87,27 +87,11 @@ export class DialogueVisitor extends BaseVisitor {
         };
     }
 
-    match(ctx: any): A.MatchStatement {
-        return {
-            type: 'match',
-            on: decodeText(ctx.Text[0].image.trim()),
-            branches: (ctx.matchBranch ?? []).map((branch: any) => this.visit(branch))
-        };
-    }
-
-    matchBranch(ctx: any): A.MatchBranch {
-        return {
-            type: 'matchBranch',
-            case: decodeText(ctx.Text[0].image.trim()),
-            statements: (ctx.statement ?? []).map((s: any) => this.visit(s))
-        };
-    }
-
     branch(ctx: any): A.BranchStatement {
         return {
             type: 'branch',
             cases: (ctx.branchCase ?? []).map((bcase: any) => this.visit(bcase))
-        }
+        };
     }
 
     branchCase(ctx: any): A.BranchCase {
@@ -115,7 +99,7 @@ export class DialogueVisitor extends BaseVisitor {
             type: 'branchCase',
             condition: this.visit(ctx.when),
             statements: (ctx.statement ?? []).map((s: any) => this.visit(s))
-        }
+        };
     }
 
     when(ctx: any): A.Condition {
@@ -123,7 +107,7 @@ export class DialogueVisitor extends BaseVisitor {
             type: 'equals',
             identifier: (ctx.Identifier[0].image.trim()),
             value: decodeText(ctx.Text[0].image.trim())
-        }
+        };
     }
 
     skip(ctx: any): A.SkipStatement {
@@ -149,7 +133,7 @@ export class DialogueVisitor extends BaseVisitor {
             type: 'signal',
             identifier: (ctx.Identifier[0].image.trim()),
             value: value === undefined ? undefined : decodeText(value)
-        }
+        };
     }
 
     label(ctx: any): A.LabelStatement {

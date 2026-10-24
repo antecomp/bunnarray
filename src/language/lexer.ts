@@ -39,16 +39,6 @@ export const SkipBlockClose = createToken({
     pattern: /\[\/skip\]/
 });
 
-export const MatchBlockOpen = createToken({
-    name: 'MatchBlockOpen',
-    pattern: /\[match:/
-});
-
-export const MatchBlockClose = createToken({
-    name: 'MatchBlockClose',
-    pattern: /\[\/match\]/
-});
-
 // --- Labels & Gotos ---
 
 export const GotoToken = createToken({
@@ -60,13 +50,6 @@ export const LabelToken = createToken({
     name: 'LabelToken',
     pattern: /@[ \t]*/
 });
-
-// --- Other junk ---
-export const Equals = createToken({
-    name: 'Equals',
-    pattern: /=[ \t]*/
-});
-
 
 // -- Remaining text ---
 // Ignore whitespace between syntax tokens (for example, the gap in `} {`).
@@ -170,8 +153,6 @@ const normalTokens = [
     CurlyBraceClose,
     SkipBlockOpen,
     SkipBlockClose,
-    MatchBlockOpen,
-    MatchBlockClose,
     BranchBlockOpen,
     BranchBlockClose,
     WhenStatementOpen,
@@ -182,10 +163,9 @@ const normalTokens = [
     SpeakerKeyword,
     AlternateKeyword,
     SignalKeyword,
-    Equals,
     CloseBracket,
     Whitespace,
-    Text,
+    Text
 ];
 
 export const allTokens = [
@@ -194,7 +174,7 @@ export const allTokens = [
     SetEquals,
     WhenEquals,
     SignalDelim,
-    DirectiveNewline,
+    DirectiveNewline
 ];
 
 export const DialogueLexer = new Lexer({

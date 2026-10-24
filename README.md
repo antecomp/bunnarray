@@ -168,50 +168,8 @@ You should see this first
 And finally we're here.
 ```
 
-### Match blocks
-Match blocks check one memory identifier against several string values. They use this syntax:
-```
-[match:on]
-    =returncase
-        <sequence>
-    =anothercase
-        <sequence>
-[/match]
-fallback
-```
-`on` is the memory identifier to read. Each `=value` is compared with its current string value. The matching case runs, then dialogue continues after `[/match]`; if no case matches, it continues there immediately.
-For example...
-```
-Well, that depends on if the dragon is slain...
-[match:dragon]
-    =slain
-        What? The dragon is slain? That is fantastic!
-        Here is all of my money!!!
-    =notslain
-        The dragon is still alive and I live in fear.
-        Please slay the dragon and come back later
-[/match]
-# This goodbye will always run after the match (unless their sequence has a goto)
-Goodbye!
-```
-Matches can also be nested or chained. A nested match allows you to enforce multiple conditions passing, and chains allow you to run matches in sequence, akin to a fallback.
-```
-[match:conditionOne]
-    =a
-        [match:nestedCondition]
-            ...
-        [/match]
-[/match]
-[match:conditionTwo]
-    =noodles
-        Yum!
-[/match]
-```
-
-Set the memory value before the match runs, either in the script with `:SET dragon=slain` or through `vm.memory.set('dragon', 'slain')`. See [Runtime Variables](#runtime-variables).
-
 ### Branch blocks
-Use a branch block when each case may check a different memory identifier:
+Use a branch block to choose dialogue based on memory. Cases may check the same identifier or different identifiers:
 ```bny
 [branch]
     [when:dragon=slain]
@@ -223,7 +181,7 @@ What else would you like to know?
 ```
 Each `[when:identifier=value]` compares the current memory value of `identifier` with the literal string `value`. The **first matching case** runs, even if later conditions also match. After that case, dialogue continues after `[/branch]` unless it uses a goto. If none match, it goes straight to the dialogue after the block. For example, with `dragon=alive` and `reputation=trusted`, the second case runs.
 
-A branch needs at least one `when` case. Case bodies can be empty and can contain other statements, including nested branches, choices, and gotos. Spaces around the identifier and value are trimmed; use the usual text escapes for literal brackets in a value. Match blocks remain available for cases that all check one identifier.
+A branch needs at least one `when` case. Case bodies can be empty and can contain other statements, including nested branches, choices, and gotos. Spaces around the identifier and value are trimmed; use the usual text escapes for literal brackets in a value. Set memory before the branch runs with `:SET dragon=slain` or `vm.memory.set('dragon', 'slain')`.
 
 ### Signals
 Use `:SIGNAL identifier` on its own line to notify listeners when execution reaches it. Add `:value` to include a string value:
@@ -242,7 +200,7 @@ const unsubscribe = vm.signals.subscribe(({ identifier, value }) => {
 Inline tags such as `<face:thinking>` and `<signal:keygiven>` are currently ordinary dialogue text; they do not create built-in face changes or signals.
 
 ### Runtime Variables
-The same string memory is used by match blocks, branch conditions, and `$variables` in dialogue text:
+The same string memory is used by branch conditions and `$variables` in dialogue text:
 ```bny
 Hello, $name.
 :SET dragon=slain
@@ -292,9 +250,8 @@ It currently highlights:
 - labels like `@start`
 - gotos like `-> start`
 - option markers like `?:`
-- match tags and choice braces
+- `[branch]` blocks and `[when:identifier=value]` cases
+- choice braces
 - inline tags like `<face:neu_smile>`
-
-The extension has not yet been updated to highlight `[branch]` and `[when:...]`.
 
 To try it locally, open that folder in VS Code and run an Extension Development Host with `F5`, or package/install it as a normal extension.

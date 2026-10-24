@@ -237,43 +237,25 @@ After`));
         expect(branch.resume()).toEqual({ kind: 'end', presentation: { text: 'After', speaker: 'Bob' } });
     });
 
-    describe('MATCH', () => {
-        const program: Program = { version: 'indev', instructions: [
-            { op: 'MATCH', on: 'state', cases: { ready: 1, waiting: 3, '': 5 }, fallback: 7 },
-            { op: 'SAY', text: 'Ready' },
-            { op: 'JUMP', target: 7 },
-            { op: 'SAY', text: 'Waiting' },
-            { op: 'JUMP', target: 7 },
-            { op: 'SAY', text: 'Empty value' },
-            { op: 'JUMP', target: 7 },
-            { op: 'SAY', text: 'After match' },
-            { op: 'END' }
-        ] };
+    describe('BRANCH', () => {
+        it('matches an empty memory value and falls through for missing memory', () => {
+            const program: Program = { version: 'indev', instructions: [
+                { op: 'BRANCH', cases: [{ condition: { identifier: 'state', value: '' }, target: 1 }], fallback: 3 },
+                { op: 'SAY', text: 'Empty value' },
+                { op: 'JUMP', target: 3 },
+                { op: 'SAY', text: 'After' },
+                { op: 'END' }
+            ] };
 
-        it.each([
-            ['ready', 'Ready'],
-            ['waiting', 'Waiting'],
-            ['', 'Empty value']
-        ])('executes case %j and rejoins at the fallback', (value, text) => {
-            const vm = createVM(program, { memory: { state: value } });
-            const branch = expectSay(vm.init(), text);
-            expect(branch.resume()).toEqual({ kind: 'end', presentation: { text: 'After match', speaker: null } });
-        });
-
-        it.each<Record<string, string> | undefined>([
-            undefined,
-            {},
-            { state: 'unknown' },
-            { state: 'READY' }
-        ])('falls back for missing or unmatched memory %j', memory => {
-            const vm = createVM(program, { memory });
-            expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'After match', speaker: null } });
+            const matched = expectSay(createVM(program, { memory: { state: '' } }).init(), 'Empty value');
+            expect(matched.resume()).toEqual({ kind: 'end', presentation: { text: 'After', speaker: null } });
+            expect(createVM(program).init()).toEqual({ kind: 'end', presentation: { text: 'After', speaker: null } });
         });
 
         it('accepts zero as a case target', () => {
             const vm = createVM({ version: 'indev', instructions: [
                 { op: 'CHOICE', choices: [{ text: 'Check again', target: 1 }] },
-                { op: 'MATCH', on: 'state', cases: { ready: 0 }, fallback: 2 },
+                { op: 'BRANCH', cases: [{ condition: { identifier: 'state', value: 'ready' }, target: 0 }], fallback: 2 },
                 { op: 'END' }
             ] }, { memory: { state: 'ready' } });
 
@@ -281,48 +263,29 @@ After`));
             expectChoice(choice.resume(0), null, ['Check again']);
         });
 
-        it.each(['set', 'delete'] as const)('reads memory after %s while paused at a choice', action => {
-            const vm = createVM({ version: 'indev', instructions: [
-                { op: 'CHOICE', choices: [{ text: 'Go', target: 1 }] },
-                { op: 'MATCH', on: 'state', cases: { ready: 2 }, fallback: 4 },
-                { op: 'SAY', text: 'Ready' },
-                { op: 'END' },
-                { op: 'SAY', text: 'Fallback' },
-                { op: 'END' }
-            ] }, { memory: { state: 'ready' } });
-
-            const choice = expectChoice(vm.init(), null, ['Go']);
-            if (action === 'set') vm.memory.set('state', 'unknown');
-            else vm.memory.delete('state');
-
-            expect(choice.resume(0)).toEqual({ kind: 'end', presentation: { text: 'Fallback', speaker: null } });
-        });
-
-        it.each(['toString', 'constructor', '__proto__'])('falls back for undeclared prototype name %s in compiled programs', value => {
-            const compiled = build(`[match:state]
-                = ready
+        it.each(['toString', 'constructor', '__proto__'])('falls through for undeclared prototype name %s', value => {
+            const compiled = build(`[branch]
+                [when:state=ready]
                     Ready
-            [/match]
+            [/branch]
             Fallback`);
 
             const vm = createVM(compiled, { memory: { state: value } });
             expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'Fallback', speaker: null } });
         });
 
-        it.each(['toString', 'constructor', '__proto__'])('executes a declared prototype-name case %s in compiled programs', value => {
-            const compiled = build(`[match:state]
-                = ${value}
+        it.each(['toString', 'constructor', '__proto__'])('executes a declared prototype-name case %s', value => {
+            const compiled = build(`[branch]
+                [when:state=${value}]
                     Matched
-            [/match]
+            [/branch]
             Fallback`);
 
             const vm = createVM(compiled, { memory: { state: value } });
             const branch = expectSay(vm.init(), 'Matched');
             expect(branch.resume()).toEqual({ kind: 'end', presentation: { text: 'Fallback', speaker: null } });
         });
-    });
 
-    describe('BRANCH', () => {
         const program = build(`[branch]
             [when:first=yes]
                 First
@@ -348,7 +311,7 @@ After`));
             expect(vm.init()).toEqual({ kind: 'end', presentation: { text: 'After', speaker: null } });
         });
 
-        it('reads current memory after a choice resumes', () => {
+        it.each(['set', 'delete'] as const)('reads memory after %s while paused at a choice', action => {
             const vm = createVM({ version: 'indev', instructions: [
                 { op: 'CHOICE', choices: [{ text: 'Go', target: 1 }] },
                 { op: 'BRANCH', cases: [
@@ -361,7 +324,8 @@ After`));
             ] }, { memory: { state: 'ready' } });
 
             const choice = expectChoice(vm.init(), null, ['Go']);
-            vm.memory.set('state', 'waiting');
+            if (action === 'set') vm.memory.set('state', 'waiting');
+            else vm.memory.delete('state');
             expect(choice.resume(0)).toEqual({ kind: 'end', presentation: { text: 'Fallback', speaker: null } });
         });
 

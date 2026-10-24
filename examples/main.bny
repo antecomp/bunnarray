@@ -189,8 +189,8 @@ We would always go to that one place... {
 I can still picture it. <face:clo_grin>
 The view of the city, the port in the distance...
 ...
-[match:cafe_mentioned]
-    =true
+[branch]
+    [when:cafe_mentioned=true]
         We always sat at the same spot, right? <face:neu_grin> {
             ?: By the window.
                 @by_the_window
@@ -239,7 +239,7 @@ The view of the city, the port in the distance...
                         -> gameover
                 }
         }
-    =false
+    [when:cafe_mentioned=false]
         We always sat at the same spot, right? <face:neu_grin> {
             ?: By the window?
                 -> by_the_window
@@ -254,7 +254,7 @@ The view of the city, the port in the distance...
                 ...
                 -> house
         }
-[/match]
+[/branch]
 
 
 @house
@@ -279,8 +279,8 @@ Like you always did. <face:neu_smile> {
 I miss that place. <face:concern_tfrown>
 Or maybe just how it felt.
 # Launching into house recollection, branches based on established info from earlier...
-[match:window_reason_given]
-    =true
+[branch]
+    [when:window_reason_given=true]
         I loved how the morning light would come in. <face:clo_grin>
         It brought our whole world to life.
         Especially you- 
@@ -291,14 +291,14 @@ Or maybe just how it felt.
         without you to wake me up.
         Or to keep me going... <face:concern_smile>
         ...
-    =false
+    [when:window_reason_given=false]
         It was... nice. <face:clo_grin>
         Quiet, quaint.
         Always felt like somewhere you could stay.
         ...
         You always seemed so comfortable there. <face:concern_smile>
         ...
-[/match]
+[/branch]
 We fell into a routine pretty quickly, <face:clo_smile>
 didn't we? {
     ?: Like clockwork
@@ -311,8 +311,8 @@ Wake up,
 you would take your time getting ready-
 as always- <face:soft_grimace>
 then out the door... <face:neu_smile>
-[match:cafe_mentioned]
-    =true
+[branch]
+    [when:cafe_mentioned=true]
         towards the café.
         Didn't even have to think about it.
         It felt like a continuation of our world,
@@ -333,8 +333,8 @@ then out the door... <face:neu_smile>
                         @begin_house_tension
                         ...
                         # Why are you trying to pull this apart?
-                        [match:house_confronted]
-                            =true
+                        [branch]
+                            [when:house_confronted=true]
                                 Why are you trying to pull this apart? <face:concern_surprise> {
                                     ?: Because it isn't just the café.
                                         Huh? {
@@ -352,7 +352,7 @@ then out the door... <face:neu_smile>
                                                 }
                                         }
                                 }
-                            =false
+                            [when:house_confronted=false]
                                 Why are you trying to pull this apart? <face:concern_surprise> {
                                     ?: It's okay {
                                         ?: It has been years {
@@ -376,7 +376,7 @@ then out the door... <face:neu_smile>
                                         }
                                     }
                                 }
-                        [/match]
+                        [/branch]
                     ?: Do you remember where the café was?
                         I just told you- <face:anger_sopen>
                         Near the house.
@@ -384,12 +384,12 @@ then out the door... <face:neu_smile>
                 }
             ?: (Say nothing)
         }
-    =false
+    [when:cafe_mentioned=false]
         And we were off! <face:cdev_grin>
         Didn't really matter where. <face:clo_bfrown>
         Though,
         you always made it feel like it did. <face:concern_smile>
-[/match]
+[/branch]
 It all felt... easy. <face:neu_smile>
 Like we had already figured it out.
 Didn't have to think about anything.
@@ -400,8 +400,8 @@ Remember the first few nights? <face:neu_smile>
 Nothing was really organized yet,
 just enough to pretend that we were settled.
 We had boxes sitting by the door for days!
-[match:house_confronted]
-    =true
+[branch]
+    [when:house_confronted=true]
         Not a thing was unpacked until you knew exactly where you wanted it. <face:devious_tgrin> {
             ?: You're mixing it up again...
                 Mixing up what? <face:soft_frown> {
@@ -423,9 +423,9 @@ We had boxes sitting by the door for days!
                 }
             ?: (Say nothing)
         }
-    =false
+    [when:house_confronted=false]
         Not a thing was unpacked until you knew exactly where you wanted it. <face:devious_tgrin>
-[/match]
+[/branch]
 Heh, <face:clo_smile>
 Maybe that's what I actually miss.
 The feeling of things falling into place,
@@ -438,8 +438,8 @@ Hey, you know... <face:concern_smile>
 [skip:confront]
     Why would you ask me that? <face:anger_sfrown> {
         ?: Humor me.
-            [match:name_shared]
-                =true
+            [branch]
+                [when:name_shared=true]
                     Is this some sort of joke? <face:anger_grimace>
                     $hername. <face:anger_sfrown>
                     What is this about? <face:neu_neu> {
@@ -447,7 +447,7 @@ Hey, you know... <face:concern_smile>
                             # She cannot answer this.
                             -> pc_name
                     }
-                =false
+                [when:name_shared=false]
                     Is this some sort of joke? <face:anger_grimace> {
                         ?: Just tell me.
                             It's... <face:concern_tfrown>
@@ -475,7 +475,7 @@ Hey, you know... <face:concern_smile>
                                     }
                             }
                     }
-            [/match]
+            [/branch]
     }
 [/skip]
 

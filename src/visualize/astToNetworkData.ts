@@ -1,12 +1,12 @@
 import type { Data, Edge, Node } from 'vis-network/standalone';
 import type {
     ChoiceBranch,
+    BranchCase,
     DialogueAST,
-    MatchBranch,
     Statement
 } from '../language/ast';
 
-type AstNode = DialogueAST | Statement | ChoiceBranch | MatchBranch;
+type AstNode = DialogueAST | Statement | ChoiceBranch | BranchCase;
 
 /** Convert a dialogue AST into the nodes and edges accepted by vis-network. */
 export function astToNetworkData(ast: DialogueAST): Data {
@@ -25,11 +25,11 @@ export function astToNetworkData(ast: DialogueAST): Data {
             case 'choiceBranch':
                 nodes.push({ id, label: `${node.type}: ${node.text}` });
                 break;
-            case 'match':
-                nodes.push({ id, label: `match: ${node.on}` });
+            case 'branch':
+                nodes.push({ id, label: 'branch' });
                 break;
-            case 'matchBranch':
-                nodes.push({ id, label: `case: ${node.case}` });
+            case 'branchCase':
+                nodes.push({ id, label: `when: ${node.condition.identifier} = ${JSON.stringify(node.condition.value)}` });
                 break;
             case 'skip':
                 nodes.push({ id, label: `skip: ${node.label}` });
@@ -62,15 +62,15 @@ export function astToNetworkData(ast: DialogueAST): Data {
         switch (node.type) {
             case 'dialogue':
             case 'choiceBranch':
-            case 'matchBranch':
+            case 'branchCase':
             case 'skip':
                 node.statements.forEach(child => addNode(child, id));
                 break;
             case 'choice':
                 node.branches.forEach(child => addNode(child, id));
                 break;
-            case 'match':
-                node.branches.forEach(child => addNode(child, id));
+            case 'branch':
+                node.cases.forEach(child => addNode(child, id));
                 break;
         }
     }

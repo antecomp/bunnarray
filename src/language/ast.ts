@@ -6,7 +6,6 @@ export type DialogueAST = {
 export type Statement =
     | SayStatement
     | ChoiceStatement
-    | MatchStatement
     | BranchStatement
     | SkipStatement
     | SetStatement
@@ -33,34 +32,22 @@ export type ChoiceBranch = {
     statements: Statement[]
 };
 
-export type MatchStatement = {
-    type: 'match',
-    on: string,
-    branches: MatchBranch[]
-};
-
-export type MatchBranch = {
-    type: 'matchBranch'
-    case: string;
-    statements: Statement[];
-};
-
 export type Condition = {
     type: 'equals'
     identifier: string;
     value: string;
-}
+};
 
 export type BranchStatement = {
     type: 'branch';
     cases: BranchCase[] // first true case wins
-}
+};
 
 export type BranchCase = {
     type: 'branchCase';
     condition: Condition;
     statements: Statement[];
-}
+};
 
 export type SetStatement = {
     type: 'set';
@@ -72,7 +59,7 @@ export type SignalStatement = {
     type: 'signal';
     identifier: string,
     value: string | undefined
-}
+};
 
 export type SkipStatement = {
     type: 'skip';

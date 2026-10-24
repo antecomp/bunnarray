@@ -26,10 +26,10 @@ How are you? <face:neu_grin> {
 -> wrapup
 @elsewhere
 If you ever want to talk about it,
-[match:slop]
-    =soy
+[branch]
+    [when:slop=soy]
         do not be afraid to
-[/match]
+[/branch]
 just let me know.
 @wrapup
 Aaaaa
@@ -41,27 +41,27 @@ Blah blah blah
 [/skip]
 Fallback
 This will run a condition
-[match:check]
-    =result1
+[branch]
+    [when:check=result1]
         I detect result 1
         This like any other sequence
         -> wrapup
-    =result2
+    [when:check=result2]
         I detect result 2
-    =result3
+    [when:check=result3]
         ->ta
-    =result4
-        [match:aaa]
-            =egg
+    [when:check=result4]
+        [branch]
+            [when:aaa=egg]
                 -> elsewhere
-        [/match]
-[/match]
-[match:checkalt]
-    =rez
-        Followup match detected rez.
-[/match]
+        [/branch]
+[/branch]
+[branch]
+    [when:checkalt=rez]
+        Followup branch detected rez.
+[/branch]
 [skip:tx]
 Blah blah blah
 [/skip]
-This is a fallback, it should run regardless of match
+This is a fallback, it should run regardless of the branch
 -> start
