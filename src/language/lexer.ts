@@ -148,11 +148,16 @@ export const BranchBlockClose = createToken({
     pattern: /\[\/branch\]/
 });
 
-// TODO: NEED TO ADD A MODE FOR THIS SO THE SUBSEQUENT IDENTIFIER IS CAPTURED INSTEAD OF TEXT
-// WILL ALSO NEED A SPECIAL EQUALS TOKEN TO POP THAT MODE.
 export const WhenStatementOpen = createToken({
     name: 'WhenStatementOpen',
-    pattern: /\[when:/
+    pattern: /\[when:/,
+    push_mode: 'whenHeader'
+});
+
+export const WhenEquals = createToken({
+    name: 'WhenEquals',
+    pattern: /=[ \t]*/,
+    pop_mode: true
 });
 
 
@@ -187,6 +192,7 @@ export const allTokens = [
     ...normalTokens,
     Identifier,
     SetEquals,
+    WhenEquals,
     SignalDelim,
     DirectiveNewline,
 ];
@@ -198,6 +204,7 @@ export const DialogueLexer = new Lexer({
         setHeader: [Whitespace, Identifier, SetEquals, DirectiveNewline],
         setValue: [Text, DirectiveNewline],
         signalHeader: [Whitespace, Identifier, SignalDelim, DirectiveNewline],
-        signalValue: [Text, DirectiveNewline]
+        signalValue: [Text, DirectiveNewline],
+        whenHeader: [Whitespace, Identifier, WhenEquals, DirectiveNewline]
     }
 });

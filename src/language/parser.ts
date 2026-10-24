@@ -34,11 +34,14 @@ matchBranch ->
         statement*
 
 branch ->
-    BranchBlockOpen CloseBracket Newline
-    (when Newline? statement*)*
+    BranchBlockOpen Newline
+    branchCase+
     BranchBlockClose
 
-when -> WhenStatementOpen Identifier Equals Text CloseBracket
+branchCase ->
+    when Newline? statement*
+
+when -> WhenStatementOpen Identifier WhenEquals Text CloseBracket
 
 skip ->
     SkipBlockOpen Text CloseBracket Newline
@@ -63,9 +66,9 @@ import {
     GotoToken, LabelToken, Equals, CloseBracket, Text, SpeakerKeyword,
     AlternateKeyword,
 
-    SetKeyword, Identifier, SetEquals, DirectiveNewline, 
+    SetKeyword, Identifier, SetEquals, DirectiveNewline,
     SignalKeyword, SignalDelim, BranchBlockOpen, BranchBlockClose,
-    WhenStatementOpen,
+    WhenStatementOpen, WhenEquals,
 
     allTokens
 } from './lexer';
@@ -85,7 +88,7 @@ export class DialogueParser extends CstParser {
             { ALT: () => this.SUBRULE(this.say) },
             { ALT: () => this.SUBRULE(this.choice) },
             { ALT: () => this.SUBRULE(this.match) },
-            { ALT: () => this.SUBRULE(this.branch)},
+            { ALT: () => this.SUBRULE(this.branch) },
             { ALT: () => this.SUBRULE(this.skip) },
             { ALT: () => this.SUBRULE(this.label) },
             { ALT: () => this.SUBRULE(this.goto) },
@@ -135,21 +138,22 @@ export class DialogueParser extends CstParser {
 
     branch = this.RULE('branch', () => {
         this.CONSUME(BranchBlockOpen);
-        this.CONSUME(CloseBracket);
         this.CONSUME(Newline);
-        this.AT_LEAST_ONE(() => {
-            this.SUBRULE(this.when);
-            this.OPTION(() => this.CONSUME1(Newline));
-            this.MANY(() => this.SUBRULE(this.statement));
-        });
+        this.AT_LEAST_ONE(() => this.SUBRULE(this.branchCase));
         this.CONSUME(BranchBlockClose);
-        this.OPTION(() => this.CONSUME(Newline));
+        this.OPTION2(() => this.CONSUME2(Newline));
     });
+
+    branchCase = this.RULE('branchCase', () => {
+        this.SUBRULE(this.when);
+        this.OPTION(() => this.CONSUME1(Newline));
+        this.MANY(() => this.SUBRULE(this.statement));
+    })
 
     when = this.RULE('when', () => {
         this.CONSUME(WhenStatementOpen);
         this.CONSUME(Identifier);
-        this.CONSUME(Equals);
+        this.CONSUME(WhenEquals);
         this.CONSUME(Text);
         this.CONSUME(CloseBracket);
     })

@@ -7,6 +7,7 @@ export type Statement =
     | SayStatement
     | ChoiceStatement
     | MatchStatement
+    | BranchStatement
     | SkipStatement
     | SetStatement
     | SignalStatement
@@ -43,6 +44,23 @@ export type MatchBranch = {
     case: string;
     statements: Statement[];
 };
+
+export type Condition = {
+    type: 'equals'
+    identifier: string;
+    value: string;
+}
+
+export type BranchStatement = {
+    type: 'branch';
+    cases: BranchCase[] // first true case wins
+}
+
+export type BranchCase = {
+    type: 'branchCase';
+    condition: Condition;
+    statements: Statement[];
+}
 
 export type SetStatement = {
     type: 'set';
