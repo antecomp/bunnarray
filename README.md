@@ -101,6 +101,17 @@ How are you? {
 Selecting "Good" goes directly to the inner choices. 
 > Every `?:` still needs option text; `?: {` is not valid syntax.
 
+Prefix an option with `[when:identifier=value]` to show it only when that memory value matches. Options without a condition are always shown:
+```bny
+What should we do? {
+    ?: [when:has_key=yes] Open the door
+        The door opens.
+    ?: Leave
+        We turn back.
+}
+```
+Conditions are checked when the VM reaches the choice. Every matching option is shown in its original order. If none are available, the VM continues after the choice block without showing an empty option list; a preceding prompt is still spoken as dialogue.
+
 ### Labels and Gotos
 A line of text (or prompt) can be 'labeled' if it proceeded by a line of the format `@label`. For example:
 ```

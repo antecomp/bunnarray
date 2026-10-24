@@ -46,14 +46,20 @@ export default function (ast: DialogueAST): Program {
             }
 
             case 'choice': {
-                const choiceIndex = emit(INS('CHOICE', { choices: [] }));
+                const choiceIndex = emit(INS('CHOICE', { choices: [], fallback: UNRESOLVED }));
                 const currentChoice = instructions[choiceIndex] as Operation<'CHOICE'>;
                 const exitJumps: Operation<'JUMP'>[] = [];
 
                 statement.branches.forEach(branch => {
                     currentChoice.choices.push({
                         text: branch.text,
-                        target: pos()
+                        target: pos(),
+                        ...(branch.condition === undefined ? {} : {
+                            condition: {
+                                identifier: branch.condition.identifier,
+                                value: branch.condition.value
+                            }
+                        })
                     });
 
                     compileSequence(branch.statements);
@@ -65,6 +71,7 @@ export default function (ast: DialogueAST): Program {
                 });
 
                 const end = pos();
+                currentChoice.fallback = end;
                 exitJumps.forEach(jump => jump.target = end);
 
                 break;

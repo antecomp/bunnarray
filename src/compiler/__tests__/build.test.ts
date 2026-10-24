@@ -102,13 +102,40 @@ how has life been treating you?`, [
     });
 
     describe('options and fallbacks', () => {
+        it('keeps optional conditions on their own choices and records the no-choice fallback', () => {
+            expectIR(`Ask? {
+                ?: [when:state=ready] Ready
+                    Ready path.
+                ?: Always
+                    Always path.
+                ?: [when:other=yes] Other
+                    Other path.
+            }
+            After.`, [
+                { op: 'SAY', text: 'Ask?' },
+                { op: 'CHOICE', choices: [
+                    { text: 'Ready', target: 2, condition: { identifier: 'state', value: 'ready' } },
+                    { text: 'Always', target: 4 },
+                    { text: 'Other', target: 6, condition: { identifier: 'other', value: 'yes' } }
+                ], fallback: 8 },
+                { op: 'SAY', text: 'Ready path.' },
+                { op: 'JUMP', target: 8 },
+                { op: 'SAY', text: 'Always path.' },
+                { op: 'JUMP', target: 8 },
+                { op: 'SAY', text: 'Other path.' },
+                { op: 'JUMP', target: 8 },
+                { op: 'SAY', text: 'After.' },
+                { op: 'END' }
+            ]);
+        });
+
         it('decodes escapes in prompts and option text without treating them as syntax', () => {
             expectIR(`Choose &lbrace;one&rbrace; {
                 ?: &lbrack;yes&rbrack;
                     Done.
             }`, [
                 { op: 'SAY', text: 'Choose {one}' },
-                { op: 'CHOICE', choices: [{ text: '[yes]', target: 2 }] },
+                { op: 'CHOICE', choices: [{ text: '[yes]', target: 2 }], fallback: 4 },
                 { op: 'SAY', text: 'Done.' },
                 { op: 'JUMP', target: 4 },
                 { op: 'END' }
@@ -127,7 +154,7 @@ how has life been treating you?`, [
                 { op: 'CHOICE', choices: [
                     { text: 'good', target: 2 },
                     { text: 'bad', target: 4 }
-                ] },
+                ], fallback: 6 },
                 { op: 'SAY', text: 'cool.' },
                 { op: 'JUMP', target: 6 },
                 { op: 'SAY', text: 'not cool' },
@@ -148,7 +175,7 @@ how has life been treating you?`, [
                 { op: 'CHOICE', choices: [
                     { text: 'nothing', target: 2 },
                     { text: 'something', target: 3 }
-                ] },
+                ], fallback: 6 },
                 { op: 'JUMP', target: 6 },
                 { op: 'SAY', text: 'One line.' },
                 { op: 'SAY', text: 'Another line.' },
@@ -175,12 +202,12 @@ how has life been treating you?`, [
                 { op: 'CHOICE', choices: [
                     { text: 'explore', target: 2 },
                     { text: 'leave', target: 10 }
-                ] },
+                ], fallback: 12 },
                 { op: 'SAY', text: 'Inner' },
                 { op: 'CHOICE', choices: [
                     { text: 'left', target: 4 },
                     { text: 'right', target: 6 }
-                ] },
+                ], fallback: 8 },
                 { op: 'SAY', text: 'Left path.' },
                 { op: 'JUMP', target: 8 },
                 { op: 'SAY', text: 'Right path.' },
@@ -211,11 +238,11 @@ how has life been treating you?`, [
                 { op: 'CHOICE', choices: [
                     { text: 'Good', target: 2 },
                     { text: 'Bad', target: 8 }
-                ] },
+                ], fallback: 10 },
                 { op: 'CHOICE', choices: [
                     { text: 'Really good', target: 3 },
                     { text: 'Mostly good', target: 5 }
-                ] },
+                ], fallback: 7 },
                 { op: 'SAY', text: 'Wonderful!' },
                 { op: 'JUMP', target: 7 },
                 { op: 'SAY', text: 'Glad to hear it.' },
@@ -245,17 +272,17 @@ how has life been treating you?`, [
                         Oh! I am just great, personally!
                 }`, [
                     { op: 'SAY', text: 'How are you?' },
-                    { op: 'CHOICE', choices: [{ text: 'Good', target: 2 }] },
+                    { op: 'CHOICE', choices: [{ text: 'Good', target: 2 }], fallback: 8 },
                     { op: 'CHOICE', choices: [
                         { text: 'Really good', target: 3 },
                         { text: 'Mostly good', target: 5 }
-                    ] },
+                    ], fallback: 7 },
                     { op: 'SAY', text: 'Wonderful!' },
                     { op: 'JUMP', target: 7 },
                     { op: 'SAY', text: 'Glad to hear it.' },
                     { op: 'JUMP', target: 7 },
                     { op: 'JUMP', target: 8 },
-                    { op: 'CHOICE', choices: [{ text: 'How about you?', target: 9 }] },
+                    { op: 'CHOICE', choices: [{ text: 'How about you?', target: 9 }], fallback: 11 },
                     { op: 'SAY', text: 'Oh! I am just great, personally!' },
                     { op: 'JUMP', target: 11 },
                     { op: 'END' }
@@ -293,7 +320,7 @@ how has life been treating you?`, [
                 { op: 'JUMP', target: 2 },
                 { op: 'SAY', text: 'Skipped on entry.' },
                 { op: 'SAY', text: 'How are you?' },
-                { op: 'CHOICE', choices: [{ text: 'good', target: 4 }] },
+                { op: 'CHOICE', choices: [{ text: 'good', target: 4 }], fallback: 6 },
                 { op: 'SAY', text: 'Great!' },
                 { op: 'JUMP', target: 6 },
                 { op: 'END' }
@@ -317,7 +344,7 @@ how has life been treating you?`, [
                 { op: 'CHOICE', choices: [
                     { text: 'weather', target: 2 },
                     { text: 'ask me how I am', target: 4 }
-                ] },
+                ], fallback: 7 },
                 { op: 'JUMP', target: 8 },
                 { op: 'JUMP', target: 7 },
                 { op: 'SAY', text: 'okay fine, I will!' },

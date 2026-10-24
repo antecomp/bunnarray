@@ -1,20 +1,23 @@
+export type EqualityCondition = {
+    identifier: string;
+    value: string;
+};
+
 export type Instruction =
     | { op: 'SAY', text: string }
     | {
         op: 'CHOICE',
         choices: {
             text: string;
-            target: number
+            target: number;
+            condition?: EqualityCondition;
         }[]
         fallback: number;
     }
     | {
         op: 'BRANCH',
         cases: {
-            condition: {
-                identifier: string;
-                value: string;
-            }
+            condition: EqualityCondition;
             target: number
         }[]
         fallback: number

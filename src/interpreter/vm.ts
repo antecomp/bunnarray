@@ -1,4 +1,4 @@
-import { Program } from '../compiler/instructions';
+import type { EqualityCondition, Program } from '../compiler/instructions';
 import once from '../util/once';
 import createMemory from './mem';
 import type { SignalNotification } from './signals';
@@ -48,6 +48,10 @@ export default function createVM(
             (_, identifier: string) => memory.get(identifier) ?? '');
     }
 
+    function matchesCondition(condition: EqualityCondition): boolean {
+        return memory.get(condition.identifier) === condition.value;
+    }
+
     const init = once(_run);
 
     function _run(): Yield {
@@ -81,22 +85,41 @@ export default function createVM(
                     }
                     continue;
                 }
-                case 'CHOICE':
+                case 'CHOICE': {
+                    const visibleChoices = ins.choices.filter(choice =>
+                        choice.condition === undefined || matchesCondition(choice.condition)
+                    );
+
+                    if (visibleChoices.length === 0) {
+                        pc = ins.fallback;
+                        if (pending !== null) {
+                            const presentation = pending;
+                            pending = null;
+                            return {
+                                kind: 'say',
+                                presentation,
+                                resume: once(_run)
+                            };
+                        }
+                        continue;
+                    }
+
                     return {
                         kind: 'choice',
                         presentation: pending,
-                        choices: ins.choices.map(choice => choice.text),
+                        choices: visibleChoices.map(choice => choice.text),
                         resume: once(index => {
-                            if (!ins.choices[index]) throw new Error('Invalid choice index: ' + index);
-                            pc = ins.choices[index].target;
+                            if (!visibleChoices[index]) throw new Error('Invalid choice index: ' + index);
+                            pc = visibleChoices[index].target;
                             // reset pending, branch should emit prompt once
                             pending = null;
                             return _run();
                         })
                     };
+                }
                 case 'BRANCH':
                     pc = ins.cases.find(branchCase =>
-                        memory.get(branchCase.condition.identifier) === branchCase.condition.value
+                        matchesCondition(branchCase.condition)
                     )?.target ?? ins.fallback;
                     continue;
 

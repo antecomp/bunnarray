@@ -59,7 +59,7 @@ describe('VM', () => {
     it('broadcasts signal identifier/value pairs to subscribers until they unsubscribe', () => {
         const vm = createVM({ version: 'indev', instructions: [
             { op: 'SIGNAL', identifier: 'opened', value: undefined },
-            { op: 'CHOICE', choices: [{ text: 'continue', target: 2 }] },
+            { op: 'CHOICE', choices: [{ text: 'continue', target: 2 }], fallback: 3 },
             { op: 'SIGNAL', identifier: 'closed', value: 'done' },
             { op: 'END' }
         ] });
@@ -106,7 +106,7 @@ describe('VM', () => {
             { op: 'CHOICE', choices: [
                 { text: 'left', target: 2 },
                 { text: 'right', target: 4 }
-            ] },
+            ], fallback: 6 },
             { op: 'SAY', text: 'Left' },
             { op: 'JUMP', target: 6 },
             { op: 'SAY', text: 'Right' },
@@ -122,13 +122,81 @@ describe('VM', () => {
 
     it('supports a choice without a preceding prompt', () => {
         const vm = createVM({ version: 'indev', instructions: [
-            { op: 'CHOICE', choices: [{ text: 'go', target: 1 }] },
+            { op: 'CHOICE', choices: [{ text: 'go', target: 1 }], fallback: 2 },
             { op: 'SAY', text: 'Going' },
             { op: 'END' }
         ] });
 
         const choice = expectChoice(vm.init(), null, ['go']);
         expect(choice.resume(0)).toEqual({ kind: 'end', presentation: { text: 'Going', speaker: null } });
+    });
+
+    it.each([
+        [0, 'Open path'],
+        [1, 'Always path']
+    ])('maps visible choice %i to its original branch after filtering', (index, text) => {
+        const program = build(`Pick one {
+            ?: [when:locked=no] Hidden
+                Hidden path
+            ?: [when:open=yes] Open
+                Open path
+            ?: Always
+                Always path
+        }
+        After`);
+        const vm = createVM(program, { memory: { locked: 'yes', open: 'yes' } });
+        const choice = expectChoice(vm.init(), 'Pick one', ['Open', 'Always']);
+
+        // The displayed list is a snapshot; changing memory does not remap its indices.
+        vm.memory.set('open', 'no');
+        const selected = expectSay(choice.resume(index), text);
+        expect(selected.resume()).toEqual({ kind: 'end', presentation: { text: 'After', speaker: null } });
+    });
+
+    it('checks option conditions when the choice is reached', () => {
+        const vm = createVM(build(`Start
+            Pick one {
+                ?: [when:state=ready] Ready
+                    Ready path
+            }
+            After`));
+        const start = expectSay(vm.init(), 'Start');
+        vm.memory.set('state', 'ready');
+        const choice = expectChoice(start.resume(), 'Pick one', ['Ready']);
+        const selected = expectSay(choice.resume(0), 'Ready path');
+        expect(selected.resume()).toEqual({ kind: 'end', presentation: { text: 'After', speaker: null } });
+    });
+
+    it('falls through without yielding an empty choice list', () => {
+        const prompted = createVM(build(`Question {
+            ?: [when:state=ready] Ready
+                Ready path
+        }
+        After`));
+        const question = expectSay(prompted.init(), 'Question');
+        expect(question.resume()).toEqual({ kind: 'end', presentation: { text: 'After', speaker: null } });
+
+        const bare = createVM(build(`{
+            ?: [when:state=ready] Ready
+                Ready path
+        }
+        After`));
+        expect(bare.init()).toEqual({ kind: 'end', presentation: { text: 'After', speaker: null } });
+    });
+
+    it('does not reuse a hidden choice prompt for the next choice', () => {
+        const vm = createVM(build(`First question? {
+            ?: [when:state=ready] Hidden
+                Hidden path
+        }
+        {
+            ?: Continue
+                Continued
+        }`));
+
+        const prompt = expectSay(vm.init(), 'First question?');
+        const choice = expectChoice(prompt.resume(), null, ['Continue']);
+        expect(choice.resume(0)).toEqual({ kind: 'end', presentation: { text: 'Continued', speaker: null } });
     });
 
     it('rejects repeated initialization and repeated resumes', () => {
@@ -146,7 +214,7 @@ describe('VM', () => {
 
     it('rejects an invalid choice index and a repeated choice resume', () => {
         const vm = createVM({ version: 'indev', instructions: [
-            { op: 'CHOICE', choices: [{ text: 'go', target: 1 }] },
+            { op: 'CHOICE', choices: [{ text: 'go', target: 1 }], fallback: 1 },
             { op: 'END' }
         ] });
 
@@ -254,7 +322,7 @@ After`));
 
         it('accepts zero as a case target', () => {
             const vm = createVM({ version: 'indev', instructions: [
-                { op: 'CHOICE', choices: [{ text: 'Check again', target: 1 }] },
+                { op: 'CHOICE', choices: [{ text: 'Check again', target: 1 }], fallback: 2 },
                 { op: 'BRANCH', cases: [{ condition: { identifier: 'state', value: 'ready' }, target: 0 }], fallback: 2 },
                 { op: 'END' }
             ] }, { memory: { state: 'ready' } });
@@ -313,7 +381,7 @@ After`));
 
         it.each(['set', 'delete'] as const)('reads memory after %s while paused at a choice', action => {
             const vm = createVM({ version: 'indev', instructions: [
-                { op: 'CHOICE', choices: [{ text: 'Go', target: 1 }] },
+                { op: 'CHOICE', choices: [{ text: 'Go', target: 1 }], fallback: 6 },
                 { op: 'BRANCH', cases: [
                     { condition: { identifier: 'state', value: 'ready' }, target: 2 }
                 ], fallback: 4 },

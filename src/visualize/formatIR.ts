@@ -9,11 +9,13 @@ export default function formatIR(program: Program): string {
             case 'SAY':
                 return `${prefix} ${JSON.stringify(instruction.text)}\n`;
             case 'CHOICE':
-                return instruction.choices.length === 0
-                    ? `${prefix} []\n`
-                    : `${prefix}\n${instruction.choices.map(choice =>
-                        `    ${JSON.stringify(choice.text)} -> ${choice.target}\n`
-                    ).join('')}`;
+                return `${prefix}\n`
+                    + instruction.choices.map(choice =>
+                        `    ${choice.condition === undefined ? '' :
+                            `[when:${choice.condition.identifier}=${JSON.stringify(choice.condition.value)}] `}`
+                        + `${JSON.stringify(choice.text)} -> ${choice.target}\n`
+                    ).join('')
+                    + `    fallback -> ${instruction.fallback}\n`;
             case 'BRANCH':
                 return `${prefix}\n`
                     + instruction.cases.map(({ condition, target }) =>
