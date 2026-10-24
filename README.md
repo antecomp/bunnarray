@@ -8,14 +8,17 @@ I hope to make something more generic that can be used for my (and others) own p
 Because I am utterly insane I took this as an opportunity to create my own custom dialogue language parser using [chevrotain](https://chevrotain.io/docs/).
 
 ## Runtime Usage
-Right now the shape is also over-fit to this implementation. 
-Hopefully I will make something more general later.
+`build(source)` compiles `.bny` text into a versioned instruction program. Pass that program to `createVM`, then call `vm.init()` to start. The VM yields dialogue, choices, or an end result; resume each dialogue line or choice to continue. Game state lives in `vm.memory` and can be supplied when the VM is created:
+```ts
+const vm = createVM(build(source), { memory: { dragon: 'slain' } });
+const firstStep = vm.init();
+```
 
 ## Writing Dialogue
 The syntax is pretty simple...
 
 ### Basic Text
-Normal lines of text all create individual dialogue nodes in the tree. New lines make them distinct new 'messages.'
+Each normal line of text becomes a separate dialogue message when the VM runs.
 Square brackets (`[` and `]`) and curly braces (`{` and `}`) are reserved for language syntax. To include them literally in text, use `&lbrack;`, `&rbrack;`, `&lbrace;`, and `&rbrace;`, respectively. These escapes also work in option text and other text fields. Use `&amp;` to write a literal escape sequence, such as `&amp;lbrace;` for the text `&lbrace;`.
 ```
 Hello, it has been a while,
@@ -54,7 +57,7 @@ to parse lol. Use `#` at the start of a line to comment it out.
 I hate you!
 ```
 
-### Options (Branches)
+### Options (Player Choices)
 Options (branching dialogue based on player responses) are defined with curly braces. The text before the opening brace is the **prompt text**, displayed as dialogue. The text after each `?:` is the **option text**, which the player selects:
 ```
 prompt {
@@ -166,7 +169,7 @@ And finally we're here.
 ```
 
 ### Match blocks
-Match blocks allow dialogue to automatically branch based on game state. Match block work by running a function by name, then, based on the (string) return of that function, it chooses where to navigate to. It uses the following syntax:
+Match blocks check one memory identifier against several string values. They use this syntax:
 ```
 [match:on]
     =returncase
@@ -176,7 +179,7 @@ Match blocks allow dialogue to automatically branch based on game state. Match b
 [/match]
 fallback
 ```
-Where `on` is the name of the function that we will run and match the result of, and each case after an `=` is a potential return string of that function.
+`on` is the memory identifier to read. Each `=value` is compared with its current string value. The matching case runs, then dialogue continues after `[/match]`; if no case matches, it continues there immediately.
 For example...
 ```
 Well, that depends on if the dragon is slain...
@@ -205,97 +208,62 @@ Matches can also be nested or chained. A nested match allows you to enforce mult
 [/match]
 ```
 
-Actually configuring these checks the matches can run is done by supplying the dialogueRunner with `matchFuncs`:
+Set the memory value before the match runs, either in the script with `:SET dragon=slain` or through `vm.memory.set('dragon', 'slain')`. See [Runtime Variables](#runtime-variables).
+
+### Branch blocks
+Use a branch block when each case may check a different memory identifier:
+```bny
+[branch]
+    [when:dragon=slain]
+        The dragon is gone. Here is your reward!
+    [when:reputation=trusted]
+        I can tell you where the dragon lives.
+[/branch]
+What else would you like to know?
+```
+Each `[when:identifier=value]` compares the current memory value of `identifier` with the literal string `value`. The **first matching case** runs, even if later conditions also match. After that case, dialogue continues after `[/branch]` unless it uses a goto. If none match, it goes straight to the dialogue after the block. For example, with `dragon=alive` and `reputation=trusted`, the second case runs.
+
+A branch needs at least one `when` case. Case bodies can be empty and can contain other statements, including nested branches, choices, and gotos. Spaces around the identifier and value are trimmed; use the usual text escapes for literal brackets in a value. Match blocks remain available for cases that all check one identifier.
+
+### Signals
+Use `:SIGNAL identifier` on its own line to notify listeners when execution reaches it. Add `:value` to include a string value:
+```bny
+Here is the key to the castle!
+:SIGNAL keygiven
+:SIGNAL quest:complete
+```
+Subscribe through the VM. The callback receives `{ identifier, value }`, where `value` is `undefined` for a signal without a value:
 ```ts
-type MatchFuncs = Record<string, () => string>
-const matches = {
-    dragon: () => dragon.isSlain ? 'slain' : 'notslain';
-}
+const unsubscribe = vm.signals.subscribe(({ identifier, value }) => {
+    console.log(identifier, value);
+});
+// Call unsubscribe() when the listener is no longer needed.
 ```
-
-### Directives
-Within a line of dialogue text (and normal text only) you 
-can define directives for additional behavior.
-Directives take the format of `<directive:value>`. 
-> Directives heavily rely on the specific shape and implementation of the DialogueNode type and its runner.
-
-#### Face
-One directive is called `face`, it is used to indicate the expression sprite to use when displaying this dialogues text. If this directive is not supplied, we just assume the most recent face at runtime.
-
-For example...
-```
-But what I really think is... <face:thinking>
-That I am angry! <face:anger>
-```
-> How you handle these faces is up to implementation, of course, but the basic idea is that the generated dialogue "node" (described below) has a face attribute you can read.
-
-#### Signals
-Another directive is called `signal`, it is used to have dialogue nodes "emit" a named signal when they are navigated into. These signals can be listened to for running side-effects and other events that correspond to reaching points in the dialogue.
-
-For example...
-```
-Here is the key to the castle! <signal:keygiven>
-```
-
-Then the runtime user of the dialogue (through use of the `dialogueRunner`) can then "listen" to these signals;
-```typescript
-const runner = createDialogueRunner(...);
-runner.addSignalListener('keygiven', () => Inventory.addItem(key));
-```
-The runner also has a `removeSignalListener` method, which can be used to create one-off reactions like this;
-```typescript
-runner.addSignalListener('something', function action() {
-    // do something...
-    runner.removeSignalListener('something', action);
-})
-```
+Inline tags such as `<face:thinking>` and `<signal:keygiven>` are currently ordinary dialogue text; they do not create built-in face changes or signals.
 
 ### Runtime Variables
-For pieces of text that is only known at (and could be changed during) runtime, you can also use variable names in dialogue lines:
-```
+The same string memory is used by match blocks, branch conditions, and `$variables` in dialogue text:
+```bny
 Hello, $name.
+:SET dragon=slain
+[branch]
+    [when:dragon=slain]
+        The dragon is gone!
+[/branch]
 ```
-These variable names always take the shape `$var`, they can only be basic alphanumeric characters directly after a dollar sign. This means that you use punctuation or other characters naturally without weird whitespace issues (like the `$name.` example above).
+Variable names start with a letter or underscore and can then contain letters, digits, or underscores. A missing `$variable` is replaced with an empty string. `:SET identifier=value` stores a string; `:SET identifier` deletes it.
 
-You can set and read these variables at runtime using two methods, `setVar` and `readVar`, in the dialogue runner API;
-```typescript
-const runner = createDialogueRunner(root, {responseText, optionsOverlay, face});
-const name = "Rabbit";
-runner.setVar('name', name);
-// Now "Hello, $name" will read out "Hello, Rabbit."
+You can also supply initial values and change them while the VM is running:
+```ts
+const vm = createVM(build(source), { memory: { name: 'Rabbit' } });
+vm.memory.set('dragon', 'slain');
+const name = vm.memory.get('name');
+vm.memory.delete('dragon');
 ```
+Conditions read memory when the VM reaches the block, so changes made before then affect the selected case.
 
-Also, if some stuff is known immediately, an initial record of some variables can be passed to `createDialogueRunner`:
-```typescript
-const runner = createDialogueRunner(root, {responseText, optionsOverlay, face}, {name: "Rabbit"});
-runner.setVar('name', name);
-// Works the same, now "Hello, $name" will read out "Hello, Rabbit."
-```
-
-> Actually setting and working with these variables is the responsibility of the dialogue runner and not the parsing algorithm, this is to keep things slightly more implementation agnostic and not have any state creep into the compiler.
-
-
-### DialogueNode (actual runtime type)
-If making your own "runner" for the dialogue, know that this parser converts everything into a graph of DialogueNodes. DialogueNodes take the shape:
-```typescript
-export type DialogueNode = {
-    text: string;
-    // Optional, will inherit from parent (i.e be unchanged) if undefined.
-    face: string | undefined;
-    // Signal response handled by runner.
-    signals: string[] | undefined
-} & ({
-    next?: DialogueNode;
-} | {
-    options: DialogueOption[];
-});
-
-export type DialogueOption = {
-    text: string;
-    next: DialogueNode;
-}
-```
-The compile function returns the DialogueNode at the "start" of this graph corresponding to the first line of text in the dialogue script.
+### Compiled program
+`build(source)` returns a `Program` with a `version` and a linear `instructions` array. The VM executes these instructions; it does not require a graph of dialogue nodes. The browser demo in `src/runner.ts` shows one way to render the VM's dialogue and choice yields.
 
 ### Why is it called BunNarraY?
 * Bun Narray-tives. Or Bun Array of text or something idk.
@@ -305,18 +273,12 @@ The compile function returns the DialogueNode at the "start" of this graph corre
 -------------------------------------------------------
 
 ### TODO
-* Remove stuff specific to the game jam, change to generic tester.
-    * Remove Tauri and related deps, just keep this as plain Vite.
-    * Later on consider formatting this to be in a nicer modular "package" format you can easily integrate into projects.
 * Make the handler callbacks generic? Or some sort of system to make integration into any dialogue navigation implementation simple.
 * May be overfit to DG, but potentially add CAR support? (Or just make this responsibility of final parse from raw dialogue to that specific format)
-* Allow signals to pass simple values, remove clutter of so many listers.
 * Make directives generic, leave it up to the personal implementation of dialogue node to handle them.
     * Ergo, make a good shape for some raw dialogue node that just provides all the directives. Up to the implementation to convert that into a runtime model.
-* Permit a "general" signal listener that can just receive all signals and do whatever with them, for arbitrary implementations/uses.
 * Move label collection to visitor to remove redundant second pass through dialogue tree?
 * MORE TESTS. THERE ARE BUGS I CAN FEEL THEM CRAWLING AROUND AT NIGHT. I KNOW THEY ARE THERE.
-* After the game jam, maybe a "set" directive to have some default dialogue-owned stuff for matches without needing to set up a backend.
 * Another DG specific thing, but I think I can make it general / up to implementor: nested questions **not** to create brand new (duplicate) node, but instead some sort of flagged "empty"
     * The current clone implementation will cause duplicate messages to be sent in many implementations (including DG), so we should change it to not assume use-case.
 
@@ -330,7 +292,9 @@ It currently highlights:
 - labels like `@start`
 - gotos like `-> start`
 - option markers like `?:`
-- block braces (match and block)
-- directives like `<face:neu_smile>`
+- match tags and choice braces
+- inline tags like `<face:neu_smile>`
+
+The extension has not yet been updated to highlight `[branch]` and `[when:...]`.
 
 To try it locally, open that folder in VS Code and run an Extension Development Host with `F5`, or package/install it as a normal extension.
