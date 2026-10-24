@@ -83,7 +83,8 @@ export class DialogueVisitor extends BaseVisitor {
         return {
             type: 'choiceBranch',
             text: decodeText(ctx.Text[0].image.trim()),
-            statements: (ctx.statement ?? []).map((s: any) => this.visit(s))
+            statements: (ctx.statement ?? []).map((s: any) => this.visit(s)),
+            condition: ctx.when && this.visit(ctx.when)
         };
     }
 

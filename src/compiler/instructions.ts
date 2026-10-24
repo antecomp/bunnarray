@@ -6,6 +6,7 @@ export type Instruction =
             text: string;
             target: number
         }[]
+        fallback: number;
     }
     | {
         op: 'BRANCH',

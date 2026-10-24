@@ -20,7 +20,7 @@ choice ->
     CurlyBraceClose Newline?
 
 choiceBranch ->
-    ChoiceToken Text Newline
+    ChoiceToken when? Text Newline
         statement*
 
 branch ->
@@ -103,8 +103,9 @@ export class DialogueParser extends CstParser {
 
     choiceBranch = this.RULE('choiceBranch', () => {
         this.CONSUME(ChoiceToken);
+        this.OPTION(() => this.SUBRULE(this.when));
         this.CONSUME(Text);
-        this.OPTION(() => this.CONSUME(Newline));
+        this.OPTION1(() => this.CONSUME(Newline));
         this.MANY(() => this.SUBRULE(this.statement));
     });
 

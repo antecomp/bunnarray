@@ -29,6 +29,7 @@ export type ChoiceStatement = {
 export type ChoiceBranch = {
     type: 'choiceBranch'
     text: string,
+    condition: Condition | undefined
     statements: Statement[]
 };
 
