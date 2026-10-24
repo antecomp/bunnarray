@@ -57,9 +57,9 @@ export class DialogueVisitor extends BaseVisitor {
     statement(ctx: any): A.Statement {
         const node =
             ctx.say?.[0] ?? ctx.choice?.[0] ?? ctx.match?.[0] ??
-            ctx.skip?.[0] ?? ctx.label?.[0] ?? ctx.goto?.[0] ?? 
+            ctx.skip?.[0] ?? ctx.label?.[0] ?? ctx.goto?.[0] ??
             ctx.set?.[0] ?? ctx.speaker?.[0] ?? ctx.alternate?.[0] ??
-            ctx.signal?.[0]
+            ctx.signal?.[0] ?? ctx.branch?.[0]
             ;
 
         return this.visit(node);
@@ -101,6 +101,29 @@ export class DialogueVisitor extends BaseVisitor {
             case: decodeText(ctx.Text[0].image.trim()),
             statements: (ctx.statement ?? []).map((s: any) => this.visit(s))
         };
+    }
+
+    branch(ctx: any): A.BranchStatement {
+        return {
+            type: 'branch',
+            cases: (ctx.branchCase ?? []).map((bcase: any) => this.visit(bcase))
+        }
+    }
+
+    branchCase(ctx: any): A.BranchCase {
+        return {
+            type: 'branchCase',
+            condition: this.visit(ctx.when),
+            statements: (ctx.statement ?? []).map((s: any) => this.visit(s))
+        }
+    }
+
+    when(ctx: any): A.Condition {
+        return {
+            type: 'equals',
+            identifier: (ctx.Identifier[0].image.trim()),
+            value: decodeText(ctx.Text[0].image.trim())
+        }
     }
 
     skip(ctx: any): A.SkipStatement {
