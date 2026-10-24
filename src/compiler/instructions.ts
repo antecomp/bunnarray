@@ -13,19 +13,34 @@ export type Instruction =
         cases: Record<string, number>
         fallback: number // no match
     }
-    | { op: 'JUMP'; target: number }
-    | { op: 'SET'; 
-        identifier: string, 
-        value: string | undefined 
+    | {
+        op: 'BRANCH',
+        cases: {
+            condition: {
+                identifier: string;
+                value: string;
+            }
+            target: number
+        }[]
+        fallback: number
     }
-    | { op: 'SIGNAL';
+    | { op: 'JUMP'; target: number }
+    | {
+        op: 'SET';
         identifier: string,
         value: string | undefined
     }
-    | { op: 'SPEAKER';
+    | {
+        op: 'SIGNAL';
+        identifier: string,
+        value: string | undefined
+    }
+    | {
+        op: 'SPEAKER';
         value: string | null;
     }
-    | { op: 'ALTERNATE';
+    | {
+        op: 'ALTERNATE';
         speakers: string[];
     }
     | { op: 'END' };
@@ -45,4 +60,5 @@ export function INS<O extends Opcode>(
 export type Program = {
     instructions: Instruction[]
     // debug symbols?
+    version: string
 };

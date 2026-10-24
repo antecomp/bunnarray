@@ -20,6 +20,12 @@ export default function formatIR(program: Program): string {
                         `    ${JSON.stringify(value)} -> ${target}\n`
                     ).join('')
                     + `    fallback -> ${instruction.fallback}\n`;
+            case 'BRANCH':
+                return `${prefix}\n`
+                    + instruction.cases.map(({ condition, target }) =>
+                        `    ${condition.identifier} = ${JSON.stringify(condition.value)} -> ${target}\n`
+                    ).join('')
+                    + `    fallback -> ${instruction.fallback}\n`;
             case 'JUMP':
                 return `${prefix} -> ${instruction.target}\n`;
             case 'END':

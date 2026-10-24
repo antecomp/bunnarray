@@ -13,7 +13,7 @@ export default function (ast: DialogueAST): Program {
     const labels: Record<string, number> = Object.create(null); // <- removes prototype names.
     const unresolvedGotos: { fromIndex: number, target: string }[] = [];
 
-    // Consider refactoring this to have it return the instruction and the index.
+    // TODO: Consider refactoring this to have it return the instruction and the index.
     const emit = (next: Instruction) => instructions.push(next) - 1;
     const pos = () => instructions.length;
 
@@ -31,9 +31,11 @@ export default function (ast: DialogueAST): Program {
             case 'say':
                 emit(INS('SAY', { text: statement.text }));
                 break;
+
             case 'label':
                 defineLabel(statement.name);
                 break;
+
             case 'goto': {
                 const jumpIndex = emit(INS('JUMP', { target: UNRESOLVED }));
                 unresolvedGotos.push({
@@ -42,6 +44,7 @@ export default function (ast: DialogueAST): Program {
                 });
                 break;
             }
+
             case 'choice': {
                 const choiceIndex = emit(INS('CHOICE', { choices: [] }));
                 const currentChoice = instructions[choiceIndex] as Operation<'CHOICE'>;
@@ -66,6 +69,7 @@ export default function (ast: DialogueAST): Program {
 
                 break;
             }
+
             case 'match': {
                 const matchIndex = emit(INS('MATCH', {
                     on: statement.on,
@@ -90,6 +94,33 @@ export default function (ast: DialogueAST): Program {
                 currentMatch.fallback = end;
                 exitJumps.forEach(jump => jump.target = end);
 
+                break;
+            }
+
+            case 'branch': {
+                const branchIndex = emit(INS('BRANCH', { cases: [], fallback: UNRESOLVED }));
+                const currentBranch = instructions[branchIndex] as Operation<'BRANCH'>;
+                const exitJumps: Operation<'JUMP'>[] = [];
+
+                statement.cases.forEach(branchCase => {
+                    currentBranch.cases.push({
+                        condition: {
+                            identifier: branchCase.condition.identifier,
+                            value: branchCase.condition.value
+                        },
+                        target: pos()
+                    });
+
+                    compileSequence(branchCase.statements);
+
+                    const exit = INS('JUMP', { target: UNRESOLVED });
+                    exitJumps.push(exit);
+                    emit(exit);
+                });
+
+                const end = pos();
+                currentBranch.fallback = end;
+                exitJumps.forEach(jump => jump.target = end);
                 break;
             }
 
@@ -143,5 +174,8 @@ export default function (ast: DialogueAST): Program {
     });
 
 
-    return { instructions };
+    return { 
+        version: 'indev',
+        instructions
+    };
 }

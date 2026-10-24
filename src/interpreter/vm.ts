@@ -103,6 +103,12 @@ export default function createVM(
 
                     continue;
 
+                case 'BRANCH':
+                    pc = ins.cases.find(branchCase =>
+                        memory.get(branchCase.condition.identifier) === branchCase.condition.value
+                    )?.target ?? ins.fallback;
+                    continue;
+
                 case 'SET':
                     if (ins.value === undefined) {
                         memory.delete(ins.identifier);
