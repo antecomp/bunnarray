@@ -25,15 +25,17 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
         const entry = document.createElement('div');
         entry.className = 'dialogue-entry';
 
+        if (step.presentation !== null) {
+            const text = document.createElement('p');
+            text.className = 'dialogue-text';
+            text.textContent = (step.presentation.speaker ?? '(NARRATOR)') + ': ' + step.presentation.text;
+            entry.append(text);
+        }
+
         if (step.kind === 'yield') {
             const text = document.createElement('p');
             text.className = 'dialogue-text';
             text.textContent = `Yield emitted: ${step.identifier}${step.value === undefined ? '' : `: ${step.value}`}`;
-            entry.append(text);
-        } else if (step.presentation !== null) {
-            const text = document.createElement('p');
-            text.className = 'dialogue-text';
-            text.textContent = (step.presentation.speaker ?? '(NARRATOR)') + ': ' + step.presentation.text;
             entry.append(text);
         }
 

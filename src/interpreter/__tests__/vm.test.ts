@@ -17,8 +17,13 @@ function expectChoice(step: Step, text: string | null, choices: string[]) {
     return step;
 }
 
-function expectYield(step: Step, identifier: string, value?: string) {
-    expect(step).toEqual({ kind: 'yield', identifier, value, resume: expect.any(Function) });
+function expectYield(
+    step: Step,
+    identifier: string,
+    value?: string,
+    presentation: { text: string; speaker: string | null } | null = null
+) {
+    expect(step).toEqual({ kind: 'yield', presentation, identifier, value, resume: expect.any(Function) });
     if (step.kind !== 'yield') throw new Error('Expected a signal yield');
     return step;
 }
@@ -115,7 +120,7 @@ describe('VM', () => {
             expect(second.resume()).toEqual({ kind: 'end', presentation: null });
         });
 
-        it('keeps pending text paired with choices and evaluates conditions after resuming', () => {
+        it('presents the prompt with the yield and delays choices until resuming', () => {
             const program = build(`:SPEAKER Narrator
                 The door will not open
                 :YIELD inspect_door
@@ -125,25 +130,53 @@ describe('VM', () => {
                 }
             `);
             const paused = createVM(program);
-            const step = expectYield(paused.init(), 'inspect_door');
+            const step = expectYield(paused.init(), 'inspect_door', undefined, {
+                text: 'The door will not open', speaker: 'Narrator'
+            });
             paused.memory.set('has_key', 'yes');
 
-            const choice = expectChoice(step.resume(), 'The door will not open', ['Use key']);
-            expect(choice.presentation?.speaker).toBe('Narrator');
+            const choice = expectChoice(step.resume(), null, ['Use key']);
             expect(choice.resume(0)).toEqual({ kind: 'end', presentation: { text: 'Opened', speaker: 'Narrator' } });
         });
 
-        it('preserves queued lines across a yield reached after advancing dialogue', () => {
+        it('presents the queued line with the yield before the next prompt and choices', () => {
             const vm = createVM(build(`Outside
                 You enter
                 :YIELD open_door
-                Inside
+                Inside {
+                    ?: Continue
+                        Done
+                }
             `));
 
             const outside = expectSay(vm.init(), 'Outside');
-            const action = expectYield(outside.resume(), 'open_door');
-            const entering = expectSay(action.resume(), 'You enter');
-            expect(entering.resume()).toEqual({ kind: 'end', presentation: { text: 'Inside', speaker: null } });
+            const action = expectYield(outside.resume(), 'open_door', undefined, {
+                text: 'You enter', speaker: null
+            });
+            const choice = expectChoice(action.resume(), 'Inside', ['Continue']);
+            expect(choice.resume(0)).toEqual({ kind: 'end', presentation: { text: 'Done', speaker: null } });
+        });
+
+        it('consumes pending text only once across consecutive yields and END', () => {
+            const vm = createVM(build('Hello\n:YIELD first\n:YIELD second'));
+
+            const first = expectYield(vm.init(), 'first', undefined, { text: 'Hello', speaker: null });
+            const second = expectYield(first.resume(), 'second');
+            expect(second.resume()).toEqual({ kind: 'end', presentation: null });
+        });
+
+        it('does not repeat the yielded presentation when all following choices are hidden', () => {
+            const vm = createVM(build(`Question
+                :YIELD inspect
+                {
+                    ?: [when:available=yes] Hidden
+                        Unreachable
+                }
+                After
+            `));
+
+            const step = expectYield(vm.init(), 'inspect', undefined, { text: 'Question', speaker: null });
+            expect(step.resume()).toEqual({ kind: 'end', presentation: { text: 'After', speaker: null } });
         });
     });
 

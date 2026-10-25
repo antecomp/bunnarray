@@ -23,6 +23,7 @@ type Yield =
     }
     | {
         kind: 'yield';
+        presentation: Presentation | null;
         identifier: string;
         value: string | undefined;
         resume: () => Yield;
@@ -143,14 +144,18 @@ export default function createVM(
                     pc++;
                     continue;
 
-                case 'YIELD':
+                case 'YIELD': {
+                    const presentation = pending;
+                    pending = null;
                     pc++;
                     return {
                         kind: 'yield',
+                        presentation,
                         identifier: ins.identifier,
                         value: ins.value,
                         resume: once(_run)
                     };
+                }
 
                 case 'SPEAKER':
                     speaker = ins.value;

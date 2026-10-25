@@ -221,21 +221,37 @@ The door won't open {
         The lock clicks open.
 }
 ```
-The VM returns `{ kind: 'yield', identifier, value, resume }`. The consumer can perform an action, wait for an animation, or update `vm.memory`, then call `resume()` to continue after the directive. The value is `undefined` when omitted. A yielded signal has no `presentation` field and does not notify `vm.signals` subscribers. `:SIGNAL` notifies subscribers and continues execution immediately; `:YIELD` waits for the consumer to resume.
+The VM returns `{ kind: 'yield', presentation, identifier, value, resume }`. The consumer displays any included presentation, then can perform an action, wait for an animation, or update `vm.memory` before calling `resume()` to continue after the directive. The value is `undefined` when omitted. The presentation is `null` if there is no pending dialogue. A yielded signal does not notify `vm.signals` subscribers. `:SIGNAL` notifies subscribers and continues execution immediately; `:YIELD` waits for the consumer to resume.
 
 For example, handling the first step of the script above:
 ```ts
 const vm = createVM(build(source));
 const step = vm.init();
 if (step.kind === 'yield') {
+    if (step.presentation !== null) {
+        showDialogue(step.presentation); // Your application's dialogue renderer.
+    }
     await performAction(step.identifier, step.value); // Your application's action handler.
     const nextStep = step.resume();
     // Pass nextStep to your dialogue renderer.
 }
 ```
-Dialogue text is queued so it can be paired with following choices. A yield leaves that pending text intact: if it appears between a line and its choices, resuming still presents the line and choices together. A yield can therefore occur before queued text has been displayed; place actions with this execution order in mind. In the example above, `rattle_door` completes before the prompt and choices are presented.
+Dialogue text is queued so it can be paired with following choices. A yield consumes the pending text and includes it in its own presentation, preserving the visible order of text and actions. For `A`, `B`, `:YIELD action`, the consumer presents A, then receives a yield with B. Resuming continues after the action without repeating B. In the example above, there is no pending text, so `rattle_door` completes before the prompt and choices are presented.
 
-The browser demo displays the yielded identifier and value with a Continue button. Clicking it resumes the VM; a game integration can resume after its own action completes instead.
+To delay choices until an action finishes, put a yield between their prompt and a bare choice block:
+```bny
+Choose your route.
+:YIELD reveal_map
+{
+    ?: Forest
+        Into the trees.
+    ?: Mountain
+        Up the trail.
+}
+```
+The yield includes "Choose your route." as its presentation. Resuming returns the choices with `presentation: null`, so the prompt is shown only once. Choice conditions are evaluated after the action resumes.
+
+The browser demo displays any presentation before the yielded identifier and value, with a Continue button. Clicking it resumes the VM; a game integration can resume after its own action completes instead.
 
 ### Runtime Variables
 The same string memory is used by branch conditions and `$variables` in dialogue text:
