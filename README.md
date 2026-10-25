@@ -8,7 +8,7 @@ I hope to make something more generic that can be used for my (and others) own p
 Because I am utterly insane I took this as an opportunity to create my own custom dialogue language parser using [chevrotain](https://chevrotain.io/docs/).
 
 ## Runtime Usage
-`build(source)` compiles `.bny` text into a versioned instruction program. Pass that program to `createVM`, then call `vm.init()` to start. The VM yields dialogue, choices, or an end result; resume each dialogue line or choice to continue. Game state lives in `vm.memory` and can be supplied when the VM is created:
+`build(source)` compiles `.bny` text into a versioned instruction program. Pass that program to `createVM`, then call `vm.init()` to start. The VM returns steps with `kind: 'say'`, `'choice'`, `'yield'`, or `'end'`. Call `resume()` on a dialogue line or yielded signal to continue, or `resume(index)` on a choice with the selected zero-based option index. An end result has no resume callback. Initialization and each resume callback can only be called once; repeated calls throw. Game state lives in `vm.memory` and can be supplied when the VM is created:
 ```ts
 const vm = createVM(build(source), { memory: { dragon: 'slain' } });
 const firstStep = vm.init();
@@ -210,6 +210,33 @@ const unsubscribe = vm.signals.subscribe(({ identifier, value }) => {
 ```
 Inline tags such as `<face:thinking>` and `<signal:keygiven>` are currently ordinary dialogue text; they do not create built-in face changes or signals.
 
+### Yielding Signals
+Use `:YIELD identifier` to pause execution and hand control to the consumer. Like `:SIGNAL`, it accepts an optional `:value` string:
+```bny
+:YIELD rattle_door: front
+The door won't open {
+    ?: Knock
+        Anyone home?
+    ?: Use key
+        The lock clicks open.
+}
+```
+The VM returns `{ kind: 'yield', identifier, value, resume }`. The consumer can perform an action, wait for an animation, or update `vm.memory`, then call `resume()` to continue after the directive. The value is `undefined` when omitted. A yielded signal has no `presentation` field and does not notify `vm.signals` subscribers. `:SIGNAL` notifies subscribers and continues execution immediately; `:YIELD` waits for the consumer to resume.
+
+For example, handling the first step of the script above:
+```ts
+const vm = createVM(build(source));
+const step = vm.init();
+if (step.kind === 'yield') {
+    await performAction(step.identifier, step.value); // Your application's action handler.
+    const nextStep = step.resume();
+    // Pass nextStep to your dialogue renderer.
+}
+```
+Dialogue text is queued so it can be paired with following choices. A yield leaves that pending text intact: if it appears between a line and its choices, resuming still presents the line and choices together. A yield can therefore occur before queued text has been displayed; place actions with this execution order in mind. In the example above, `rattle_door` completes before the prompt and choices are presented.
+
+The browser demo displays the yielded identifier and value with a Continue button. Clicking it resumes the VM; a game integration can resume after its own action completes instead.
+
 ### Runtime Variables
 The same string memory is used by branch conditions and `$variables` in dialogue text:
 ```bny
@@ -232,7 +259,7 @@ vm.memory.delete('dragon');
 Conditions read memory when the VM reaches the block, so changes made before then affect the selected case.
 
 ### Compiled program
-`build(source)` returns a `Program` with a `version` and a linear `instructions` array. The VM executes these instructions; it does not require a graph of dialogue nodes. The browser demo in `src/runner.ts` shows one way to render the VM's dialogue and choice yields.
+`build(source)` returns a `Program` with a `version` and a linear `instructions` array. The VM executes these instructions; it does not require a graph of dialogue nodes. The browser demo in `src/runner.ts` shows one way to render dialogue, choices, and yielding signals.
 
 ### Why is it called BunNarraY?
 * Bun Narray-tives. Or Bun Array of text or something idk.
