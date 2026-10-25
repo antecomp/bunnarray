@@ -25,7 +25,12 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
         const entry = document.createElement('div');
         entry.className = 'dialogue-entry';
 
-        if (step.presentation !== null) {
+        if (step.kind === 'yield') {
+            const text = document.createElement('p');
+            text.className = 'dialogue-text';
+            text.textContent = `Yield emitted: ${step.identifier}${step.value === undefined ? '' : `: ${step.value}`}`;
+            entry.append(text);
+        } else if (step.presentation !== null) {
             const text = document.createElement('p');
             text.className = 'dialogue-text';
             text.textContent = (step.presentation.speaker ?? '(NARRATOR)') + ': ' + step.presentation.text;
@@ -35,7 +40,7 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
         const actions = document.createElement('div');
         actions.className = 'dialogue-actions';
 
-        if (step.kind === 'say') {
+        if (step.kind === 'say' || step.kind === 'yield') {
             const button = document.createElement('button');
             button.type = 'button';
             button.textContent = 'Continue';

@@ -17,6 +17,12 @@ function expectChoice(step: Step, text: string | null, choices: string[]) {
     return step;
 }
 
+function expectYield(step: Step, identifier: string, value?: string) {
+    expect(step).toEqual({ kind: 'yield', identifier, value, resume: expect.any(Function) });
+    if (step.kind !== 'yield') throw new Error('Expected a signal yield');
+    return step;
+}
+
 describe('VM', () => {
     it('ends an empty program immediately', () => {
         const vm = createVM({ version: 'indev', instructions: [{ op: 'END' }] });
@@ -79,6 +85,66 @@ describe('VM', () => {
             { identifier: 'closed', value: 'done' }
         ]);
         expect(second).toEqual([{ identifier: 'opened', value: undefined }]);
+    });
+
+    describe('YIELD', () => {
+        it('pauses side effects until resumed without broadcasting the yielded signal', () => {
+            const vm = createVM(build(`:YIELD open_door: front &amp; back
+                :SET opened=yes
+                :SIGNAL opened
+            `));
+            const signals: unknown[] = [];
+            vm.signals.subscribe(signal => signals.push(signal));
+
+            const step = expectYield(vm.init(), 'open_door', 'front & back');
+            expect(vm.memory.get('opened')).toBeUndefined();
+            expect(signals).toEqual([]);
+
+            expect(step.resume()).toEqual({ kind: 'end', presentation: null });
+            expect(vm.memory.get('opened')).toBe('yes');
+            expect(signals).toEqual([{ identifier: 'opened', value: undefined }]);
+            expect(() => step.resume()).toThrow('Resume callback already consumed');
+        });
+
+        it('resumes consecutive yields once each, including a yield immediately before END', () => {
+            const vm = createVM(build(':YIELD first\n:YIELD second: done'));
+
+            const first = expectYield(vm.init(), 'first');
+            const second = expectYield(first.resume(), 'second', 'done');
+            expect(() => first.resume()).toThrow('Resume callback already consumed');
+            expect(second.resume()).toEqual({ kind: 'end', presentation: null });
+        });
+
+        it('keeps pending text paired with choices and evaluates conditions after resuming', () => {
+            const program = build(`:SPEAKER Narrator
+                The door will not open
+                :YIELD inspect_door
+                {
+                    ?: [when:has_key=yes] Use key
+                        Opened
+                }
+            `);
+            const paused = createVM(program);
+            const step = expectYield(paused.init(), 'inspect_door');
+            paused.memory.set('has_key', 'yes');
+
+            const choice = expectChoice(step.resume(), 'The door will not open', ['Use key']);
+            expect(choice.presentation?.speaker).toBe('Narrator');
+            expect(choice.resume(0)).toEqual({ kind: 'end', presentation: { text: 'Opened', speaker: 'Narrator' } });
+        });
+
+        it('preserves queued lines across a yield reached after advancing dialogue', () => {
+            const vm = createVM(build(`Outside
+                You enter
+                :YIELD open_door
+                Inside
+            `));
+
+            const outside = expectSay(vm.init(), 'Outside');
+            const action = expectYield(outside.resume(), 'open_door');
+            const entering = expectSay(action.resume(), 'You enter');
+            expect(entering.resume()).toEqual({ kind: 'end', presentation: { text: 'Inside', speaker: null } });
+        });
     });
 
     it('keeps memory subscriptions working for changes and deletions', () => {

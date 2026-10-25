@@ -22,6 +22,12 @@ type Yield =
         resume: (index: number) => Yield;
     }
     | {
+        kind: 'yield';
+        identifier: string;
+        value: string | undefined;
+        resume: () => Yield;
+    }
+    | {
         kind: 'end';
         presentation: Presentation | null;
     };
@@ -136,6 +142,15 @@ export default function createVM(
                     signals.notify({ identifier: ins.identifier, value: ins.value });
                     pc++;
                     continue;
+
+                case 'YIELD':
+                    pc++;
+                    return {
+                        kind: 'yield',
+                        identifier: ins.identifier,
+                        value: ins.value,
+                        resume: once(_run)
+                    };
 
                 case 'SPEAKER':
                     speaker = ins.value;
