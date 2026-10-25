@@ -10,10 +10,11 @@ export type Statement =
     | SkipStatement
     | SetStatement
     | SignalStatement
+    | YieldStatement
     | LabelStatement
     | GotoStatement
     | SpeakerStatement
-    | AlternateStatement;
+    | AlternateStatement
 
 export type SayStatement = {
     type: 'say';
@@ -61,6 +62,12 @@ export type SignalStatement = {
     identifier: string,
     value: string | undefined
 };
+
+export type YieldStatement = {
+    type: 'yield';
+    identifier: string,
+    value: string | undefined;
+}
 
 export type SkipStatement = {
     type: 'skip';

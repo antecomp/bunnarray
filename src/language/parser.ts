@@ -11,6 +11,8 @@ statement ->
     | speaker
     | alternate
     | branch
+    | signal
+    | yield
 
 say -> Text Newline?
 
@@ -40,6 +42,7 @@ skip ->
 
 set -> SetKeyword Identifier (SetEquals Text)? DirectiveNewline
 signal -> SignalKeyword Identifier (SignalDelim Text)? DirectiveNewline
+yield -> YieldSignalKeyword Identifier (YieldSignalDelim Text)? DirectiveNewline
 
 label -> LabelToken Text Newline?
 goto -> GotoToken Text Newline?
@@ -58,9 +61,9 @@ import {
 
     SetKeyword, Identifier, SetEquals, DirectiveNewline,
     SignalKeyword, SignalDelim, BranchBlockOpen, BranchBlockClose,
-    WhenStatementOpen, WhenEquals,
+    WhenStatementOpen, WhenEquals, YieldSignalKeyword, YieldSignalDelim,
 
-    allTokens
+    allTokens,
 } from './lexer';
 
 export class DialogueParser extends CstParser {
@@ -83,6 +86,7 @@ export class DialogueParser extends CstParser {
             { ALT: () => this.SUBRULE(this.goto) },
             { ALT: () => this.SUBRULE(this.set) },
             { ALT: () => this.SUBRULE(this.signal) },
+            { ALT: () => this.SUBRULE(this.yield) },
             { ALT: () => this.SUBRULE(this.speaker) },
             { ALT: () => this.SUBRULE(this.alternate) }
         ]);
@@ -184,5 +188,15 @@ export class DialogueParser extends CstParser {
         });
         this.CONSUME(DirectiveNewline);
     });
+
+    yield = this.RULE('yield', () => {
+        this.CONSUME(YieldSignalKeyword);
+        this.CONSUME(Identifier);
+        this.OPTION(() => {
+            this.CONSUME(YieldSignalDelim);
+            this.CONSUME(Text);
+        });
+        this.CONSUME(DirectiveNewline);
+    })
 
 }

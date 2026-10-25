@@ -52,7 +52,7 @@ export function astToNetworkData(ast: DialogueAST): Data {
                     label: `set: ${node.identifier}${node.value === undefined ? '' : ` = ${JSON.stringify(node.value)}`}`
                 });
                 break;
-            // TODO alternate & speaker
+            // TODO alternate & speaker, yield, etc
         }
 
         if (parentId !== undefined) {

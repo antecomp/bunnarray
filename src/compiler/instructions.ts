@@ -34,6 +34,11 @@ export type Instruction =
         value: string | undefined
     }
     | {
+        op: 'YIELD';
+        identifier: string,
+        value: string | undefined
+    }
+    | {
         op: 'SPEAKER';
         value: string | null;
     }

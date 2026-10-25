@@ -30,6 +30,8 @@ export default function formatIR(program: Program): string {
                 return `${prefix} ${instruction.identifier} = ${instruction.value}\n`;
             case 'SIGNAL':
                 return `${prefix} ${instruction.identifier}${instruction.value === undefined ? '' : ` = ${JSON.stringify(instruction.value)}`}\n`;
+            case 'YIELD':
+                return `${prefix} ${instruction.identifier}${instruction.value === undefined ? '' : ` = ${JSON.stringify(instruction.value)}`}\n`;
             case 'SPEAKER':
                 return `${prefix} ${instruction.value}\n`;
             case 'ALTERNATE':

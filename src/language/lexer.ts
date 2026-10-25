@@ -120,6 +120,19 @@ export const SignalDelim = createToken({
     push_mode: 'signalValue'
 });
 
+export const YieldSignalKeyword = createToken({
+    name: 'YieldSignalKeyword',
+    pattern: /:YIELD\b/,
+    push_mode: 'yieldHeader'
+});
+
+export const YieldSignalDelim = createToken({
+    name: 'YieldSignalDelim',
+    pattern: /:[ \t]*/,
+    pop_mode: true,
+    push_mode: 'yieldValue'
+});
+
 // --- Branches and Conditionals ---
 export const BranchBlockOpen = createToken({
     name: 'BranchBlockOpen',
@@ -163,6 +176,7 @@ const normalTokens = [
     SpeakerKeyword,
     AlternateKeyword,
     SignalKeyword,
+    YieldSignalKeyword,
     CloseBracket,
     Whitespace,
     Text
@@ -174,6 +188,7 @@ export const allTokens = [
     SetEquals,
     WhenEquals,
     SignalDelim,
+    YieldSignalDelim,
     DirectiveNewline
 ];
 
@@ -185,6 +200,8 @@ export const DialogueLexer = new Lexer({
         setValue: [Text, DirectiveNewline],
         signalHeader: [Whitespace, Identifier, SignalDelim, DirectiveNewline],
         signalValue: [Text, DirectiveNewline],
+        yieldHeader: [Whitespace, Identifier, YieldSignalDelim, DirectiveNewline],
+        yieldValue: [Text, DirectiveNewline],
         whenHeader: [Whitespace, Identifier, WhenEquals, DirectiveNewline]
     }
 });

@@ -59,7 +59,7 @@ export class DialogueVisitor extends BaseVisitor {
             ctx.say?.[0] ?? ctx.choice?.[0] ??
             ctx.skip?.[0] ?? ctx.label?.[0] ?? ctx.goto?.[0] ??
             ctx.set?.[0] ?? ctx.speaker?.[0] ?? ctx.alternate?.[0] ??
-            ctx.signal?.[0] ?? ctx.branch?.[0]
+            ctx.signal?.[0] ?? ctx.branch?.[0] ?? ctx.yield?.[0]
             ;
 
         return this.visit(node);
@@ -132,6 +132,15 @@ export class DialogueVisitor extends BaseVisitor {
         const value: string | undefined = ctx.Text?.[0]?.image;
         return {
             type: 'signal',
+            identifier: (ctx.Identifier[0].image.trim()),
+            value: value === undefined ? undefined : decodeText(value)
+        };
+    }
+
+    yield(ctx: any): A.YieldStatement {
+        const value: string | undefined = ctx.Text?.[0]?.image;
+        return {
+            type: 'yield',
             identifier: (ctx.Identifier[0].image.trim()),
             value: value === undefined ? undefined : decodeText(value)
         };

@@ -128,6 +128,14 @@ export default function (ast: DialogueAST): Program {
                 break;
             }
 
+            case 'yield': {
+                emit(INS('YIELD', {
+                    identifier: statement.identifier,
+                    value: statement.value
+                }));
+                break;                
+            }
+
             case 'speaker': {
                 emit(INS('SPEAKER', {
                     value: statement.value
