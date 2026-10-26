@@ -1,74 +1,81 @@
 import type { Program } from './compiler/instructions';
-import createVM from './interpreter/vm';
+import createVM, { type Emission, type Wait } from './interpreter/vm';
 
-type Step = ReturnType<ReturnType<typeof createVM>['init']>;
-
-/** Append each VM yield to the dialogue stack as it is reached. */
+/** Append VM emissions and offer the action required by each pause. */
 export default function runDialogue(program: Program, stack: HTMLDivElement): void {
-    const vm = createVM(program);
+    let actionEntry: HTMLDivElement | null = null;
+    let options: string[] = [];
 
-    vm.signals.subscribe(({ identifier, value }) => {
+    function appendEntry(text?: string): HTMLDivElement {
         const entry = document.createElement('div');
         entry.className = 'dialogue-entry';
-
-        const text = document.createElement('p');
-        text.className = 'dialogue-text';
-        text.textContent = `Signal emitted: ${identifier}${value === undefined ? '' : `: ${value}`}`;
-        entry.append(text);
-
+        if (text !== undefined) {
+            const paragraph = document.createElement('p');
+            paragraph.className = 'dialogue-text';
+            paragraph.textContent = text;
+            entry.append(paragraph);
+        }
         stack.append(entry);
-    });
+        return entry;
+    }
 
-    function render(step: Step): void {
-        if (step.kind === 'end' && step.presentation === null) return;
-
-        const entry = document.createElement('div');
-        entry.className = 'dialogue-entry';
-
-        if (step.presentation !== null) {
-            const text = document.createElement('p');
-            text.className = 'dialogue-text';
-            text.textContent = (step.presentation.speaker ?? '(NARRATOR)') + ': ' + step.presentation.text;
-            entry.append(text);
+    function handleEmission(emission: Emission): void {
+        switch (emission.kind) {
+            case 'say':
+                actionEntry = appendEntry(`${emission.speaker ?? '(NARRATOR)'}: ${emission.text}`);
+                break;
+            case 'signal':
+            case 'yield': {
+                const label = emission.kind === 'signal' ? 'Signal' : 'Yield';
+                const entry = appendEntry(`${label} emitted: ${emission.identifier}${emission.value === undefined ? '' : `: ${emission.value}`}`);
+                if (emission.kind === 'yield') actionEntry = entry;
+                break;
+            }
+            case 'options':
+                options = emission.options;
+                actionEntry ??= appendEntry();
+                break;
+            case 'end':
+                break;
         }
+    }
 
-        if (step.kind === 'yield') {
-            const text = document.createElement('p');
-            text.className = 'dialogue-text';
-            text.textContent = `Yield emitted: ${step.identifier}${step.value === undefined ? '' : `: ${step.value}`}`;
-            entry.append(text);
-        }
+    const vm = createVM(program, { handler: handleEmission });
+
+    function advance(run: () => Wait): void {
+        actionEntry = null;
+        options = [];
+        const wait = run();
+        if (wait === 'end') return;
 
         const actions = document.createElement('div');
         actions.className = 'dialogue-actions';
+        const buttons: HTMLButtonElement[] = [];
+        let consumed = false;
 
-        if (step.kind === 'say' || step.kind === 'yield') {
+        function addButton(label: string, resume: () => Wait): void {
             const button = document.createElement('button');
             button.type = 'button';
-            button.textContent = 'Continue';
+            button.textContent = label;
             button.addEventListener('click', () => {
-                const next = step.resume();
+                if (consumed) return;
+                consumed = true;
+                buttons.forEach(action => { action.disabled = true; });
                 button.classList.add('is-selected');
-                render(next);
+                advance(resume);
             });
+            buttons.push(button);
             actions.append(button);
-        } else if (step.kind === 'choice') {
-            step.choices.forEach((choice, index) => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.textContent = choice;
-                button.addEventListener('click', () => {
-                    const next = step.resume(index);
-                    button.classList.add('is-selected');
-                    render(next);
-                });
-                actions.append(button);
-            });
         }
 
-        if (step.kind !== 'end') entry.append(actions);
-        stack.append(entry);
+        if (wait === 'select') {
+            options.forEach((option, index) => addButton(option, () => vm.choose(index)));
+        } else {
+            addButton('Continue', wait === 'next' ? () => vm.next() : () => vm.resume());
+        }
+
+        (actionEntry ?? appendEntry()).append(actions);
     }
 
-    render(vm.init());
+    advance(() => vm.start());
 }

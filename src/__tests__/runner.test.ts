@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Instruction } from '../compiler/instructions';
-import runDialogue from '../runner2';
+import runDialogue from '../runner';
 
 /** The runner only needs element creation, appending, and click listeners. */
 class Element {
@@ -28,7 +28,7 @@ class Element {
     }
 }
 
-describe('runner2 with vm2', () => {
+describe('runner with vm', () => {
     let stack: Element;
 
     beforeEach(() => {

@@ -1,67 +1,73 @@
-import type { EqualityCondition, Program } from '../compiler/instructions';
+import type { EqualityCondition, Operation, Program } from '../compiler/instructions';
 import once from '../util/once';
 import createMemory from './mem';
-import type { SignalNotification } from './signals';
-import createSubscriptions from './subscriptions';
 
-type Presentation = {
-    text: string;
-    speaker: string | null;
-};
+export type Emission =
+    | { kind: 'say'; text: string; speaker: string | null }
+    | { kind: 'signal'; identifier: string; value: string | undefined }
+    | { kind: 'yield'; identifier: string; value: string | undefined }
+    | { kind: 'options'; options: string[] }
+    | { kind: 'end' }
 
-type Yield =
-    | {
-        kind: 'say';
-        presentation: Presentation;
-        resume: () => Yield;
-    }
-    | {
-        kind: 'choice';
-        presentation: Presentation | null;
-        choices: string[];
-        resume: (index: number) => Yield;
-    }
-    | {
-        kind: 'yield';
-        presentation: Presentation | null;
-        identifier: string;
-        value: string | undefined;
-        resume: () => Yield;
-    }
-    | {
-        kind: 'end';
-        presentation: Presentation | null;
-    };
+/** Constructs an Emission */
+export function EM<E extends Emission['kind']>(
+    kind: E,
+    config: Omit<Extract<Emission, { kind: E }>, 'kind'>
+): Extract<Emission, { kind: E }> {
+    return { kind, ...config } as Extract<Emission, { kind: E }>;
+}
+
+export type Wait = 'next' | 'select' | 'yield' | 'end';
+
+type EmissionHandler = (emission: Emission) => void;
+type Choice = Operation<'CHOICE'>['choices'][number];
 
 type VMOptions = {
     memory?: Record<string, string>
-};
+    handler: EmissionHandler
+}
 
-export default function createVM(
-    program: Program,
-    options: VMOptions = {}
-) {
-    let pending: Presentation | null = null;
-    let pc: number = 0;
+export default function createVM(program: Program, { handler: emit, memory: initialMemory }: VMOptions) {
+    const memory = createMemory(initialMemory);
+
+    let pc = 0;
+    let waiting: Wait | null = null;    // what the consumer owes before resuming.
+    let canExecSay = true;              // allow printing the say and continue (next or automatically)
+    let visibleChoices: Choice[] = [];  // snapshot of visible choices
+
     let speaker: string | null = null;
     let alternateSpeakers: string[] = [];
-    let nextSpeakerIndex = 0;
-    const memory = createMemory(options.memory);
-    const signals = createSubscriptions<SignalNotification>();
+    let nextAlternate = 0;
 
-    function insertVariables(line: string): string {
-        return line.replace(
+
+    // --- util ---
+    function interpolate(text: string): string {
+        return text.replace(
             /\$([A-Za-z_][A-Za-z0-9_]*)/g,
-            (_, identifier: string) => memory.get(identifier) ?? '');
+            (_, identifier: string) => memory.get(identifier) ?? ''
+        );
     }
 
-    function matchesCondition(condition: EqualityCondition): boolean {
+    function matches(condition: EqualityCondition): boolean {
         return memory.get(condition.identifier) === condition.value;
     }
 
-    const init = once(_run);
+    function speakerForNextLine(): string | null {
+        if (alternateSpeakers.length > 0) {
+            speaker = alternateSpeakers[nextAlternate];
+            nextAlternate = (nextAlternate + 1) % alternateSpeakers.length;
+        }
+        return speaker;
+    }
 
-    function _run(): Yield {
+    function stopWith(wait: Wait): Wait {
+        waiting = wait;
+        return wait;
+    }
+
+    function run(): Wait {
+        waiting = null;
+
         for (; ;) {
             const ins = program.instructions[pc];
 
@@ -69,113 +75,107 @@ export default function createVM(
                 case 'JUMP':
                     pc = ins.target;
                     continue;
-                case 'END':
-                    return {
-                        kind: 'end',
-                        presentation: pending
-                    };
-                case 'SAY': {
-                    const previous = pending;
-                    if (alternateSpeakers.length > 0) {
-                        speaker = alternateSpeakers[nextSpeakerIndex];
-                        nextSpeakerIndex = (nextSpeakerIndex + 1) % alternateSpeakers.length;
-                    }
-                    pending = { text: insertVariables(ins.text), speaker };
-                    pc++;
 
-                    if (previous !== null) {
-                        return {
-                            kind: 'say',
-                            presentation: previous,
-                            resume: once(_run)
-                        };
-                    }
-                    continue;
-                }
-                case 'CHOICE': {
-                    const visibleChoices = ins.choices.filter(choice =>
-                        choice.condition === undefined || matchesCondition(choice.condition)
-                    );
-
-                    if (visibleChoices.length === 0) {
-                        pc = ins.fallback;
-                        if (pending !== null) {
-                            const presentation = pending;
-                            pending = null;
-                            return {
-                                kind: 'say',
-                                presentation,
-                                resume: once(_run)
-                            };
-                        }
-                        continue;
-                    }
-
-                    return {
-                        kind: 'choice',
-                        presentation: pending,
-                        choices: visibleChoices.map(choice => choice.text),
-                        resume: once(index => {
-                            if (!visibleChoices[index]) throw new Error('Invalid choice index: ' + index);
-                            pc = visibleChoices[index].target;
-                            // reset pending, branch should emit prompt once
-                            pending = null;
-                            return _run();
-                        })
-                    };
-                }
                 case 'BRANCH':
-                    pc = ins.cases.find(branchCase =>
-                        matchesCondition(branchCase.condition)
-                    )?.target ?? ins.fallback;
+                    pc = ins.cases.find(branchCase => matches(branchCase.condition))?.target ?? ins.fallback;
                     continue;
 
                 case 'SET':
-                    if (ins.value === undefined) {
-                        memory.delete(ins.identifier);
-                    } else {
-                        memory.set(ins.identifier, insertVariables(ins.value));
-                    }
+                    if (ins.value === undefined) memory.delete(ins.identifier);
+                    else memory.set(ins.identifier, interpolate(ins.value));
                     pc++;
                     continue;
-
-                case 'SIGNAL':
-                    signals.notify({ identifier: ins.identifier, value: ins.value });
-                    pc++;
-                    continue;
-
-                case 'YIELD': {
-                    const presentation = pending;
-                    pending = null;
-                    pc++;
-                    return {
-                        kind: 'yield',
-                        presentation,
-                        identifier: ins.identifier,
-                        value: ins.value,
-                        resume: once(_run)
-                    };
-                }
 
                 case 'SPEAKER':
                     speaker = ins.value;
                     alternateSpeakers = [];
-                    nextSpeakerIndex = 0;
+                    nextAlternate = 0;
                     pc++;
                     continue;
 
                 case 'ALTERNATE':
                     alternateSpeakers = ins.speakers;
-                    nextSpeakerIndex = 0;
+                    nextAlternate = 0;
                     pc++;
                     continue;
+
+                case 'SIGNAL':
+                    emit(EM('signal', ins));
+                    pc++;
+                    continue;
+
+                case 'YIELD':
+                    emit(EM('yield', ins));
+                    pc++;
+                    return stopWith('yield');
+
+                case 'SAY':
+                    // Pause *before* execution.
+                    if (!canExecSay) return stopWith('next');
+                    canExecSay = false;
+                    emit(EM('say', {
+                        text: interpolate(ins.text),
+                        speaker: speakerForNextLine()
+                    }));
+                    pc++;
+                    continue;
+
+                case 'CHOICE':
+                    visibleChoices = ins.choices.filter(
+                        choice => choice.condition === undefined || matches(choice.condition)
+                    );
+                    if (visibleChoices.length === 0) {
+                        pc = ins.fallback;
+                        continue;
+                    }
+                    emit(EM('options', { options: visibleChoices.map(choice => choice.text) }));
+                    return stopWith('select');
+
+                case 'END':
+                    emit({ kind: 'end' });
+                    return stopWith('end');
             }
         }
     }
 
+    // --- API ---
+    function expectWaiting(wait: Wait, caller: string): void {
+        if (waiting !== wait) {
+            throw new Error(
+                `${caller}() called, but the VM is `
+                + (waiting === null ? 'not paused' : `waiting for '${waiting}'`)
+            );
+        }
+    }
+
     return {
-        init,
         memory,
-        signals: { subscribe: signals.subscribe }
-    };
+
+        start: once(() => {
+            canExecSay = true;
+            return run();
+        }),
+
+        next(): Wait {
+            expectWaiting('next', 'next');
+            canExecSay = true;
+            return run();
+        },
+
+        choose(index: number): Wait {
+            expectWaiting('select', 'choose');
+            const choice = visibleChoices[index];
+            if (!choice) throw new Error('Invalid choice index: ' + index);
+            pc = choice.target;
+            canExecSay = true;
+            return run();
+        },
+
+        // doesn't affect canExecSay -- inherits how we should block from above
+        resume(): Wait {
+            expectWaiting('yield', 'resume');
+            return run();
+        }
+
+    }
 }

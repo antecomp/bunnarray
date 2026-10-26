@@ -8,10 +8,20 @@ I hope to make something more generic that can be used for my (and others) own p
 Because I am utterly insane I took this as an opportunity to create my own custom dialogue language parser using [chevrotain](https://chevrotain.io/docs/).
 
 ## Runtime Usage
-`build(source)` compiles `.bny` text into a versioned instruction program. Pass that program to `createVM`, then call `vm.init()` to start. The VM returns steps with `kind: 'say'`, `'choice'`, `'yield'`, or `'end'`. Call `resume()` on a dialogue line or yielded signal to continue, or `resume(index)` on a choice with the selected zero-based option index. An end result has no resume callback. Initialization and each resume callback can only be called once; repeated calls throw. Game state lives in `vm.memory` and can be supplied when the VM is created:
+`build(source)` compiles `.bny` text into a versioned instruction program. Pass it to `createVM` with an emission handler, then call `vm.start()` once. The handler receives `say`, `signal`, `yield`, `options`, and `end` emissions in execution order. Each execution call returns the action the VM is waiting for:
+
+- `next`: call `vm.next()` to show the next dialogue line.
+- `select`: call `vm.choose(index)` with the zero-based index from the emitted options.
+- `yield`: call `vm.resume()` after handling the yielded action.
+- `end`: execution has finished.
+
+Calls that do not match the current wait state throw. Game state lives in `vm.memory` and can be supplied when the VM is created:
 ```ts
-const vm = createVM(build(source), { memory: { dragon: 'slain' } });
-const firstStep = vm.init();
+const vm = createVM(build(source), {
+    memory: { dragon: 'slain' },
+    handler: emission => console.log(emission)
+});
+const wait = vm.start();
 ```
 
 ## Writing Dialogue
@@ -35,7 +45,7 @@ Still Alice speaking.
 :SPEAKER
 The story continues.
 ```
-The runtime presentation includes the speaker name, or `null` for the narrator.
+Each `say` emission includes the speaker name, or `null` for the narrator.
 
 Use `:ALTERNATE` with semicolon-separated names to rotate speakers on each dialogue line. Names may contain spaces. A bare `:ALTERNATE` stops the rotation and leaves the last speaker in place. `:SPEAKER` also stops the rotation and sets a new speaker.
 ```
@@ -201,12 +211,16 @@ Here is the key to the castle!
 :SIGNAL keygiven
 :SIGNAL quest:complete
 ```
-Subscribe through the VM. The callback receives `{ identifier, value }`, where `value` is `undefined` for a signal without a value:
+Handle signals through the emission handler. Signal emissions contain `{ kind: 'signal', identifier, value }`, where `value` is `undefined` when omitted. Signals continue execution immediately:
 ```ts
-const unsubscribe = vm.signals.subscribe(({ identifier, value }) => {
-    console.log(identifier, value);
+const vm = createVM(build(source), {
+    handler: emission => {
+        if (emission.kind === 'signal') {
+            console.log(emission.identifier, emission.value);
+        }
+    }
 });
-// Call unsubscribe() when the listener is no longer needed.
+vm.start();
 ```
 Inline tags such as `<face:thinking>` and `<signal:keygiven>` are currently ordinary dialogue text; they do not create built-in face changes or signals.
 
@@ -221,22 +235,24 @@ The door won't open {
         The lock clicks open.
 }
 ```
-The VM returns `{ kind: 'yield', presentation, identifier, value, resume }`. The consumer displays any included presentation, then can perform an action, wait for an animation, or update `vm.memory` before calling `resume()` to continue after the directive. The value is `undefined` when omitted. The presentation is `null` if there is no pending dialogue. A yielded signal does not notify `vm.signals` subscribers. `:SIGNAL` notifies subscribers and continues execution immediately; `:YIELD` waits for the consumer to resume.
+The handler receives `{ kind: 'yield', identifier, value }`, and the execution call returns `'yield'`. The value is `undefined` when omitted. The consumer can perform an action, wait for an animation, or update `vm.memory` before calling `vm.resume()`. A yield pauses execution; a signal continues immediately.
 
-For example, handling the first step of the script above:
+For example, handling the leading yield in the script above:
 ```ts
-const vm = createVM(build(source));
-const step = vm.init();
-if (step.kind === 'yield') {
-    if (step.presentation !== null) {
-        showDialogue(step.presentation); // Your application's dialogue renderer.
+let action: { identifier: string; value: string | undefined } | undefined;
+const vm = createVM(build(source), {
+    handler: emission => {
+        if (emission.kind === 'yield') action = emission;
+        else console.log(emission); // Render dialogue and options in your application.
     }
-    await performAction(step.identifier, step.value); // Your application's action handler.
-    const nextStep = step.resume();
-    // Pass nextStep to your dialogue renderer.
+});
+let wait = vm.start();
+if (wait === 'yield' && action) {
+    await performAction(action.identifier, action.value); // Your application's action handler.
+    wait = vm.resume();
 }
 ```
-Dialogue text is queued so it can be paired with following choices. A yield consumes the pending text and includes it in its own presentation, preserving the visible order of text and actions. For `A`, `B`, `:YIELD action`, the consumer presents A, then receives a yield with B. Resuming continues after the action without repeating B. In the example above, there is no pending text, so `rattle_door` completes before the prompt and choices are presented.
+Dialogue is emitted immediately. For `A`, `B`, `:YIELD action`, starting emits A and returns `'next'`; calling `vm.next()` emits B followed by the yield and returns `'yield'`. Resuming preserves the line pause: if another dialogue line follows, the VM returns `'next'` before emitting it. A leading yield allows the first dialogue line to be emitted when resumed.
 
 To delay choices until an action finishes, put a yield between their prompt and a bare choice block:
 ```bny
@@ -249,9 +265,9 @@ Choose your route.
         Up the trail.
 }
 ```
-The yield includes "Choose your route." as its presentation. Resuming returns the choices with `presentation: null`, so the prompt is shown only once. Choice conditions are evaluated after the action resumes.
+The VM emits "Choose your route." before the yield. Resuming emits the options without repeating the prompt. Choice conditions are evaluated after the action resumes.
 
-The browser demo displays any presentation before the yielded identifier and value, with a Continue button. Clicking it resumes the VM; a game integration can resume after its own action completes instead.
+The browser demo displays dialogue and yielded identifiers and values in emission order, with a Continue button at each pause. Clicking it resumes the VM; a game integration can resume after its own action completes instead.
 
 ### Runtime Variables
 The same string memory is used by branch conditions and `$variables` in dialogue text:
@@ -267,7 +283,10 @@ Variable names start with a letter or underscore and can then contain letters, d
 
 You can also supply initial values and change them while the VM is running:
 ```ts
-const vm = createVM(build(source), { memory: { name: 'Rabbit' } });
+const vm = createVM(build(source), {
+    memory: { name: 'Rabbit' },
+    handler: emission => console.log(emission)
+});
 vm.memory.set('dragon', 'slain');
 const name = vm.memory.get('name');
 vm.memory.delete('dragon');
