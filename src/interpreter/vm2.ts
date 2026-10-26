@@ -33,8 +33,7 @@ export default function createVM(program: Program, { handler: emit, memory: init
     let pc = 0;
     let waiting: Wait | null = null;    // what the consumer owes before resuming.
     let canExecSay = true;              // allow printing the say and continue (next or automatically)
-    // TODO: Can we bundle this into the emission cleaner? So we're not working by index?
-    let visibleChoices: Choice[] = [];
+    let visibleChoices: Choice[] = [];  // snapshot of visible choices
 
     let speaker: string | null = null;
     let alternateSpeakers: string[] = [];
