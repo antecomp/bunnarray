@@ -32,7 +32,7 @@ export default function createVM(program: Program, { handler: emit, memory: init
 
     let pc = 0;
     let waiting: Wait | null = null;    // what the consumer owes before resuming.
-    let advance = true;             // allow printing the say and continue (next or automatically)
+    let canExecSay = true;              // allow printing the say and continue (next or automatically)
     // TODO: Can we bundle this into the emission cleaner? So we're not working by index?
     let visibleChoices: Choice[] = [];
 
@@ -103,7 +103,7 @@ export default function createVM(program: Program, { handler: emit, memory: init
                 case 'SIGNAL':
                     emit(EM('signal', ins));
                     pc++;
-                    break;
+                    continue;
 
                 case 'YIELD':
                     emit(EM('yield', ins));
@@ -111,8 +111,9 @@ export default function createVM(program: Program, { handler: emit, memory: init
                     return stopWith('yield');
 
                 case 'SAY':
-                    if (!advance) return stopWith('next');
-                    advance = false;
+                    // Pause *before* execution.
+                    if (!canExecSay) return stopWith('next');
+                    canExecSay = false;
                     emit(EM('say', {
                         text: interpolate(ins.text),
                         speaker: speakerForNextLine()
@@ -152,13 +153,13 @@ export default function createVM(program: Program, { handler: emit, memory: init
         memory,
 
         start: once(() => {
-            advance = true;
+            canExecSay = true;
             return run();
         }),
 
         next(): Wait {
             expectWaiting('next', 'next');
-            advance = true;
+            canExecSay = true;
             return run();
         },
 
@@ -167,10 +168,11 @@ export default function createVM(program: Program, { handler: emit, memory: init
             const choice = visibleChoices[index];
             if (!choice) throw new Error('Invalid choice index: ' + index);
             pc = choice.target;
-            advance = true;
+            canExecSay = true;
             return run();
         },
         
+        // doesn't affect canExecSay -- inherits how we should block from above
         resume(): Wait {
             expectWaiting('yield', 'resume');
             return run();
