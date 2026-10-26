@@ -54,6 +54,7 @@ export default function (ast: DialogueAST): Program {
                     currentChoice.choices.push({
                         text: branch.text,
                         target: pos(),
+                        ...(branch.id === undefined ? {} : { id: branch.id }),
                         ...(branch.condition === undefined ? {} : {
                             condition: {
                                 identifier: branch.condition.identifier,
@@ -160,7 +161,6 @@ export default function (ast: DialogueAST): Program {
 
         (instructions[pending.fromIndex] as Operation<'JUMP'>).target = labels[pending.target];
     });
-
 
     return { 
         version: 'indev',

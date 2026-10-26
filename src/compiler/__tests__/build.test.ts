@@ -102,6 +102,23 @@ how has life been treating you?`, [
     });
 
     describe('options and fallbacks', () => {
+        it('retains choice IDs and leaves untagged choices without an ID', () => {
+            const { instructions } = build(`{
+                ?: [id:first] First
+                ?: [when:ready=yes] [id:second] Second
+                ?: Plain
+            }`);
+            const choice = instructions.find(instruction => instruction.op === 'CHOICE');
+            if (choice?.op !== 'CHOICE') throw new Error('Expected a CHOICE instruction');
+
+            expect(choice.choices.map(({ id, text }) => ({ id, text }))).toEqual([
+                { id: 'first', text: 'First' },
+                { id: 'second', text: 'Second' },
+                { id: undefined, text: 'Plain' }
+            ]);
+            expect(choice.choices[2]).not.toHaveProperty('id');
+        });
+
         it('keeps optional conditions on their own choices and records the no-choice fallback', () => {
             expectIR(`Ask? {
                 ?: [when:state=ready] Ready

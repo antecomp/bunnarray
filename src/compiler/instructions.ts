@@ -11,6 +11,7 @@ export type Instruction =
             text: string;
             target: number;
             condition?: EqualityCondition;
+            id?: string;
         }[]
         fallback: number;
     }
