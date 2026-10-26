@@ -31,6 +31,7 @@ export type ChoiceBranch = {
     type: 'choiceBranch'
     text: string,
     condition: Condition | undefined
+    id: string | undefined
     statements: Statement[]
 };
 

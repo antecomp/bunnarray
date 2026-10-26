@@ -22,7 +22,7 @@ choice ->
     CurlyBraceClose Newline?
 
 choiceBranch ->
-    ChoiceToken when? Text Newline
+    ChoiceToken (when id? | id when?)? Text Newline?
         statement*
 
 branch ->
@@ -57,7 +57,7 @@ import {
     Newline, CurlyBraceOpen, CurlyBraceClose, SkipBlockOpen,
     SkipBlockClose, ChoiceToken,
     GotoToken, LabelToken, CloseBracket, Text, SpeakerKeyword,
-    AlternateKeyword,
+    AlternateKeyword, IdBlockOpen, IdBlockClose,
 
     SetKeyword, Identifier, SetEquals, DirectiveNewline,
     SignalKeyword, SignalDelim, BranchBlockOpen, BranchBlockClose,
@@ -107,10 +107,32 @@ export class DialogueParser extends CstParser {
 
     choiceBranch = this.RULE('choiceBranch', () => {
         this.CONSUME(ChoiceToken);
-        this.OPTION(() => this.SUBRULE(this.when));
+        // (when id? | id when?)? Text
+        this.OPTION(() => {
+            this.OR([
+                {
+                    ALT: () => {
+                        this.SUBRULE(this.when);
+                        this.OPTION1(() => this.SUBRULE(this.id));
+                    }
+                },
+                {
+                    ALT: () => {
+                        this.SUBRULE1(this.id);
+                        this.OPTION2(() => this.SUBRULE1(this.when));
+                    }
+                }
+            ]);
+        });
         this.CONSUME(Text);
-        this.OPTION1(() => this.CONSUME(Newline));
+        this.OPTION3(() => this.CONSUME(Newline));
         this.MANY(() => this.SUBRULE(this.statement));
+    });
+
+    id = this.RULE('id', () => {
+        this.CONSUME(IdBlockOpen);
+        this.CONSUME(Text);
+        this.CONSUME(IdBlockClose);
     });
 
     branch = this.RULE('branch', () => {

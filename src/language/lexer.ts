@@ -156,6 +156,18 @@ export const WhenEquals = createToken({
     pop_mode: true
 });
 
+// --- Option IDs ---
+export const IdBlockOpen = createToken({
+    name: 'IdBlockOpen',
+    pattern: /\[id:/,
+    push_mode: 'idHeader'
+});
+
+export const IdBlockClose = createToken({
+    name: 'IdBlockClose',
+    pattern: /\]/,
+    pop_mode: true
+});
 
 // --- Lexer ---
 // Order is priority, first match wins.
@@ -177,6 +189,7 @@ const normalTokens = [
     AlternateKeyword,
     SignalKeyword,
     YieldSignalKeyword,
+    IdBlockOpen,
     CloseBracket,
     Whitespace,
     Text
@@ -189,6 +202,7 @@ export const allTokens = [
     WhenEquals,
     SignalDelim,
     YieldSignalDelim,
+    IdBlockClose,
     DirectiveNewline
 ];
 
@@ -202,6 +216,7 @@ export const DialogueLexer = new Lexer({
         signalValue: [Text, DirectiveNewline],
         yieldHeader: [Whitespace, Identifier, YieldSignalDelim, DirectiveNewline],
         yieldValue: [Text, DirectiveNewline],
-        whenHeader: [Whitespace, Identifier, WhenEquals, DirectiveNewline]
+        whenHeader: [Whitespace, Identifier, WhenEquals, DirectiveNewline],
+        idHeader: [Text, IdBlockClose]
     }
 });
