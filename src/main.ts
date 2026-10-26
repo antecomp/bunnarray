@@ -3,7 +3,7 @@ import stock from '../examples/test.bny?raw';
 import build from './compiler/testbuild';
 import { astToNetworkData } from './visualize/astToNetworkData';
 import formatIR from './visualize/formatIR';
-import runDialogue from './runner';
+import runDialogue from './runner2';
 
 const compileButton = document.getElementById('compile-button') as HTMLButtonElement;
 const demoTextarea = document.getElementById('demo-textarea') as HTMLTextAreaElement;
