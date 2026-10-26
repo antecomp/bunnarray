@@ -32,7 +32,7 @@ export default function createVM(program: Program, { handler: emit, memory: init
 
     let pc = 0;
     let waiting: Wait | null = null;    // what the consumer owes before resuming.
-    let autoAdvance = true;             // print a say without next call (i.e at start / after options
+    let advance = true;             // allow printing the say and continue (next or automatically)
     // TODO: Can we bundle this into the emission cleaner? So we're not working by index?
     let visibleChoices: Choice[] = [];
 
@@ -72,7 +72,7 @@ export default function createVM(program: Program, { handler: emit, memory: init
         for (; ;) {
             const ins = program.instructions[pc];
 
-            switch(ins.op) {
+            switch (ins.op) {
                 case 'JUMP':
                     pc = ins.target;
                     continue;
@@ -104,17 +104,47 @@ export default function createVM(program: Program, { handler: emit, memory: init
                     emit(EM('signal', ins));
                     pc++;
                     break;
+
+                case 'YIELD':
+                    emit(EM('yield', ins));
+                    pc++;
+                    return stopWith('yield');
+
+                case 'SAY':
+                    if (!advance) return stopWith('next');
+                    advance = false;
+                    emit(EM('say', {
+                        text: interpolate(ins.text),
+                        speaker: speakerForNextLine()
+                    }));
+                    pc++;
+                    continue;
+
+                case 'CHOICE':
+                    visibleChoices = ins.choices.filter(
+                        choice => choice.condition === undefined || matches(choice.condition)
+                    );
+                    if (visibleChoices.length === 0) {
+                        pc = ins.fallback;
+                        continue;
+                    }
+                    emit(EM('options', { options: visibleChoices.map(choice => choice.text) }));
+                    return stopWith('select');
+
+                case 'END':
+                    emit({ kind: 'end' });
+                    return stopWith('end');
             }
         }
     }
 
-
-
     // --- API ---
     function expectWaiting(wait: Wait, caller: string): void {
         if (waiting !== wait) {
-            throw new Error(`${caller}() called, but the VM is ${waiting === null ? 'not paused' : `waiting for '${waiting}'`
-                }.`);
+            throw new Error(
+                `${caller}() called, but the VM is `
+                + (waiting === null ? 'not paused' : `waiting for '${waiting}'`)
+            );
         }
     }
 
@@ -122,7 +152,29 @@ export default function createVM(program: Program, { handler: emit, memory: init
         memory,
 
         start: once(() => {
+            advance = true;
+            return run();
+        }),
 
-        })
+        next(): Wait {
+            expectWaiting('next', 'next');
+            advance = true;
+            return run();
+        },
+
+        choose(index: number): Wait {
+            expectWaiting('select', 'choose');
+            const choice = visibleChoices[index];
+            if (!choice) throw new Error('Invalid choice index: ' + index);
+            pc = choice.target;
+            advance = true;
+            return run();
+        },
+        
+        resume(): Wait {
+            expectWaiting('yield', 'resume');
+            return run();
+        }
+
     }
 }
