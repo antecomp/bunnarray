@@ -98,7 +98,7 @@ describe('runner with vm', () => {
             { op: 'CHOICE', choices: [
                 { text: 'Hidden', target: 1, condition: { identifier: 'hidden', value: 'yes' } },
                 { text: 'Left', target: 1 },
-                { text: 'Right', target: 3 }
+                { text: 'Right', id: 'right', target: 3 }
             ], fallback: 5 },
             { op: 'SAY', text: 'Left branch' },
             { op: 'END' },

@@ -68,16 +68,19 @@ describe('VM', () => {
 
     it.each([0, 1])('follows visible choice %i and rejoins after the branch', index => {
         const { vm, emissions } = runtime(`Pick one {
-            ?: [when:hidden=yes] Hidden
+            ?: [when:hidden=yes] [id:hidden] Hidden
                 Unreachable
-            ?: Left
+            ?: [id:left] Left
                 Left branch
             ?: Right
                 Right branch
         }
         After`);
         expect(vm.start()).toBe('select');
-        expect(emissions).toEqual([say('Pick one'), { kind: 'options', options: ['Left', 'Right'] }]);
+        expect(emissions).toEqual([say('Pick one'), { kind: 'options', options: [
+            { text: 'Left', id: 'left' },
+            { text: 'Right' }
+        ] }]);
         expect(() => vm.choose(2)).toThrow('Invalid choice index: 2');
         expect(vm.choose(index)).toBe('next');
         expect(emissions[2]).toEqual(say(index === 0 ? 'Left branch' : 'Right branch'));
@@ -95,7 +98,7 @@ describe('VM', () => {
         expect(vm.start()).toBe('yield');
         vm.memory.set('key', 'yes');
         expect(vm.resume()).toBe('select');
-        expect(emissions[emissions.length - 1]).toEqual({ kind: 'options', options: ['Unlock'] });
+        expect(emissions[emissions.length - 1]).toEqual({ kind: 'options', options: [{ text: 'Unlock' }] });
         expect(vm.choose(0)).toBe('end');
         expect(emissions[emissions.length - 2]).toEqual(say('Opened'));
     });

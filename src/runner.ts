@@ -1,10 +1,10 @@
 import type { Program } from './compiler/instructions';
-import createVM, { type Emission, type Wait } from './interpreter/vm';
+import createVM, { type Emission, type Option, type Wait } from './interpreter/vm';
 
 /** Append VM emissions and offer the action required by each pause. */
 export default function runDialogue(program: Program, stack: HTMLDivElement): void {
     let actionEntry: HTMLDivElement | null = null;
-    let options: string[] = [];
+    let options: Option[] = [];
 
     function appendEntry(text?: string): HTMLDivElement {
         const entry = document.createElement('div');
@@ -69,7 +69,7 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
         }
 
         if (wait === 'select') {
-            options.forEach((option, index) => addButton(option, () => vm.choose(index)));
+            options.forEach((option, index) => addButton(option.text, () => vm.choose(index)));
         } else {
             addButton('Continue', wait === 'next' ? () => vm.next() : () => vm.resume());
         }

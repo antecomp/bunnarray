@@ -2,12 +2,14 @@ import type { EqualityCondition, Operation, Program } from '../compiler/instruct
 import once from '../util/once';
 import createMemory from './mem';
 
+export type Option = { text: string; id?: string };
+
 export type Emission =
     | { kind: 'say'; text: string; speaker: string | null }
     | { kind: 'signal'; identifier: string; value: string | undefined }
     | { kind: 'yield'; identifier: string; value: string | undefined }
-    | { kind: 'options'; options: string[] }
-    | { kind: 'end' }
+    | { kind: 'options'; options: Option[] }
+    | { kind: 'end' };
 
 /** Constructs an Emission */
 export function EM<E extends Emission['kind']>(
@@ -25,7 +27,7 @@ type Choice = Operation<'CHOICE'>['choices'][number];
 type VMOptions = {
     memory?: Record<string, string>
     handler: EmissionHandler
-}
+};
 
 export default function createVM(program: Program, { handler: emit, memory: initialMemory }: VMOptions) {
     const memory = createMemory(initialMemory);
@@ -128,7 +130,12 @@ export default function createVM(program: Program, { handler: emit, memory: init
                         pc = ins.fallback;
                         continue;
                     }
-                    emit(EM('options', { options: visibleChoices.map(choice => choice.text) }));
+                    emit(EM('options', {
+                        options: visibleChoices.map(choice => ({
+                            text: choice.text,
+                            id: choice.id,
+                        }))
+                    }));
                     return stopWith('select');
 
                 case 'END':
@@ -177,5 +184,5 @@ export default function createVM(program: Program, { handler: emit, memory: init
             return run();
         }
 
-    }
+    };
 }
