@@ -95,7 +95,7 @@ export const LabelToken = createToken({
 // Spaces inside a Text token are consumed by Text and remain part of its image.
 export const Whitespace = createToken({
     name: 'Whitespace',
-    pattern: /[ \t]+/,
+    pattern: /[^\S\r\n\u2028\u2029]+/, // captures more than a plain  /[ \t]+/,
     group: Lexer.SKIPPED
 });
 
