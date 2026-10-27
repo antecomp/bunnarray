@@ -1,4 +1,4 @@
-import stock from '../../../examples/test.bny?raw';
+import stock from '../../../examples/feature-tour.bny?raw';
 import { buildDebug } from '@bunnarray/compiler/debug';
 import formatIR from './visualize/formatIR';
 import runDialogue from './runner';

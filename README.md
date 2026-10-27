@@ -15,6 +15,10 @@ Because I am utterly insane I took this as an opportunity to create my own custo
 
 Run `npm test`, `npm run lint`, and `npm run build` from the repository root.
 
+For a playable example covering the language features and their combinations, see
+[`examples/feature-tour.bny`](./examples/feature-tour.bny). Run it more than once
+to follow different choices; it sets its own memory values.
+
 ## Runtime Usage
 `build(source)` from `@bunnarray/compiler` compiles `.bny` text into a versioned instruction program. Pass it to `createVM` from `@bunnarray/vm` with an emission handler, then call `vm.start()` once. The handler receives `say`, `signal`, `yield`, `options`, and `end` emissions in execution order. Each execution call returns the action the VM is waiting for:
 
