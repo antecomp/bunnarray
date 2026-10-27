@@ -1,16 +1,16 @@
-import { DialogueAST } from '../language/ast';
-import { DialogueLexer } from '../language/lexer';
-import { DialogueParser } from '../language/parser';
-import preprocess from '../language/preprocess';
-import { DialogueVisitor } from '../language/vistor';
-import { Program } from './instructions';
-import lower from './lower';
+import { DialogueAST } from './language/ast';
+import { DialogueLexer } from './language/lexer';
+import { DialogueParser } from './language/parser';
+import preprocess from './language/preprocess';
+import { DialogueVisitor } from './language/vistor';
+import type { Program } from '@bunnarray/vm';
+import { lower } from './lower';
 import { formatLexErrors, formatParseErrors } from './formatSyntaxErrors';
 
 const parser = new DialogueParser();
 const visitor = new DialogueVisitor();
 
-export default function build(raw: string): Program {
+export function build(raw: string): Program {
     const begin = performance.now();
     console.log('𑣲₍ ᐢ. .ᐢ₎ : Compiling .bny dialogue...');
 

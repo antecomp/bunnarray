@@ -1,5 +1,4 @@
-import type { Program } from './compiler/instructions';
-import createVM, { type Emission, type Option, type Wait } from './interpreter/vm';
+import { createVM, type Emission, type Option, type Program, type Wait } from '@bunnarray/vm';
 
 /** Append VM emissions and offer the action required by each pause. */
 export default function runDialogue(program: Program, stack: HTMLDivElement): void {

@@ -1,0 +1,13 @@
+{
+  "name": "@bunnarray/compiler",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./debug": "./src/buildDebug.ts"
+  },
+  "dependencies": {
+    "@bunnarray/vm": "0.1.0",
+    "chevrotain": "^12.0.0"
+  }
+}

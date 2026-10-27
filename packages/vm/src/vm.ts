@@ -1,5 +1,5 @@
-import type { EqualityCondition, Operation, Program, Version } from '../compiler/instructions';
-import once from '../util/once';
+import type { EqualityCondition, Operation, Program, Version } from './instructions';
+import once from './once';
 import createMemory from './mem';
 
 const VM_VERSION = {
@@ -9,7 +9,7 @@ const VM_VERSION = {
 } as const satisfies Version;
 
 function formatVersion(ver: Version): string {
-    return `${ver.major}.${ver.minor}-${ver.patch}`
+    return `${ver.major}.${ver.minor}-${ver.patch}`;
 }
 
 export type Option = { text: string; id?: string };
@@ -34,12 +34,20 @@ export type Wait = 'next' | 'select' | 'yield' | 'end';
 type EmissionHandler = (emission: Emission) => void;
 type Choice = Operation<'CHOICE'>['choices'][number];
 
-type VMOptions = {
+export type VMOptions = {
     memory?: Record<string, string>
     handler: EmissionHandler
 };
 
-export default function createVM(program: Program, { handler: emit, memory: initialMemory }: VMOptions) {
+export type VM = {
+    memory: ReturnType<typeof createMemory>;
+    start(): Wait;
+    next(): Wait;
+    choose(index: number): Wait;
+    resume(): Wait;
+};
+
+export function createVM(program: Program, { handler: emit, memory: initialMemory }: VMOptions): VM {
     if(program.version.major !== VM_VERSION.major)
         throw new Error(
             `Program version ${formatVersion(program.version)} `
@@ -118,12 +126,12 @@ export default function createVM(program: Program, { handler: emit, memory: init
                     continue;
 
                 case 'SIGNAL':
-                    emit(EM('signal', ins));
+                    emit(EM('signal', { identifier: ins.identifier, value: ins.value }));
                     pc++;
                     continue;
 
                 case 'YIELD':
-                    emit(EM('yield', ins));
+                    emit(EM('yield', { identifier: ins.identifier, value: ins.value }));
                     pc++;
                     return stopWith('yield');
 
@@ -149,7 +157,7 @@ export default function createVM(program: Program, { handler: emit, memory: init
                     emit(EM('options', {
                         options: visibleChoices.map(choice => ({
                             text: choice.text,
-                            id: choice.id,
+                            id: choice.id
                         }))
                     }));
                     return stopWith('select');

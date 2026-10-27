@@ -1,16 +1,16 @@
 /** End-to-end checks from BunNarraY source through preprocessing, parsing, and IR lowering. */
 import { describe, expect, it } from 'vitest';
-import example from '../../../examples/example.bny?raw';
-import main from '../../../examples/main.bny?raw';
-import simple from '../../../examples/simple.bny?raw';
-import testbranch from '../../../examples/testbranch.bny?raw';
-import build from '../build';
-import type { Instruction } from '../instructions';
-import { DialogueLexer, Text } from '../../language/lexer';
-import preprocess from '../../language/preprocess';
+import example from '../../../../examples/example.bny?raw';
+import main from '../../../../examples/main.bny?raw';
+import simple from '../../../../examples/simple.bny?raw';
+import testbranch from '../../../../examples/testbranch.bny?raw';
+import { build } from '../build';
+import type { Instruction } from '@bunnarray/vm';
+import { DialogueLexer, Text } from '../language/lexer';
+import preprocess from '../language/preprocess';
 
 function expectIR(source: string, instructions: Instruction[]) {
-    expect(build(source)).toEqual({ version: 'indev', instructions });
+    expect(build(source)).toEqual({ version: { major: 1, minor: 0, patch: 'indev' }, instructions });
 }
 
 describe('build', () => {

@@ -1,4 +1,4 @@
-import type { Program } from '../compiler/instructions';
+import type { Program } from '@bunnarray/vm';
 
 /** Format a Program as an instruction listing with indented branch targets. */
 export default function formatIR(program: Program): string {

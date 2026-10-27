@@ -4,7 +4,7 @@ import type {
     BranchCase,
     DialogueAST,
     Statement
-} from '../language/ast';
+} from '@bunnarray/compiler';
 
 type AstNode = DialogueAST | Statement | ChoiceBranch | BranchCase;
 

@@ -14,7 +14,7 @@ export type Statement =
     | LabelStatement
     | GotoStatement
     | SpeakerStatement
-    | AlternateStatement
+    | AlternateStatement;
 
 export type SayStatement = {
     type: 'say';
@@ -68,7 +68,7 @@ export type YieldStatement = {
     type: 'yield';
     identifier: string,
     value: string | undefined;
-}
+};
 
 export type SkipStatement = {
     type: 'skip';

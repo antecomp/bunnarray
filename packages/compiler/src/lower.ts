@@ -3,12 +3,20 @@
  * Takes our Dialogue AST and "lowers" it into a linear set of instructions.
  */
 
-import { DialogueAST, Statement } from '../language/ast';
-import { INS, Instruction, Operation, Program } from './instructions';
+import { DialogueAST, Statement } from './language/ast';
+import type { Instruction, Opcode, Operation, Program } from '@bunnarray/vm';
+
+/** Construct an Instruction while lowering the AST. */
+function INS<O extends Opcode>(
+    opcode: O,
+    config: Omit<Extract<Instruction, { op: O }>, 'op'>
+): Operation<O> {
+    return { op: opcode, ...config } as Operation<O>;
+}
 
 const UNRESOLVED = -1;
 
-export default function (ast: DialogueAST): Program {
+export function lower(ast: DialogueAST): Program {
     const instructions: Instruction[] = [];
     const labels: Record<string, number> = Object.create(null); // <- removes prototype names.
     const unresolvedGotos: { fromIndex: number, target: string }[] = [];

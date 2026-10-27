@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Instruction } from '../compiler/instructions';
+import type { Instruction } from '@bunnarray/vm';
 import runDialogue from '../runner';
 
 /** The runner only needs element creation, appending, and click listeners. */
@@ -39,7 +39,7 @@ describe('runner with vm', () => {
     afterEach(() => { vi.unstubAllGlobals(); });
 
     function run(instructions: Instruction[]): void {
-        runDialogue({ version: 'indev', instructions }, stack as unknown as HTMLDivElement);
+        runDialogue({ version: { major: 1, minor: 0 }, instructions }, stack as unknown as HTMLDivElement);
     }
 
     function lines(): string[] { return stack.find('p').map(element => element.textContent); }

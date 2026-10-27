@@ -63,7 +63,7 @@ import {
     SignalKeyword, SignalDelim, BranchBlockOpen, BranchBlockClose,
     WhenStatementOpen, WhenEquals, YieldSignalKeyword, YieldSignalDelim,
 
-    allTokens,
+    allTokens
 } from './lexer';
 
 export class DialogueParser extends CstParser {
@@ -219,6 +219,6 @@ export class DialogueParser extends CstParser {
             this.CONSUME(Text);
         });
         this.CONSUME(DirectiveNewline);
-    })
+    });
 
 }

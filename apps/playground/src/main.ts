@@ -1,6 +1,6 @@
 import { Network } from 'vis-network/standalone';
-import stock from '../examples/test.bny?raw';
-import build from './compiler/testbuild';
+import stock from '../../../examples/test.bny?raw';
+import { buildDebug } from '@bunnarray/compiler/debug';
 import { astToNetworkData } from './visualize/astToNetworkData';
 import formatIR from './visualize/formatIR';
 import runDialogue from './runner';
@@ -20,7 +20,7 @@ function display(x: any) {
 demoTextarea.value = stock;
 compileButton.onclick = () => {
     dialogueStack.replaceChildren();
-    const rez = build(demoTextarea.value);
+    const rez = buildDebug(demoTextarea.value);
     astNetwork?.destroy();
     astNetwork = rez
         ? new Network(

@@ -7,8 +7,16 @@ I hope to make something more generic that can be used for my (and others) own p
 # The BunNarraY Dialogue Language 𑣲₍ ᐢ. .ᐢ₎
 Because I am utterly insane I took this as an opportunity to create my own custom dialogue language parser using [chevrotain](https://chevrotain.io/docs/).
 
+## Workspace
+
+- `packages/vm` owns the instruction format and runtime and has no package dependencies.
+- `packages/compiler` owns parsing and lowering. It depends on `@bunnarray/vm` for `Program` and `Instruction`.
+- `apps/playground` is the browser demo. Run it with `npm run dev`.
+
+Run `npm test`, `npm run lint`, and `npm run build` from the repository root.
+
 ## Runtime Usage
-`build(source)` compiles `.bny` text into a versioned instruction program. Pass it to `createVM` with an emission handler, then call `vm.start()` once. The handler receives `say`, `signal`, `yield`, `options`, and `end` emissions in execution order. Each execution call returns the action the VM is waiting for:
+`build(source)` from `@bunnarray/compiler` compiles `.bny` text into a versioned instruction program. Pass it to `createVM` from `@bunnarray/vm` with an emission handler, then call `vm.start()` once. The handler receives `say`, `signal`, `yield`, `options`, and `end` emissions in execution order. Each execution call returns the action the VM is waiting for:
 
 - `next`: call `vm.next()` to show the next dialogue line.
 - `select`: call `vm.choose(index)` with the zero-based index from the emitted options.
@@ -17,7 +25,10 @@ Because I am utterly insane I took this as an opportunity to create my own custo
 
 Calls that do not match the current wait state throw. Game state lives in `vm.memory` and can be supplied when the VM is created:
 ```ts
-const vm = createVM(build(source), {
+import { build } from '@bunnarray/compiler';
+import { createVM, type VM } from '@bunnarray/vm';
+
+const vm: VM = createVM(build(source), {
     memory: { dragon: 'slain' },
     handler: emission => console.log(emission)
 });
@@ -293,7 +304,7 @@ vm.memory.delete('dragon');
 Conditions read memory when the VM reaches the block, so changes made before then affect the selected case.
 
 ### Compiled program
-`build(source)` returns a `Program` with a `version` and a linear `instructions` array. The VM executes these instructions; it does not require a graph of dialogue nodes. The browser demo in `src/runner.ts` shows one way to render dialogue, choices, and yielding signals.
+`build(source)` returns a `Program` with a `version` and a linear `instructions` array. The VM executes these instructions; it does not require a graph of dialogue nodes. The browser demo in `apps/playground/src/runner.ts` shows one way to render dialogue, choices, and yielding signals.
 
 ### Why is it called BunNarraY?
 * Bun Narray-tives. Or Bun Array of text or something idk.

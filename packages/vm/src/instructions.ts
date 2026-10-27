@@ -53,14 +53,6 @@ export type Opcode = Instruction['op'];
 
 export type Operation<O extends Opcode> = Extract<Instruction, { op: O }>;
 
-/** Construct an Instruction */
-export function INS<O extends Opcode>(
-    opcode: O,
-    config: Omit<Extract<Instruction, { op: O }>, 'op'>
-): Extract<Instruction, { op: O }> {
-    return { op: opcode, ...config } as Operation<O>;
-}
-
 export type Program = {
     instructions: Instruction[]
     version: Version
