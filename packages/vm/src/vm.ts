@@ -1,5 +1,4 @@
 import type { EqualityCondition, Operation, Program, Version } from './instructions';
-import once from './once';
 import createMemory from './mem';
 
 const VM_VERSION = {
@@ -57,6 +56,7 @@ export function createVM(program: Program, { handler: emit, memory: initialMemor
     const memory = createMemory(initialMemory);
 
     let pc = 0;
+    let started = false;
     let waiting: Wait | null = null;    // what the consumer owes before resuming.
     let canExecSay = true;              // allow printing the say and continue (next or automatically)
     let visibleChoices: Choice[] = [];  // snapshot of visible choices
@@ -182,10 +182,12 @@ export function createVM(program: Program, { handler: emit, memory: initialMemor
     return {
         memory,
 
-        start: once(() => {
+        start(): Wait {
+            if (started) throw new Error('VM already started');
+            started = true;
             canExecSay = true;
             return run();
-        }),
+        },
 
         next(): Wait {
             expectWaiting('next', 'next');

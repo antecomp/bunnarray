@@ -19,7 +19,7 @@ describe('VM', () => {
         const { vm, emissions } = runtime([{ op: 'END' }]);
         expect(vm.start()).toBe('end');
         expect(emissions).toEqual([{ kind: 'end' }]);
-        expect(() => vm.start()).toThrow('Resume callback already consumed');
+        expect(() => vm.start()).toThrow('VM already started');
     });
 
     it('emits consecutive lines once, pausing before each following line', () => {
