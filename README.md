@@ -29,7 +29,7 @@ The syntax is pretty simple...
 
 ### Basic Text
 Each normal line of text becomes a separate dialogue message when the VM runs.
-Square brackets (`[` and `]`) and curly braces (`{` and `}`) are reserved for language syntax. To include them literally in text, use `&lbrack;`, `&rbrack;`, `&lbrace;`, and `&rbrace;`, respectively. These escapes also work in option text and other text fields. Use `&amp;` to write a literal escape sequence, such as `&amp;lbrace;` for the text `&lbrace;`.
+Square brackets (`[` and `]`) and curly braces (`{` and `}`) are reserved for language syntax. To include them literally in text, use `&lbrack;`, `&rbrack;`, `&lbrace;`, and `&rbrace;`, respectively. These escapes also work in option text and other text fields. Use `&hash;` for a literal `#` and `&amp;` to write a literal escape sequence, such as `&amp;lbrace;` for the text `&lbrace;`.
 ```
 Hello, it has been a while,
 how has life been treating you?
@@ -60,11 +60,10 @@ The first three lines are spoken by Alice, Bob Smith, and Alice, respectively.
 Empty names, such as in `:ALTERNATE Alice;;Bob`, are invalid.
 
 ### Comments
-I only have line comments right now becuase they are easier 
-to parse lol. Use `#` at the start of a line to comment it out.
+Use `#` to comment out the rest of a line. It can follow a statement or appear on a line by itself. Use `&hash;` for a literal `#` in dialogue text or a value.
 ```
 # At this point in the story, she probably hates you.
-I hate you!
+I hate you! # This note is ignored.
 ```
 
 ### Options (Player Choices)

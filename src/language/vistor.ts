@@ -9,11 +9,12 @@ const escapedCharacters: Record<string, string> = {
     rbrack: ']',
     lbrace: '{',
     rbrace: '}',
+    hash: '#',
     amp: '&'
 };
 
 function decodeText(text: string): string {
-    return text.replace(/&(lbrack|rbrack|lbrace|rbrace|amp);/g,
+    return text.replace(/&(lbrack|rbrack|lbrace|rbrace|hash|amp);/g,
         (_, name: string) => escapedCharacters[name]);
 }
 
@@ -127,7 +128,7 @@ export class DialogueVisitor extends BaseVisitor {
         return {
             type: 'set',
             identifier: (ctx.Identifier[0].image.trim()),
-            value: value === undefined ? undefined : decodeText(value)
+            value: value === undefined ? undefined : decodeText(value.trim())
         };
     }
 
@@ -136,7 +137,7 @@ export class DialogueVisitor extends BaseVisitor {
         return {
             type: 'signal',
             identifier: (ctx.Identifier[0].image.trim()),
-            value: value === undefined ? undefined : decodeText(value)
+            value: value === undefined ? undefined : decodeText(value.trim())
         };
     }
 
@@ -145,7 +146,7 @@ export class DialogueVisitor extends BaseVisitor {
         return {
             type: 'yield',
             identifier: (ctx.Identifier[0].image.trim()),
-            value: value === undefined ? undefined : decodeText(value)
+            value: value === undefined ? undefined : decodeText(value.trim())
         };
     }
 
@@ -167,7 +168,7 @@ export class DialogueVisitor extends BaseVisitor {
         const im = ctx.Text?.[0]?.image;
         return {
             type: 'speaker',
-            value: im ? decodeText(im) : null
+            value: im ? decodeText(im.trim()) : null
         };
     }
 

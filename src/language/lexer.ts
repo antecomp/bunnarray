@@ -1,5 +1,44 @@
 import { createToken, Lexer } from 'chevrotain';
 
+const horizontalWhitespace = /[^\S\r\n\u2028\u2029]/;
+
+function startsAtLineStart(text: string, offset: number): boolean {
+    const lineStart = text.lastIndexOf('\n', offset - 1) + 1;
+    return /^[^\S\r\n\u2028\u2029]*$/.test(text.slice(lineStart, offset));
+}
+
+// A blank line has no grammar meaning. Match only at the start of a physical
+// line so the newline that terminates a statement stays visible to the parser.
+export const BlankLine = createToken({
+    name: 'BlankLine',
+    pattern: (text: string, offset: number) => {
+        if (!startsAtLineStart(text, offset)) return null;
+        let end = offset;
+        while (horizontalWhitespace.test(text[end] ?? '')) end++;
+        return text[end] === '\n' ? [text.slice(offset, end + 1)] as [string] : null;
+    },
+    group: Lexer.SKIPPED,
+    line_breaks: true,
+    start_chars_hint: [' ', '\t', '\n']
+});
+
+// An inline comment leaves its newline in place; a comment-only line can be
+// skipped together with its newline. Both retain source positions.
+export const Comment = createToken({
+    name: 'Comment',
+    pattern: (text: string, offset: number) => {
+        if (text[offset] !== '#') return null;
+        const end = text.indexOf('\n', offset);
+        const lineEnd = end === -1 ? text.length : end;
+        const through = startsAtLineStart(text, offset) && end !== -1
+            ? end + 1 : lineEnd;
+        return [text.slice(offset, through)] as [string];
+    },
+    group: Lexer.SKIPPED,
+    line_breaks: true,
+    start_chars_hint: ['#']
+});
+
 export const Newline = createToken({
     name: 'Newline',
     pattern: /\n/
@@ -60,10 +99,10 @@ export const Whitespace = createToken({
     group: Lexer.SKIPPED
 });
 
-// Consumes all characters up excluding \n, [] and {}
+// Consumes all characters up to syntax punctuation, a comment, or a newline.
 export const Text = createToken({
     name: 'Text',
-    pattern: /[^\n{}\[\]]+/
+    pattern: /[^\n{}\[\]#]+/
 });
 
 
@@ -173,7 +212,9 @@ export const IdBlockClose = createToken({
 // Order is priority, first match wins.
 
 const normalTokens = [
+    BlankLine,
     Newline,
+    Comment,
     CurlyBraceOpen,
     CurlyBraceClose,
     SkipBlockOpen,
@@ -210,13 +251,13 @@ export const DialogueLexer = new Lexer({
     defaultMode: 'normal',
     modes: {
         normal: normalTokens,
-        setHeader: [Whitespace, Identifier, SetEquals, DirectiveNewline],
-        setValue: [Text, DirectiveNewline],
-        signalHeader: [Whitespace, Identifier, SignalDelim, DirectiveNewline],
-        signalValue: [Text, DirectiveNewline],
-        yieldHeader: [Whitespace, Identifier, YieldSignalDelim, DirectiveNewline],
-        yieldValue: [Text, DirectiveNewline],
-        whenHeader: [Whitespace, Identifier, WhenEquals, DirectiveNewline],
-        idHeader: [Text, IdBlockClose]
+        setHeader: [Whitespace, Identifier, SetEquals, Comment, DirectiveNewline],
+        setValue: [Text, Comment, DirectiveNewline],
+        signalHeader: [Whitespace, Identifier, SignalDelim, Comment, DirectiveNewline],
+        signalValue: [Text, Comment, DirectiveNewline],
+        yieldHeader: [Whitespace, Identifier, YieldSignalDelim, Comment, DirectiveNewline],
+        yieldValue: [Text, Comment, DirectiveNewline],
+        whenHeader: [Whitespace, Identifier, WhenEquals, Comment, DirectiveNewline],
+        idHeader: [Text, IdBlockClose, Comment]
     }
 });

@@ -6,6 +6,8 @@ import simple from '../../../examples/simple.bny?raw';
 import testbranch from '../../../examples/testbranch.bny?raw';
 import build from '../build';
 import type { Instruction } from '../instructions';
+import { DialogueLexer, Text } from '../../language/lexer';
+import preprocess from '../../language/preprocess';
 
 function expectIR(source: string, instructions: Instruction[]) {
     expect(build(source)).toEqual({ version: 'indev', instructions });
@@ -59,9 +61,28 @@ how has life been treating you?`, [
             ]);
         });
 
-        it('keeps a hash within dialogue text', () => {
-            expectIR('The key is #1.', [
+        it('accepts inline comments and an escaped literal hash', () => {
+            expectIR('The key is &hash;1. # explain the key\nNext line. # and this', [
                 { op: 'SAY', text: 'The key is #1.' },
+                { op: 'SAY', text: 'Next line.' },
+                { op: 'END' }
+            ]);
+        });
+
+        it('keeps original token positions across blank and comment lines', () => {
+            const source = '  # note\n\u00a0\n  First # inline\n\u00a0# skip\n  Second &hash;2';
+            const lex = DialogueLexer.tokenize(preprocess(source));
+
+            expect(lex.errors).toEqual([]);
+            expect(lex.tokens.filter(token => token.tokenType === Text)
+                .map(token => [token.image, token.startLine, token.startColumn]))
+                .toEqual([
+                    ['First ', 3, 3],
+                    ['Second &hash;2', 5, 3]
+                ]);
+            expectIR(source, [
+                { op: 'SAY', text: 'First' },
+                { op: 'SAY', text: 'Second #2' },
                 { op: 'END' }
             ]);
         });
@@ -146,11 +167,13 @@ how has life been treating you?`, [
             ]);
         });
 
-        it('decodes escapes in prompts and option text without treating them as syntax', () => {
-            expectIR(`Choose &lbrace;one&rbrace; {
-                ?: &lbrack;yes&rbrack;
+        it('decodes escapes and skips comments inside choices', () => {
+            expectIR(`Choose &lbrace;one&rbrace; { # prompt note
+                # option note
+
+                ?: &lbrack;yes&rbrack; # selection note
                     Done.
-            }`, [
+            } # end note`, [
                 { op: 'SAY', text: 'Choose {one}' },
                 { op: 'CHOICE', choices: [{ text: '[yes]', target: 2 }], fallback: 4 },
                 { op: 'SAY', text: 'Done.' },
@@ -506,6 +529,19 @@ how has life been treating you?`, [
     });
 
     describe('directives and signals', () => {
+        it('trims values before inline comments and decodes literal hashes', () => {
+            expectIR(`:SPEAKER Alice  # speaker note
+                :SET code=&hash;1  # assignment note
+                :SIGNAL key: &hash;2  # signal note
+                :YIELD wait: &hash;3  # yield note`, [
+                { op: 'SPEAKER', value: 'Alice' },
+                { op: 'SET', identifier: 'code', value: '#1' },
+                { op: 'SIGNAL', identifier: 'key', value: '#2' },
+                { op: 'YIELD', identifier: 'wait', value: '#3' },
+                { op: 'END' }
+            ]);
+        });
+
         it('compiles assignments and removals in source order', () => {
             expectIR(`:SET state=ready
                 :SET _quest2=&lbrack;open&rbrack; &amp; waiting
