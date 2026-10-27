@@ -13,7 +13,6 @@ export default function (ast: DialogueAST): Program {
     const labels: Record<string, number> = Object.create(null); // <- removes prototype names.
     const unresolvedGotos: { fromIndex: number, target: string }[] = [];
 
-    // TODO: Consider refactoring this to have it return the instruction and the index.
     const emit = (next: Instruction) => instructions.push(next) - 1;
     const pos = () => instructions.length;
 
@@ -46,8 +45,8 @@ export default function (ast: DialogueAST): Program {
             }
 
             case 'choice': {
-                const choiceIndex = emit(INS('CHOICE', { choices: [], fallback: UNRESOLVED }));
-                const currentChoice = instructions[choiceIndex] as Operation<'CHOICE'>;
+                const currentChoice = INS('CHOICE', { choices: [], fallback: UNRESOLVED });
+                emit(currentChoice);
                 const exitJumps: Operation<'JUMP'>[] = [];
 
                 statement.branches.forEach(branch => {
@@ -79,8 +78,8 @@ export default function (ast: DialogueAST): Program {
             }
 
             case 'branch': {
-                const branchIndex = emit(INS('BRANCH', { cases: [], fallback: UNRESOLVED }));
-                const currentBranch = instructions[branchIndex] as Operation<'BRANCH'>;
+                const currentBranch = INS('BRANCH', { cases: [], fallback: UNRESOLVED });
+                emit(currentBranch);
                 const exitJumps: Operation<'JUMP'>[] = [];
 
                 statement.cases.forEach(branchCase => {
@@ -106,10 +105,11 @@ export default function (ast: DialogueAST): Program {
             }
 
             case 'skip': {
-                const skipLoc = emit(INS('JUMP', { target: UNRESOLVED }));
+                const skipJump = INS('JUMP', { target: UNRESOLVED });
+                emit(skipJump);
                 defineLabel(statement.label);
                 compileSequence(statement.statements);
-                (instructions[skipLoc] as Operation<'JUMP'>).target = pos();
+                skipJump.target = pos();
                 break;
             }
 
