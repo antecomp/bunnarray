@@ -1,6 +1,16 @@
-import type { EqualityCondition, Operation, Program } from '../compiler/instructions';
+import type { EqualityCondition, Operation, Program, Version } from '../compiler/instructions';
 import once from '../util/once';
 import createMemory from './mem';
+
+const VM_VERSION = {
+    major: 1,
+    minor: 0,
+    patch: ''
+} as const satisfies Version;
+
+function formatVersion(ver: Version): string {
+    return `${ver.major}.${ver.minor}-${ver.patch}`
+}
 
 export type Option = { text: string; id?: string };
 
@@ -30,6 +40,12 @@ type VMOptions = {
 };
 
 export default function createVM(program: Program, { handler: emit, memory: initialMemory }: VMOptions) {
+    if(program.version.major !== VM_VERSION.major)
+        throw new Error(
+            `Program version ${formatVersion(program.version)} `
+            + `incompatible with vm version ${formatVersion(VM_VERSION)}`
+        );
+
     const memory = createMemory(initialMemory);
 
     let pc = 0;

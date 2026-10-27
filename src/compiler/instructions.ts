@@ -63,6 +63,11 @@ export function INS<O extends Opcode>(
 
 export type Program = {
     instructions: Instruction[]
-    // debug symbols?
-    version: string
+    version: Version
+};
+
+export type Version = {
+    major: number;
+    minor: number;
+    patch?: string;
 };

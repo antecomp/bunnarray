@@ -163,7 +163,11 @@ export default function (ast: DialogueAST): Program {
     });
 
     return { 
-        version: 'indev',
+        version: {
+            major: 1,
+            minor: 0,
+            patch: 'indev'
+        },
         instructions
     };
 }
