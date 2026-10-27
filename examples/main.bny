@@ -1,0 +1,556 @@
+Click here to begin. <face:eye_closed>
+@intro
+Welcome to the Conduit. <face:eye_open>
+The Conduit connects you with those who have passed.
+
+Before establishing communication, know these ground rules:
+@rules
+1. Do not ask them about the afterlife.
+2. Do not ask them about their state or existence.
+3. Do not ask about their death-
+   -or the circumstances around their death.
+Any of these will cause them major distress and will end the session.
+Do you understand these terms? {
+    ?: Yes
+    ?: No
+        You must accept these terms to continue.
+        Do you need them to be reiterated? {
+            ?: Yes
+                -> rules
+            ?: No, I accept the terms.
+        }
+}
+
+# ------ Phase 1: Establish The Gameplay Loop + Minor Strange Tension.
+Terms accepted.
+@start
+Who do you wish to speak to? {
+    ?: My wife
+        Establishing connection...
+    ?: My wife, $hername.
+        Establishing connection... <signal:set_name_shared>
+}
+Please wait... 
+Your consciousness is now being mapped to the target's vestige...
+... <face:clo_neu> {
+    ?: Hey.
+}
+Hey, it has been a while.  <face:neu_smile> {
+    ?: How are you?
+        I am... <face:concern_surprise>
+        How... 
+        I- <face:concern_sfrown>
+        ->gameover
+    ?: It is good to see you.
+        It is good to be seen.
+    ?: Can you see me?
+        I- <face:concern_sfrown>
+        Why can't I...
+        No.
+        Please don't ask me that. <face:soft_frown>
+        -> gameover
+}
+I missed you. Where have you been? <face:neu_sfrown> {
+    ?: You died.
+        I know that. <face:aclo_flat>
+        @whynotearlier
+        Why didn't you try to talk to me earlier? <face:anger_flat> {
+            ?: I couldn't.
+                Why not? {
+                    ?: The technology did not exist yet.
+                        The technology? <face:neu_concern>
+                        What are you talking about?
+                        Are you not here? <face:concern_tfrown>
+                        Why can't I see you?
+                        Why are you-
+                        -> gameover
+                    ?: Life moves on... {
+                        ?: It's not like I could just drop everything.
+                        Oh, but it's so convenient now? <face:anger_sopen> {
+                            ?: That's not what I meant!
+                                Then what did you mean?
+                                Let me explain something to you.
+                                I have been here, waiting.
+                                This whole time.
+                                There is nothing here.
+                                -> onlymemories
+                            ?: No, I- {
+                                ?: I'm sorry.
+                                    -> missedsorry
+                            }
+                        }
+                    }
+                }
+            ?: It has not been that long.
+                Don't lie to me, it has been years... <face:anger_sopen> {
+                    ?: How do you know that?
+                        Because- 
+                        ... <face:anger_sfrown>
+                        I have sat here, waiting...
+                        for all that time.
+                        @onlymemories
+                        I can't do anything except entertain myself with memories. <face:neu_concern>
+                        There is nothing else I can do but remember. 
+                        There is nothing else I can feel but what-
+                        -I...
+                        Why have you taken so long? <face:concern_tfrown>
+                        -> gameover
+                }
+            ?: I'm sorry.
+                @missedsorry
+                It's okay. <face:soft_tfrown>
+                # should be the only possible exit out of this skip.
+            ?: Have you been waiting this whole time?
+                Yes. <face:aclo_frown>
+                There is...
+                There is nothing here.
+                ...
+                -> onlymemories
+        }
+    ?: It's hard to explain.
+        Hard to explain what? That I am dead? <face:aclo_surprise>
+        Do you think I can't tell?
+        You know what I meant.
+        -> whynotearlier
+    ?: Do you remember what happened?
+        No. <face:concern_grimace>
+        No no no-
+        Don't make me think about that.
+        -> gameover
+}
+
+# --- Phase 2: Some basic conversations and reminiscing to establish a "baseline"
+
+You still do that, you know. <face:neu_smile> {
+    ?: Do what?
+}
+Take too long to say what you mean.
+...
+You used to just stand there-
+-waiting for everything to click.
+For it all to make sense to you.
+Even when I asked you the simplest things. {
+    ?: Like what?
+    ?: I don't remember that.
+        You don't? <face:concern_tfrown>
+        It was...
+}
+Anything, really.
+You always wanted the answer to be right. <face:clo_grin>
+When I met you, I thought you were just indecisive. <face:clo_smile>
+But no,
+you really would just take your time.
+...
+Remember how often we would have to send the waitress back? <face:cdev_grin>
+Because you still weren't ready to order.
+You would always ask a million questions about the food:
+What to pair with it...
+If it was the sort of thing you'd regret picking...
+You would stare at the menu like it mattered. <face:neu_smile>
+Like you could pick wrong. {
+    ?: Where was this?
+        Everywhere! <face:clo_bgrin>
+        Didn't matter where we were.
+        Every pit-stop was special,
+        or you would want to make it special.
+    ?: That doesn't sound like me.
+        Really? <face:neu_surprise>
+        Maybe you just never noticed... 
+        Or you're too embarrassed to admit it. <face:soft_tgrin>
+    ?: "What to pair with it...?"
+        Huh? <face:concern_surprise> {
+            ?: I don't drink.
+                Oh, I meant uh- 
+                Never mind. <face:concern_sfrown>
+                ...
+        }
+}
+I appreciated that about you, you know... <face:neu_smile>
+Made all our days more vivid. <face:soft_tgrin>
+... <face:neu_concern>
+Especially at-
+...
+#@debug
+We would always go to that one place... {
+    ?: The café?
+        The café... <face:concern_surprise> <signal:set_cafe_mentioned>
+        Yeah. <face:clo_smile>
+        That sounds right.
+    ?: I don't recall a place like that.
+        Really? <face:concern_sfrown>
+        ...
+        That's strange.
+        We went there all the time.
+    ?: We went to a lot of places.
+        Yeah, we did. <face:clo_smile>
+        But this place more than anywhere else.
+}
+...
+I can still picture it. <face:clo_grin>
+The view of the city, the port in the distance...
+...
+[branch]
+    [when:cafe_mentioned=true]
+        We always sat at the same spot, right? <face:neu_grin> {
+            ?: By the window.
+                @by_the_window
+                Of course! How else would we have that view? <face:soft_tgrin>
+                Why did you like sitting there, anyway? <face:concern_tfrown> {
+                    ?: It was brighter. {
+                        ?: That place always had dim lights- {
+                            ?: -and I wanted to actually see the menu.
+                                Haha, right! <signal:set_window_reason> <face:clo_bgrin>
+                                The light did seem to make you less tense. <face:neu_smile>
+                                Like things bothered you more when they were half-seen.
+                                Even there,
+                                with something as small as lunch. <face:cdev_grin>
+                                ... <face:clo_sfrown>
+                                Nothing with you ever felt careless. <face:neu_smile>
+                                Like-
+                                -> house
+                        }
+                    }
+                    ?: I did it for you.
+                        Aw... <face:clo_grin>
+                        You were always so thoughtful. <face:clo_smile>
+                        Like with- <face:clo_sopen>
+                        -> house
+                }
+            ?: Wherever we could.
+                Sure. <face:neu_grin>
+                That's what you would say, anyway. <face:soft_tgrin>
+                Like you didn't care.
+                But you'd still hesitate, <face:devious_tgrin>
+                and pick somewhere that felt right.
+                That was just your personality; <face:neu_bgrin>
+                Like... <face:neu_smile>
+                Remember-
+                -> house
+            ?: I don't think we should talk about that place.
+                That's unlike you. <face:neu_sfrown>
+                You never avoided it before.
+                ...
+                Did something happen there? <face:concern_grimace> {
+                    ?: Can we please talk about something else.
+                        But why-
+                        Oh. <face:concern_sfrown>
+                        That's right...
+                        That's where-
+                        -> gameover
+                }
+        }
+    [when:cafe_mentioned=false]
+        We always sat at the same spot, right? <face:neu_grin> {
+            ?: By the window?
+                -> by_the_window
+            ?: Wherever we could
+                No... that's not right. <face:concern_sfrown>
+                Do you know what place I'm talking about? {
+                    ?: Not really.
+                }
+                That's alright. <face:concern_tfrown>
+                At least one of us remembers.
+                I can start somewhere that feels steadier.
+                ...
+                -> house
+        }
+[/branch]
+
+
+@house
+The house. <face:neu_smile>
+...
+# Contradicting with the earlier city/port setting of cafe...?
+The one by the lake, <face:neu_surprise>
+You took your time deciding on that one...
+Like you always did. <face:neu_smile> {
+    ?: I had that one before I met you.
+        Oh. <signal:set_house_confronted> <face:concern_surprise>
+        That doesn't-
+        ... <face:concern_tfrown>
+        It felt like ours...
+        That's how I remember it.
+    ?: (Say nothing)
+        ... <face:neu_smile>
+        You remember.
+        I know you do.
+}
+...
+I miss that place. <face:concern_tfrown>
+Or maybe just how it felt.
+# Launching into house recollection, branches based on established info from earlier...
+[branch]
+    [when:window_reason_given=true]
+        I loved how the morning light would come in. <face:clo_grin>
+        It brought our whole world to life.
+        Especially you- 
+        you would never close the blinds.
+        Then each morning you'd spring up with the sun.
+        That certainly made me livelier too...
+        I could sleep for days,
+        without you to wake me up.
+        Or to keep me going... <face:concern_smile>
+        ...
+    [when:window_reason_given=false]
+        It was... nice. <face:clo_grin>
+        Quiet, quaint.
+        Always felt like somewhere you could stay.
+        ...
+        You always seemed so comfortable there. <face:concern_smile>
+        ...
+[/branch]
+We fell into a routine pretty quickly, <face:clo_smile>
+didn't we? {
+    ?: Like clockwork
+}
+# The cafe was NOT near this house, but she will fasely put these two memories together.
+Yeah, haha. <face:clo_grin>
+It all blurred together after a while, <face:neu_smile>
+but I still remember the order of it.
+Wake up,
+you would take your time getting ready-
+as always- <face:soft_grimace>
+then out the door... <face:neu_smile>
+[branch]
+    [when:cafe_mentioned=true]
+        towards the café.
+        Didn't even have to think about it.
+        It felt like a continuation of our world,
+        like we never left the house. {
+            ?: That doesn't sound right...
+                What? <face:neu_surprise>
+                That sounds... exactly right. <face:neu_wfrown>
+                It's so clear to me.
+                The walk, that entrance, the smell of coffee... <face:soft_tfrown> {
+                    ?: That house wasn't near the café.
+                        ...
+                        No... <face:aclo_frown>
+                        We walked there.
+                        Every morning.
+                        I remember the door, <face:concern_smile>
+                        that little bell above it.
+                        The way you had to shove it for it to open...
+                        @begin_house_tension
+                        ...
+                        # Why are you trying to pull this apart?
+                        [branch]
+                            [when:house_confronted=true]
+                                Why are you trying to pull this apart? <face:concern_surprise> {
+                                    ?: Because it isn't just the café.
+                                        Huh? {
+                                            ?: You keep doing this.
+                                                Doing what? <face:anger_neu>
+                                                ...
+                                                What are you trying to imply here? {
+                                                    ?: What is your name?
+                                                        -> confront
+                                                    ?: What happened to you?
+                                                        Stop. <face:anger_sfrown>
+                                                        I don't want to- <face:soft_frown>
+                                                        Please, this isn't right...
+                                                        -> gameover
+                                                }
+                                        }
+                                }
+                            [when:house_confronted=false]
+                                Why are you trying to pull this apart? <face:concern_surprise> {
+                                    ?: It's okay {
+                                        ?: It has been years {
+                                            ?: We all misremember things.
+                                                Right... <face:concern_sfrown>
+                                                Yeah, sorry.
+                                                I can remember it your way. <face:neu_wsmile>
+                                                I can move the café wherever you want it.
+                                                If that makes this easier.
+                                                If that keeps you here. <face:concern_smile> {
+                                                    ?: Is everything okay?
+                                                        No- <face:concern_surprise>
+                                                        I mean-
+                                                        Please, stay. <face:concern_sfrown>
+                                                        We can put it all back together the way you remember it.
+                                                        I feel more like myself now,
+                                                        when I don't have to hold on to this alone.
+                                                        -> sculpt_end
+                                                }
+                                               
+                                        }
+                                    }
+                                }
+                        [/branch]
+                    ?: Do you remember where the café was?
+                        I just told you- <face:anger_sopen>
+                        Near the house.
+                        -> begin_house_tension
+                }
+            ?: (Say nothing)
+        }
+    [when:cafe_mentioned=false]
+        And we were off! <face:cdev_grin>
+        Didn't really matter where. <face:clo_bfrown>
+        Though,
+        you always made it feel like it did. <face:concern_smile>
+[/branch]
+It all felt... easy. <face:neu_smile>
+Like we had already figured it out.
+Didn't have to think about anything.
+That was the nice part.
+Although... <face:soft_tgrin>
+It didn't start that way, haha. 
+Remember the first few nights? <face:neu_smile>
+Nothing was really organized yet,
+just enough to pretend that we were settled.
+We had boxes sitting by the door for days!
+[branch]
+    [when:house_confronted=true]
+        Not a thing was unpacked until you knew exactly where you wanted it. <face:devious_tgrin> {
+            ?: You're mixing it up again...
+                Mixing up what? <face:soft_frown> {
+                    ?: We did not move into that house together.
+                        I... <face:concern_surprise>
+                        Maybe I am confusing things.
+                        ...
+                        Things don't stay where I leave them anymore. <face:concern_sfrown>
+                        ...
+                        Maybe that is why I keep holding them here.
+                        The places, the order of it.
+                        If I let go,
+                        everything runs together again.
+                        ... <face:soft_frown>
+                        Please...
+                        I need you to stay a little longer.
+                        Help me keep it in one piece. 
+                        -> sculpt_alt_end
+                }
+            ?: (Say nothing)
+        }
+    [when:house_confronted=false]
+        Not a thing was unpacked until you knew exactly where you wanted it. <face:devious_tgrin>
+[/branch]
+Heh, <face:clo_smile>
+Maybe that's what I actually miss.
+The feeling of things falling into place,
+not the routines or memories themselves...
+But the fact that I built them with you.
+Hey, you know... <face:concern_smile>
+-> ending_lie
+
+# Confrontation, leads to true ending.
+[skip:confront]
+    Why would you ask me that? <face:anger_sfrown> {
+        ?: Humor me.
+            [branch]
+                [when:name_shared=true]
+                    Is this some sort of joke? <face:anger_grimace>
+                    $hername. <face:anger_sfrown>
+                    What is this about? <face:neu_neu> {
+                        ?: And what is my name?
+                            # She cannot answer this.
+                            -> pc_name
+                    }
+                [when:name_shared=false]
+                    Is this some sort of joke? <face:anger_grimace> {
+                        ?: Just tell me.
+                            It's... <face:concern_tfrown>
+                            ...
+                            I should-
+                            ...
+                            I should know... <face:concern_surprise> {
+                                ?: This keeps happening. 
+                                    What are you talking about? <face:neu_neu> {
+                                        ?: The lakehouse, the café. {
+                                            ?: Places that never belonged together. {
+                                                    ?: You keep folding them into one memory. {
+                                                        ?: Do you not remember my name either?
+                                                            -> pc_name
+                                                    ?: Do you actually remember these places?
+                                                        Stop! <face:anger_grimace>
+                                                        I am trying...
+                                                        Do you have any idea how hard this is?
+                                                        Do you think that I'm- <face:anger_neu>
+                                                        I can't do this.
+                                                        -> gameover
+                                                }
+                                            }
+                                        }
+                                    }
+                            }
+                    }
+            [/branch]
+    }
+[/skip]
+
+# Ending where you played into the delirium more...
+[skip:ending_lie]
+    It's been really nice talking to you. <face:concern_smile>
+    I feel more like myself, now.
+    Please, stay a little longer.
+    Help me remember the rest.
+    ENDING 1: FILM <signal:ending> <face:error> {
+        ?: Play again?
+            -> intro
+    }
+[/skip]
+
+[skip:sculpt_end]
+    ENDING 3A: SCULPTURES <signal:ending> <face:error> {
+        ?: Try again
+            -> intro
+    }
+[/skip]
+
+[skip:sculpt_alt_end]
+    ENDING 3B: SCULPTURES <signal:ending> <face:error> {
+        ?: Try again
+            -> intro
+    }
+[/skip]
+
+[skip:pc_name]
+    ...
+    You're- <face:concern_grimace>
+    ... <face:concern_sfrown>
+    I know you.
+    I just-
+    Why can't I...
+    -> ending_truth
+[/skip]
+
+[skip:ending_truth]
+    ... <face:soft_frown>
+    I don't remember your name.
+    But I remember... you. <face:concern_smile>
+    I remember how you made me feel.
+    It's just- <face:soft_tfrown>
+    ...
+    I'm sorry. <face:concern_sfrown>
+    ...
+    I have been playing these moments back for so long.
+    Over and over.
+    None of it stays where it belongs anymore.
+    Places keep folding into each other.
+    Mornings into nights.
+    Houses into cafés.
+    You into a memory.
+    ...
+    I-
+    I just wanted something new,
+    something I have not already recycled.
+    ...
+    Everything feels so worn down.
+    I am sorry this is all that's left of me. <face:soft_frown>
+    ENDING 2: FRAGMENTS <signal:ending> <face:error> {
+        ?: Try again
+            -> intro
+    }
+[/skip]
+
+# Capture for fallthroughs into gameover, hopefully we never see this
+# But I want to handle it gracefully just in case...
+What is...
+# --- Default game-over that we can jump to from essentially anywhere.
+@gameover
+# make sure you reset game state on gameover so the try again is truly fresh.
+SESSION TERMINATED <signal:gameover> <face:error> {
+    ?: Try again
+        -> intro
+}

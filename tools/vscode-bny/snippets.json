@@ -1,21 +1,21 @@
 {
-  "Match Block": {
-    "prefix": "match",
-    "description": "Insert a BNY match block",
+  "Branch Block": {
+    "prefix": "branch",
+    "description": "Insert a BNY branch block",
     "body": [
-      "[match:${1:condition}]",
-      "    =${2:case}",
+      "[branch]",
+      "    [when:${1:identifier}=${2:value}]",
       "        $0",
-      "[/match]"
+      "[/branch]"
     ]
   },
   "Skip Block": {
-    "prefix": "block",
+    "prefix": "skip",
     "description": "Insert a BNY skip block",
     "body": [
-      "[block:${1:label}]",
+      "[skip:${1:label}]",
       "    $0",
-      "[/block]"
+      "[/skip]"
     ]
   }
 }

@@ -1,0 +1,171 @@
+Hello, $name <face:neu_neu>
+Welcome to the branch test.
+Where are we going? {
+    ?: silly
+        -> xxxdone
+    ?: start
+    ?: gentest then start
+        This is a quick sequence before we move on.
+        blah blah blah
+}
+Below will branch on the 'test' condition.
+[branch]
+    [when:test=a]
+        We detected a!
+    [when:test=b]
+        We should not see this
+[/branch]
+This is now the fallback of the branch.
+Let's go into the next test.
+Can we branch in an option? {
+    ?: I hope so! 
+        [branch]
+            [when:testb=b]
+                Detected b!
+            [when:testb=c]
+                We should no see this.
+        [/branch]
+}
+This is a fallback for the option, hopefully the branch falls into this too!
+Next, lets make sure our branch just runs into the fallback when nothing hits.
+[branch]
+    [when:testx=y]
+        We should not see this
+    [when:testx=a]
+        We should not see this either
+[/branch]
+This is the fallback we should see!
+Can a branch lead to a goto?
+[branch]
+    [when:test=a]
+        -> onA
+    [when:test=b]
+        How.
+[/branch]
+Fallback we should not see
+
+@onA
+This is the result of the goto we should hit.
+What about chained branches?
+[branch]
+    [when:test=x]
+        Should not see this
+[/branch]
+[branch]
+    [when:testb=b]
+        Detected b, because test a failed first
+[/branch]
+And what about nested branches?
+[branch]
+    [when:test=a]
+        [branch]
+            [when:testb=b]
+                Got to b through a nested branch
+        [/branch]
+[/branch]
+Also have a fallback here, our nested branch should connect.
+Now, a weird edge case. Sometimes we might have a nested branch that is chained.
+# In this case, the nested branch should fallback/treat the outers chain as it's own chain too...
+[branch]
+    [when:test=a]
+        # We should enter this test, but then it will fail and should chain to the outers chain...
+        [branch]
+            [when:testx=fail]
+                We should not see this
+        [/branch]
+[/branch]
+[branch]
+    [when:testb=b]
+        We should hit this b detect
+[/branch]
+And *then* this is the last fallback for this annoying thing.
+But alas, that last test is if the branches are directly owned by the cases. What happens when there's a sequence first?
+[branch]
+    [when:test=a]
+        Wow we're in a right now, 
+        but then there's a sequence
+        and only now there's a nested branch...
+        [branch]
+            [when:testx=fail]
+                We should not see this
+        [/branch]
+[/branch]
+[branch]
+    [when:testb=b]
+        We should hit this b from our chain.
+[/branch]
+Similar, final fallback for everything here.
+We should also make sure the branch fallback inheritance also works when at the end of an option stream. {
+    ?: Agreed & Branch that passes
+        Alright, here is the sequence.
+        Branch time.
+        [branch]
+            [when:test=a]
+                (correct) branch hit a here.
+        [/branch]
+    ?: Agreed & Branch that fails
+        Okay, sequence here.
+        Branch time.
+        [branch]
+            [when:test=fail]
+                We should not see this
+        [/branch]
+}
+This is the fallback of the option, the branch should still hit this.
+While we are here, we should also test the skip skip
+[skip:xxx]
+and this second
+->xxxdone
+[/skip]
+You should see this first
+->xxx
+@xxxdone
+And finally we're here.
+Okay one last silly test.
+Branches as option fallback {
+    ?: Lets do it
+        Here we go!
+}
+[branch]
+    [when:test=a]
+        Managed to get into the branch as a fallback!
+[/branch]
+[branch]
+    [when:test=a]
+        This fallback branch can also be a chain!!!
+[/branch]
+What about straight to a branch? {
+    ?: Send it!
+}
+[branch]
+    [when:test=a]
+        We should see this.
+[/branch]
+Then finally back to a normal node.
+Lets make sure our fixes didn't break normal fallbacks {
+    ?: Okay
+        Some text
+    ?: Okay (NR)
+}
+Normal fallback
+That we continue from here...
+Let's also make sure our gotos still win over everything. {
+    ?: Test
+        -> pasta
+}
+[branch]
+    [when:test=a]
+        This should be skipped
+[/branch]
+@pasta
+We should go here!
+How about nested options? {
+    ?: enter inner
+        Inner prompt {
+            ?: inner option
+        }
+}
+[branch]
+    [when:test=a]
+        We should see this as a branch fallback
+[/branch]

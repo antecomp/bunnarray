@@ -3,17 +3,65 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="stylesheet" href="/src/styles.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Conduit</title>
+  <title>BunNarraY Demo</title>
   <script type="module" src="/src/main.ts" defer></script>
-</head>
-<!-- 
-    Created by omni.vi March 2026 for the "Tales of Agora Road Demo Disc" Game Jam.
-    https://forum.agoraroad.com/index.php?threads/game-jam-tales-of-agora-road-demo-disc.8697/
+  <style>
+    textarea {
+      width: 500px;
+      height: 450px;
+      font-size: 1.05em;
+    }
 
-    Bundled with vite. Original Source Code @ https://github.com/antecomp/pixicrystal
--->
-<body></body>
+    #compile-button {
+      padding: 10px;
+      font-size: 1.5em;
+    }
+
+    #ast-graph {
+      width: 1000px;
+      height: 750px;
+      border: solid black 2px;
+    }
+
+    #IR {
+      background: #e6e6e6;
+    }
+
+    #dialogue-stack {
+      max-width: 600px;
+    }
+
+    .dialogue-entry {
+      margin: 16px 0;
+    }
+
+    .dialogue-text {
+      white-space: pre-wrap;
+    }
+
+    .dialogue-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .dialogue-actions button.is-selected {
+      background: #355a9d;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+    <textarea id="demo-textarea" width="500" height="450"></textarea>
+    <br>
+    <button id="compile-button">Compile</button>
+    <br>
+    <div id="dialogue-stack" aria-live="polite"></div>
+    <pre id="IR"></pre>
+    <div id="ast-graph"></div>
+    <pre id="debug"></pre>
+</body>
 
 </html>

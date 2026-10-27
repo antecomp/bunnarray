@@ -1,0 +1,42 @@
+# This is a comment
+Normal text is just line by line
+Each line renders separately in-game.
+To have dialogue options (branching) you use curly braces {
+    ?: Option 1
+        Then you can a nested stream of dialogue under each option.
+    ?: Option 2
+        Blah blah blah
+}
+Those dialogue streams will naturally fall into this line after the options.
+Unless you use a go-to.
+To use gotos you first label a line of text with an @
+@label_name
+This line of text is labeled.
+#Then you can jump to it with -> label_name.
+Where do you want to go? {
+    ?: That first label example
+        -> label_name
+    ?: Something farther down...
+        -> another_label
+}
+If we picked "Something farther down" we will skip this.
+@another_label
+Blah blah blah
+
+You can also use variables that are placed-in at runtime...
+using syntax like this: $variable
+# The dialogue "runner" as a setVar method for defining these.
+
+You can also branch based on game state using a branch block.
+Each when case compares a memory identifier with a string value.
+The first true case determines where to go...
+[branch]
+    [when:someFunc=result1]
+        Some nested dialogue here
+    [when:someFunc=result2]
+        Different dialogue
+    [when:someFunc=result3]
+        -> label_name
+[/branch]
+If no branch case passes, or the chosen sequence falls through,
+we land here!

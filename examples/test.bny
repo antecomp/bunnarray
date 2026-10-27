@@ -1,0 +1,13 @@
+# This is a comment
+HELLO!!!!!
+HOW ARE YOU!!!! {
+  ?: FINE THANK YOU
+    Cool.
+    ->whisperbye
+  ?: STOP SHOUTING!!!
+    NO!
+}
+GOODBYE!
+[skip:whisperbye] 
+  goodbye 
+[/skip]

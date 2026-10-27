@@ -1,0 +1,104 @@
+# Sometimes we may have options that are chained.
+# The idea here is basically that there is no new prompt. 
+# This (and supporting the first say) is also why Presentation is nullable
+For example;
+What would you like to drink? {
+    ?: Tea {
+        ?: with sugar
+            Here you go! Tea with sugar!
+        ?: with honey
+            Here you go! Tea with honey!
+    }
+    ?: Coffee {
+        ?: With cream
+            Here you go! Coffee with cream!
+        ?: Black
+            Plain ol' coffee, just for you!
+    }
+}
+# Tea is our answer, and it immediately spawns another option set. 
+# Tea does not become the prompt in this case, we just move on to the next prompt!
+
+# As another thing to consider, options can be chained together without 
+# Any intermediate prompt. Working in a similar way;
+What would you like to drink? {
+    ?: Tea
+        :SET drink=tea
+    ?: Coffee
+        :SET drink=coffee
+} {
+    ?: With sugar
+        :SET mix=sugar
+    ?: With milk
+        :SET mix=milk
+}
+Here you go! $drink with $mix!
+
+Moving on...
+Pick {
+    ?: A
+        Nice choice.
+    ?: B
+} {
+    # Should be paired with displaying "Nice choice."
+    # While also being an immediate follow-up prompt to B
+    ?: X
+}
+
+# Now we hit some annoying combinations...
+What do you want to drink?
+# Wait for some animation, options present *after* handler continues...
+# We're not retroactively trying to pause the prompt
+:YIELD look_at_menu
+{
+    ?: Tea
+        Here's your tea.
+    ?: Coffee
+        Here's your coffee.
+}
+
+# idk why you would do this, but we need to support it
+# Just like the above, we shouldn't have some meaningless need for
+# a continue between these, that chained prompt should appear
+# with the "what would you like in..." message.
+What would you like to drink? {
+    ?: Tea
+        And what would you like in your tea?
+    ?: Coffee
+        And what would you like in your coffee?
+} {
+    ?: Sugar
+        Here's that with sugar!
+    ?: Milk
+        Here's that with milk!
+}
+
+# Other edge case...
+Pick {
+    ?: A
+        Nice choice.
+    ?: B
+} 
+:YIELD some:bullshit
+{
+    # Should be paired with displaying "Nice choice."
+    # While also being an immediate follow-up prompt to B
+    ?: X
+}
+
+Hello
+:SET test=false
+{
+    ?: [when:test=true] lksdfjklsfd
+     ...
+}
+
+Do you want any sugar?
+# Timing doesn't matter perfectly, do this while rendering the options
+:SIGNAL pan_camera_to_coffee_cup
+{
+    ?: Yes
+        ...
+    ? No
+        ...
+}
