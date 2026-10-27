@@ -5,7 +5,6 @@
   "type": "module",
   "dependencies": {
     "@bunnarray/compiler": "0.1.0",
-    "@bunnarray/vm": "0.1.0",
-    "vis-network": "^10.1.2"
+    "@bunnarray/vm": "0.1.0"
   }
 }

@@ -1,7 +1,5 @@
-import { Network } from 'vis-network/standalone';
 import stock from '../../../examples/test.bny?raw';
 import { buildDebug } from '@bunnarray/compiler/debug';
-import { astToNetworkData } from './visualize/astToNetworkData';
 import formatIR from './visualize/formatIR';
 import runDialogue from './runner';
 
@@ -10,7 +8,6 @@ const demoTextarea = document.getElementById('demo-textarea') as HTMLTextAreaEle
 const debugDiv = document.getElementById('debug') as HTMLPreElement;
 const IRVis = document.getElementById('IR') as HTMLPreElement;
 const dialogueStack = document.getElementById('dialogue-stack') as HTMLDivElement;
-let astNetwork: Network | undefined;
 
 function display(x: any) {
     console.log(x);
@@ -21,31 +18,6 @@ demoTextarea.value = stock;
 compileButton.onclick = () => {
     dialogueStack.replaceChildren();
     const rez = buildDebug(demoTextarea.value);
-    astNetwork?.destroy();
-    astNetwork = rez
-        ? new Network(
-            document.getElementById('ast-graph')!,
-            astToNetworkData(rez.ast),
-            {
-                nodes: {
-                    shape: 'box',
-                    widthConstraint: 180,
-                    margin: { top: 12, right: 12, bottom: 12, left: 12 }
-                },
-                edges: { smooth: false },
-                layout: {
-                    hierarchical: {
-                        enabled: true,
-                        direction: 'UD',
-                        sortMethod: 'directed',
-                        levelSeparation: 160,
-                        nodeSpacing: 220
-                    }
-                },
-                physics: { enabled: false }
-            }
-        )
-        : undefined;
     display(
         rez
     );
