@@ -505,5 +505,77 @@ how has life been treating you?`, [
         });
     });
 
-    // TODO Directives/Signals if those become directly incorporated as instructions.
+    describe('directives and signals', () => {
+        it('compiles assignments and removals in source order', () => {
+            expectIR(`:SET state=ready
+                :SET _quest2=&lbrack;open&rbrack; &amp; waiting
+                :SET state
+                Continue.`, [
+                { op: 'SET', identifier: 'state', value: 'ready' },
+                { op: 'SET', identifier: '_quest2', value: '[open] & waiting' },
+                { op: 'SET', identifier: 'state', value: undefined },
+                { op: 'SAY', text: 'Continue.' },
+                { op: 'END' }
+            ]);
+        });
+
+        it('keeps optional signal and yield values distinct from their identifiers', () => {
+            expectIR(`:SIGNAL opened
+                :SIGNAL quest:complete
+                :YIELD inspect
+                :YIELD action: front &amp; back
+                Done.`, [
+                { op: 'SIGNAL', identifier: 'opened', value: undefined },
+                { op: 'SIGNAL', identifier: 'quest', value: 'complete' },
+                { op: 'YIELD', identifier: 'inspect', value: undefined },
+                { op: 'YIELD', identifier: 'action', value: 'front & back' },
+                { op: 'SAY', text: 'Done.' },
+                { op: 'END' }
+            ]);
+        });
+
+        it('sets a speaker and restores the narrator with a bare directive', () => {
+            expectIR(`:SPEAKER Alice &amp; Bob
+                Hello.
+                :SPEAKER
+                Narration.`, [
+                { op: 'SPEAKER', value: 'Alice & Bob' },
+                { op: 'SAY', text: 'Hello.' },
+                { op: 'SPEAKER', value: null },
+                { op: 'SAY', text: 'Narration.' },
+                { op: 'END' }
+            ]);
+        });
+
+        it('places directives inside a choice before its common fallback', () => {
+            expectIR(`Choose. {
+                ?: Accept
+                    :SET accepted=yes
+                    :SIGNAL choice:accepted
+                    :YIELD save
+            }
+            After.`, [
+                { op: 'SAY', text: 'Choose.' },
+                { op: 'CHOICE', choices: [{ text: 'Accept', target: 2 }], fallback: 6 },
+                { op: 'SET', identifier: 'accepted', value: 'yes' },
+                { op: 'SIGNAL', identifier: 'choice', value: 'accepted' },
+                { op: 'YIELD', identifier: 'save', value: undefined },
+                { op: 'JUMP', target: 6 },
+                { op: 'SAY', text: 'After.' },
+                { op: 'END' }
+            ]);
+        });
+    });
+
+    it('keeps variable references and inline tags as dialogue text', () => {
+        expectIR('Hey, $name.', [
+            { op: 'SAY', text: 'Hey, $name.' },
+            { op: 'END' }
+        ]);
+    });
+
+    it('rejects gotos to missing labels and duplicate labels', () => {
+        expect(() => build('->missing')).toThrow('encountered goto to unknown label missing');
+        expect(() => build('@same\nFirst.\n@same\nSecond.')).toThrow('duplicate label');
+    });
 });
