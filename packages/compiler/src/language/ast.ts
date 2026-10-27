@@ -93,5 +93,5 @@ export type SpeakerStatement = {
 
 export type AlternateStatement = {
     type: 'alternate';
-    speakers: string[];
+    speakers: (string | null)[];
 };

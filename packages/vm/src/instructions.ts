@@ -45,7 +45,7 @@ export type Instruction =
     }
     | {
         op: 'ALTERNATE';
-        speakers: string[];
+        speakers: (string | null)[];
     }
     | { op: 'END' };
 

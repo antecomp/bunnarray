@@ -68,7 +68,7 @@ Hello again!
 Still Alice speaking.
 ```
 The first three lines are spoken by Alice, Bob Smith, and Alice, respectively.
-Empty names, such as in `:ALTERNATE Alice;;Bob`, are invalid.
+An empty name, such as in `:ALTERNATE Alice;;Bob`, selects the narrator for that turn.
 
 ### Comments
 Use `#` to comment out the rest of a line. It can follow a statement or appear on a line by itself. Use `&hash;` for a literal `#` in dialogue text or a value.

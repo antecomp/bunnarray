@@ -176,12 +176,7 @@ export class DialogueVisitor extends BaseVisitor {
         const text: string | undefined = ctx.Text?.[0]?.image;
         const speakers = text === undefined
             ? []
-            : splitSpeakerNames(text);
-
-        // TODO: Consider making this use narrator (null) instead?
-        if (speakers.some(name => name.length === 0)) {
-            throw new Error('ALTERNATE requires a speaker between each semicolon');
-        }
+            : splitSpeakerNames(text).map(name => name === '' ? null : name);
 
         return { type: 'alternate', speakers };
     }

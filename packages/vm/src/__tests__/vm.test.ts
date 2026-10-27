@@ -204,21 +204,22 @@ describe('VM', () => {
 
     it('rotates speakers and stops rotation when a speaker is set', () => {
         const { vm, emissions } = runtime([
-            { op: 'ALTERNATE', speakers: ['Alice', 'Bob'] },
+            { op: 'ALTERNATE', speakers: ['Alice', 'Bob', null] },
             { op: 'SAY', text: 'One' },
             { op: 'SAY', text: 'Two' },
             { op: 'SAY', text: 'Three' },
-            { op: 'SPEAKER', value: 'Carol' },
             { op: 'SAY', text: 'Four' },
-            { op: 'SPEAKER', value: null },
+            { op: 'SPEAKER', value: 'Carol' },
             { op: 'SAY', text: 'Five' },
+            { op: 'SPEAKER', value: null },
+            { op: 'SAY', text: 'Six' },
             { op: 'END' }
         ]);
         let wait = vm.start();
         while (wait === 'next') wait = vm.next();
         expect(emissions).toEqual([
-            say('One', 'Alice'), say('Two', 'Bob'), say('Three', 'Alice'),
-            say('Four', 'Carol'), say('Five'), { kind: 'end' }
+            say('One', 'Alice'), say('Two', 'Bob'), say('Three'), say('Four', 'Alice'),
+            say('Five', 'Carol'), say('Six'), { kind: 'end' }
         ]);
     });
 

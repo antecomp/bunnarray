@@ -62,7 +62,7 @@ export function createVM(program: Program, { handler: emit, memory: initialMemor
     let visibleChoices: Choice[] = [];  // snapshot of visible choices
 
     let speaker: string | null = null;
-    let alternateSpeakers: string[] = [];
+    let alternateSpeakers: (string | null)[] = [];
     let nextAlternate = 0;
 
 

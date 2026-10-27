@@ -113,12 +113,15 @@ how has life been treating you?`, [
         });
 
         it.each([
-            ':ALTERNATE ;Alice',
-            ':ALTERNATE Alice;;Bob',
-            ':ALTERNATE Alice; ;Bob',
-            ':ALTERNATE Alice;'
-        ])('rejects an empty speaker in %j', source => {
-            expect(() => build(source)).toThrow('ALTERNATE requires a speaker between each semicolon');
+            [':ALTERNATE ;Alice', [null, 'Alice']],
+            [':ALTERNATE Alice;;Bob', ['Alice', null, 'Bob']],
+            [':ALTERNATE Alice; ;Bob', ['Alice', null, 'Bob']],
+            [':ALTERNATE Alice;', ['Alice', null]]
+        ] as const)('uses the narrator for an empty speaker in %j', (source, speakers) => {
+            expectIR(source, [
+                { op: 'ALTERNATE', speakers: [...speakers] },
+                { op: 'END' }
+            ]);
         });
     });
 
