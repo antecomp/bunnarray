@@ -5,6 +5,7 @@ import preprocess from '../language/preprocess';
 import { DialogueVisitor } from '../language/vistor';
 import { Program } from './instructions';
 import lower from './lower';
+import { formatLexErrors, formatParseErrors } from './formatSyntaxErrors';
 
 const parser = new DialogueParser();
 const visitor = new DialogueVisitor();
@@ -17,15 +18,13 @@ export default function build(raw: string): Program {
     const lex = DialogueLexer.tokenize(normalized);
 
     if (lex.errors.length > 0) {
-        console.error('Lex errors:', lex.errors);
-        throw new Error('Lex errors');
+        throw new Error(formatLexErrors(lex.errors, normalized));
     }
 
     parser.input = lex.tokens;
     const cst = parser.dialogue();
     if (parser.errors.length > 0) {
-        console.error('Parse errors:', parser.errors);
-        throw new Error('Parse errors');
+        throw new Error(formatParseErrors(parser.errors, normalized));
     }
 
     const ast = visitor.visit(cst) as DialogueAST;

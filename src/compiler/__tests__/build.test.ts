@@ -614,4 +614,13 @@ how has life been treating you?`, [
         expect(() => build('->missing')).toThrow('encountered goto to unknown label missing');
         expect(() => build('@same\nFirst.\n@same\nSecond.')).toThrow('duplicate label');
     });
+
+    it('reports lexer and parser errors at their source positions', () => {
+        expect(() => build('  # skip\n\n  :SET 1bad'))
+            .toThrow(/Lex error at line 3, column 8: /);
+        expect(() => build('  # skip\n\n{\n  Plain\n}'))
+            .toThrow(/Parse error at line 4, column 3: /);
+        expect(() => build('  # skip\n\n{\n  ?: Yes'))
+            .toThrow(/Parse error at line 5, column 1: /);
+    });
 });
