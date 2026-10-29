@@ -15,6 +15,37 @@ function say(text: string, speaker: string | null = null): Emission {
 }
 
 describe('VM', () => {
+    it.each<{ instructions: Instruction[] }>([
+        { instructions: [] },
+        { instructions: [{ op: 'SAY', text: 'Missing END' }] },
+        { instructions: [{ op: 'END' }, { op: 'SAY', text: 'After END' }] }
+    ])('rejects programs without a final END: $instructions', ({ instructions }) => {
+        expect(() => runtime(instructions)).toThrow('Program must end with an END instruction');
+    });
+
+    it.each([-1, 2, 100, 0.5, NaN, Infinity])('rejects invalid jump target %s', target => {
+        const { vm } = runtime([{ op: 'JUMP', target }, { op: 'END' }]);
+        expect(() => vm.start()).toThrow(`Jump target out of range: ${target}`);
+    });
+
+    it.each<Instruction>([
+        { op: 'BRANCH', cases: [{ condition: { identifier: 'state', value: 'yes' }, target: 2 }], fallback: 1 },
+        { op: 'BRANCH', cases: [], fallback: 2 },
+        { op: 'CHOICE', choices: [], fallback: 2 }
+    ])('rejects out-of-range branch and choice fallbacks: %j', instruction => {
+        const { vm } = runtime([instruction, { op: 'END' }], { state: 'yes' });
+        expect(() => vm.start()).toThrow('Jump target out of range: 2');
+    });
+
+    it('rejects an out-of-range selected choice target', () => {
+        const { vm } = runtime([
+            { op: 'CHOICE', choices: [{ text: 'Invalid', target: 2 }], fallback: 1 },
+            { op: 'END' }
+        ]);
+        expect(vm.start()).toBe('select');
+        expect(() => vm.choose(0)).toThrow('Jump target out of range: 2');
+    });
+
     it('ends an empty program and only starts once', () => {
         const { vm, emissions } = runtime([{ op: 'END' }]);
         expect(vm.start()).toBe('end');

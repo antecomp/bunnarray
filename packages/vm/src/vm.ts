@@ -54,6 +54,9 @@ export function createVM(program: Program, { handler: emit, memory: initialMemor
             + `incompatible with vm version ${formatVersion(VM_VERSION)}`
         );
 
+    if (program.instructions[program.instructions.length - 1]?.op !== 'END')
+        throw new Error('Program must end with an END instruction');
+
     const memory = createMemory(update => emit(EM('memory', update)), initialMemory);
 
     let pc = 0;
@@ -96,6 +99,9 @@ export function createVM(program: Program, { handler: emit, memory: initialMemor
         waiting = null;
 
         for (; ;) {
+            if (!Number.isInteger(pc) || pc < 0 || pc >= program.instructions.length)
+                throw new Error(`pc (${pc}) out of program range!`);
+
             const ins = program.instructions[pc];
 
             switch (ins.op) {
