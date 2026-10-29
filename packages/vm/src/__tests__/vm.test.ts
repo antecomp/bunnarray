@@ -51,7 +51,7 @@ describe('VM', () => {
 
     it.each([-1, 2, 100, 0.5, NaN, Infinity])('rejects invalid jump target %s', target => {
         const { vm } = runtime([{ op: 'JUMP', target }, { op: 'END' }]);
-        expect(() => vm.start()).toThrow(`Jump target out of range: ${target}`);
+        expect(() => vm.start()).toThrow(`pc (${target}) out of program range!`);
     });
 
     it.each<Instruction>([
@@ -60,7 +60,7 @@ describe('VM', () => {
         { op: 'CHOICE', choices: [], fallback: 2 }
     ])('rejects out-of-range branch and choice fallbacks: %j', instruction => {
         const { vm } = runtime([instruction, { op: 'END' }], { state: 'yes' });
-        expect(() => vm.start()).toThrow('Jump target out of range: 2');
+        expect(() => vm.start()).toThrow('pc (2) out of program range!');
     });
 
     it('rejects an out-of-range selected choice target', () => {
@@ -69,7 +69,7 @@ describe('VM', () => {
             { op: 'END' }
         ]);
         expect(vm.start()).toBe('select');
-        expect(() => vm.choose(0)).toThrow('Jump target out of range: 2');
+        expect(() => vm.choose(0)).toThrow('pc (2) out of program range!');
     });
 
     it('ends an empty program and only starts once', () => {
