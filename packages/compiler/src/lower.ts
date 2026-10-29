@@ -158,6 +158,10 @@ export function lower(ast: DialogueAST): Program {
                 }));
                 break;
             }
+
+            default:
+                const exhaustive: never = statement;
+                throw new Error(`Unhandled syntax node: ${exhaustive}`);
         }
     }
 

@@ -47,7 +47,7 @@ export type VM = {
 };
 
 export function createVM(program: Program, { handler: emit, memory: initialMemory }: VMOptions): VM {
-    if(program.version.major !== VM_VERSION.major)
+    if (program.version.major !== VM_VERSION.major)
         throw new Error(
             `Program version ${formatVersion(program.version)} `
             + `incompatible with vm version ${formatVersion(VM_VERSION)}`
@@ -165,6 +165,10 @@ export function createVM(program: Program, { handler: emit, memory: initialMemor
                 case 'END':
                     emit({ kind: 'end' });
                     return stopWith('end');
+
+                default:
+                    const exhaustive: never = ins;
+                    throw new Error(`Unhandled instruction: ${exhaustive}`);
             }
         }
     }
