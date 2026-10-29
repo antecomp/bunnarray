@@ -208,7 +208,6 @@ const vm = createVM(build(source), {
 });
 vm.start();
 ```
-Inline tags such as `<face:thinking>` and `<signal:keygiven>` are currently ordinary dialogue text; they do not create built-in face changes or signals.
 
 ### Yields
 Use `:YIELD identifier` to pause execution and hand control to the consumer. Like `:SIGNAL`, it accepts an optional `:value` string:
