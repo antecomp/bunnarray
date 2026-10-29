@@ -1,15 +1,19 @@
-import { DialogueAST } from './language/ast';
-import { DialogueLexer } from './language/lexer';
-import { DialogueParser } from './language/parser';
-import preprocess from './language/preprocess';
-import { DialogueVisitor } from './language/vistor';
-import { lower } from './lower';
-import { formatLexErrors, formatParseErrors } from './formatSyntaxErrors';
+import {
+    type DialogueAST,
+    DialogueLexer,
+    DialogueParser,
+    preprocess,
+    DialogueVisitor,
+    lower,
+    formatLexErrors,
+    formatParseErrors
+} from '@bunnarray/compiler';
 
 const parser = new DialogueParser();
 const visitor = new DialogueVisitor();
 
 export function buildDebug(raw: string) {
+    const begin = performance.now();
     console.log('𑣲₍ ᐢ. .ᐢ₎ : Compiling .bny dialogue...');
 
     const normalized = preprocess(raw);
@@ -38,6 +42,9 @@ export function buildDebug(raw: string) {
     const ir = lower(ast);
 
     console.log(ir);
+
+    const end = performance.now();
+    console.log(`𑣲₍ ᐢ. .ᐢ₎ : Compiled in ${end - begin}ms!`);
 
     return {
         ir,

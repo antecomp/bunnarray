@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./debug": "./src/buildDebug.ts"
+    ".": "./src/index.ts"
   },
   "dependencies": {
     "@bunnarray/vm": "0.1.0",
