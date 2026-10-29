@@ -10,11 +10,12 @@ const escapedCharacters: Record<string, string> = {
     lbrace: '{',
     rbrace: '}',
     hash: '#',
+    pipe: '|',
     amp: '&'
 };
 
 function decodeText(text: string): string {
-    return text.replace(/&(lbrack|rbrack|lbrace|rbrace|hash|amp);/g,
+    return text.replace(/&(lbrack|rbrack|lbrace|rbrace|hash|pipe|amp);/g,
         (_, name: string) => escapedCharacters[name]);
 }
 
@@ -59,7 +60,7 @@ export class DialogueVisitor extends BaseVisitor {
         const node =
             ctx.say?.[0] ?? ctx.choice?.[0] ??
             ctx.skip?.[0] ?? ctx.label?.[0] ?? ctx.goto?.[0] ??
-            ctx.set?.[0] ?? ctx.speaker?.[0] ?? ctx.alternate?.[0] ??
+            ctx.set?.[0] ?? ctx.speaker?.[0] ?? ctx.shorthandSpeaker?.[0] ?? ctx.alternate?.[0] ??
             ctx.signal?.[0] ?? ctx.branch?.[0] ?? ctx.yield?.[0]
             ;
 
@@ -170,6 +171,10 @@ export class DialogueVisitor extends BaseVisitor {
             type: 'speaker',
             value: im ? decodeText(im.trim()) : null
         };
+    }
+
+    shorthandSpeaker(ctx: any): A.SpeakerStatement {
+        return this.speaker(ctx);
     }
 
     alternate(ctx: any): A.AlternateStatement {

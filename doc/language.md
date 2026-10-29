@@ -5,7 +5,7 @@ BunNarraY scripts contain dialogue lines, directives, and blocks. Blank lines an
 ### Basic Text
 Each normal line of text becomes a separate dialogue message when the VM runs.
 Leading and trailing whitespace on a dialogue line is removed.
-Square brackets (`[` and `]`) and curly braces (`{` and `}`) are reserved for language syntax. To include them literally in text, use `&lbrack;`, `&rbrack;`, `&lbrace;`, and `&rbrace;`, respectively. These escapes also work in option text and other text fields. Use `&hash;` for a literal `#` and `&amp;` to write a literal escape sequence, such as `&amp;lbrace;` for the text `&lbrace;`.
+Square brackets (`[` and `]`), curly braces (`{` and `}`), and pipes (`|`) are reserved for language syntax. To include them literally in text, use `&lbrack;`, `&rbrack;`, `&lbrace;`, `&rbrace;`, and `&pipe;`, respectively. These escapes also work in option text and other text fields. Use `&hash;` for a literal `#` and `&amp;` to write a literal escape sequence, such as `&amp;lbrace;` for the text `&lbrace;`.
 ```
 Hello, it has been a while,
 how has life been treating you?
@@ -22,6 +22,17 @@ Still Alice speaking.
 The story continues.
 ```
 Each `say` emission includes the speaker name, or `null` for the narrator.
+
+Use `|name|` as shorthand for `:SPEAKER name`. It can share a line with dialogue or appear on its own. The speaker persists for following dialogue lines, and `||` returns to the (null) narrator. Like `:SPEAKER`, the shorthand stops any active speaker rotation. Names may contain spaces and text escapes.
+```bny
+|Alice| Hello!
+Still Alice speaking.
+|Bob Smith| How are you? {
+    ?: Good
+        Glad to hear it.
+}
+|| The story continues.
+```
 
 Use `:ALTERNATE` with semicolon-separated names to rotate speakers on each dialogue line. Names may contain spaces. A bare `:ALTERNATE` stops the rotation and leaves the last speaker in place. `:SPEAKER` also stops the rotation and sets a new speaker. Only dialogue lines advance the rotation.
 ```

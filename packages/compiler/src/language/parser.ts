@@ -9,6 +9,7 @@ statement ->
     | goto
     | set
     | speaker
+    | shorthandSpeaker
     | alternate
     | branch
     | signal
@@ -48,6 +49,7 @@ label -> LabelToken Text Newline?
 goto -> GotoToken Text Newline?
 
 speaker -> SpeakerKeyword Text? Newline
+shorthandSpeaker -> Pipe Text? Pipe Newline?
 alternate -> AlternateKeyword Text? Newline
 
 */
@@ -56,7 +58,7 @@ import { CstParser } from 'chevrotain';
 import {
     Newline, CurlyBraceOpen, CurlyBraceClose, SkipBlockOpen,
     SkipBlockClose, ChoiceToken,
-    GotoToken, LabelToken, CloseBracket, Text, SpeakerKeyword,
+    GotoToken, LabelToken, CloseBracket, Text, SpeakerKeyword, Pipe,
     AlternateKeyword, IdBlockOpen, IdBlockClose,
 
     SetKeyword, Identifier, SetEquals, DirectiveNewline,
@@ -88,6 +90,7 @@ export class DialogueParser extends CstParser {
             { ALT: () => this.SUBRULE(this.signal) },
             { ALT: () => this.SUBRULE(this.yield) },
             { ALT: () => this.SUBRULE(this.speaker) },
+            { ALT: () => this.SUBRULE(this.shorthandSpeaker) },
             { ALT: () => this.SUBRULE(this.alternate) }
         ]);
     });
@@ -193,6 +196,13 @@ export class DialogueParser extends CstParser {
         this.CONSUME(SpeakerKeyword);
         this.OPTION(() => this.CONSUME(Text));
         this.CONSUME(Newline);
+    });
+
+    shorthandSpeaker = this.RULE('shorthandSpeaker', () => {
+        this.CONSUME(Pipe);
+        this.OPTION(() => this.CONSUME(Text));
+        this.CONSUME1(Pipe);
+        this.OPTION1(() => this.CONSUME(Newline));
     });
 
     alternate = this.RULE('alternate', () => {

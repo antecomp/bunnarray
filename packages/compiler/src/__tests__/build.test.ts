@@ -95,6 +95,29 @@ how has life been treating you?`, [
         });
     });
 
+    describe('shorthand speakers', () => {
+        it('accepts standalone headers, narrator resets, comments, and escaped names', () => {
+            expectIR(`| Alice &pipe; Bob | # speaker note
+                Hello &pipe; &amp;pipe;.
+                || Narration.
+                |   |
+                |Carol|`, [
+                { op: 'SPEAKER', value: 'Alice | Bob' },
+                { op: 'SAY', text: 'Hello | &pipe;.' },
+                { op: 'SPEAKER', value: null },
+                { op: 'SAY', text: 'Narration.' },
+                { op: 'SPEAKER', value: null },
+                { op: 'SPEAKER', value: 'Carol' },
+                { op: 'END' }
+            ]);
+        });
+
+        it.each(['|Alice', '|Alice\nHello', '|Alice| Hello |'])
+        ('rejects an unclosed speaker header: %j', source => {
+            expect(() => build(source)).toThrow();
+        });
+    });
+
     describe('alternating speakers', () => {
         it('splits semicolon-separated names and accepts a bare directive to stop', () => {
             expectIR(':ALTERNATE Alice; Bob Smith ;Carol\n:SPEAKER Other\n:ALTERNATE', [

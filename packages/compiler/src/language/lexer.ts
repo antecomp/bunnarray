@@ -102,7 +102,7 @@ export const Whitespace = createToken({
 // Consumes all characters up to syntax punctuation, a comment, or a newline.
 export const Text = createToken({
     name: 'Text',
-    pattern: /[^\n{}\[\]#]+/
+    pattern: /[^\n{}\[\]#|]+/
 });
 
 
@@ -134,6 +134,11 @@ export const DirectiveNewline = createToken({
 
 
 // --- Speaker Logic ---
+export const Pipe = createToken({
+    name: 'Pipe',
+    pattern: /\|/
+});
+
 export const SpeakerKeyword = createToken({
     name: 'SpeakerKeyword',
     pattern: /:SPEAKER\b/
@@ -226,6 +231,7 @@ const normalTokens = [
     GotoToken,
     LabelToken,
     SetKeyword,
+    Pipe,
     SpeakerKeyword,
     AlternateKeyword,
     SignalKeyword,
