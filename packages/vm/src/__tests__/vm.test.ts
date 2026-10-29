@@ -183,22 +183,39 @@ describe('VM', () => {
             { op: 'END' }
         ], { name: 'Rabbit' });
         expect(vm.start()).toBe('end');
-        expect(emissions[0]).toEqual(say('Hello Rabbit '));
+        expect(emissions).toEqual([
+            { kind: 'memory', key: 'greeting', prev: undefined, value: 'Hello Rabbit' },
+            say('Hello Rabbit '),
+            { kind: 'memory', key: 'name', prev: 'Rabbit', value: undefined },
+            { kind: 'end' }
+        ]);
         expect(vm.memory.get('greeting')).toBe('Hello Rabbit');
         expect(vm.memory.get('name')).toBeUndefined();
     });
 
-    it('keeps memory subscriptions working for changes and deletions', () => {
-        const { vm } = runtime([{ op: 'END' }]);
-        const updates: unknown[] = [];
-        const unsubscribe = vm.memory.subscribe(update => updates.push(update));
+    it('emits host memory writes and deletions after applying them', () => {
+        const emissions: Emission[] = [];
+        const vm = createVM({ version: { major: 1, minor: 0 }, instructions: [{ op: 'END' }] }, {
+            memory: { key: 'initial' },
+            handler: emission => {
+                if (emission.kind === 'memory') {
+                    expect(vm.memory.get(emission.key)).toBe(emission.value);
+                }
+                emissions.push(emission);
+            }
+        });
+        expect(emissions).toEqual([]);
         vm.memory.set('key', 'value');
-        vm.memory.delete('key');
-        unsubscribe();
-        vm.memory.set('key', 'later');
-        expect(updates).toEqual([
-            { key: 'key', prev: undefined, value: 'value' },
-            { key: 'key', prev: 'value', value: undefined }
+        vm.memory.set('key', 'value');
+        expect(vm.memory.delete('key')).toBe(true);
+        expect(vm.memory.delete('key')).toBe(false);
+        vm.memory.set('key', '');
+        expect(vm.memory.snapshot()).toEqual({ key: '' });
+        expect(emissions).toEqual([
+            { kind: 'memory', key: 'key', prev: 'initial', value: 'value' },
+            { kind: 'memory', key: 'key', prev: 'value', value: 'value' },
+            { kind: 'memory', key: 'key', prev: 'value', value: undefined },
+            { kind: 'memory', key: 'key', prev: undefined, value: '' }
         ]);
     });
 

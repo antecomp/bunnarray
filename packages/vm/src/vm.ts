@@ -1,5 +1,5 @@
 import type { EqualityCondition, Operation, Program, Version } from './instructions';
-import createMemory from './mem';
+import createMemory, { type MemoryUpdate } from './mem';
 
 const VM_VERSION = {
     major: 1,
@@ -15,6 +15,7 @@ export type Option = { text: string; id?: string };
 
 export type Emission =
     | { kind: 'say'; text: string; speaker: string | null }
+    | ({ kind: 'memory' } & MemoryUpdate)
     | { kind: 'signal'; identifier: string; value: string | undefined }
     | { kind: 'yield'; identifier: string; value: string | undefined }
     | { kind: 'options'; options: Option[] }
@@ -53,7 +54,7 @@ export function createVM(program: Program, { handler: emit, memory: initialMemor
             + `incompatible with vm version ${formatVersion(VM_VERSION)}`
         );
 
-    const memory = createMemory(initialMemory);
+    const memory = createMemory(update => emit(EM('memory', update)), initialMemory);
 
     let pc = 0;
     let started = false;

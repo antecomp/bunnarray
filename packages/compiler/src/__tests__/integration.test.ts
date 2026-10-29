@@ -47,6 +47,8 @@ describe('compiled programs in the VM', () => {
         expect(vm.resume()).toBe('yield');
         expect(vm.resume()).toBe('end');
         expect(emissions).toEqual([
+            { kind: 'memory', key: 'name', prev: undefined, value: 'Rabbit' },
+            { kind: 'memory', key: 'name', prev: 'Rabbit', value: undefined },
             { kind: 'signal', identifier: 'opened', value: undefined },
             { kind: 'signal', identifier: 'status', value: 'ready' },
             { kind: 'yield', identifier: 'inspect', value: undefined },
@@ -86,6 +88,7 @@ describe('compiled programs in the VM', () => {
         expect(vm.resume()).toBe('end');
         expect(emissions).toEqual([
             { kind: 'yield', identifier: 'inspect', value: undefined },
+            { kind: 'memory', key: 'key', prev: undefined, value: 'yes' },
             { kind: 'say', text: 'Opened', speaker: null },
             { kind: 'end' }
         ]);

@@ -1,21 +1,17 @@
-import createSubscriptions from './subscriptions';
+export type MemoryUpdate = {
+    key: string;
+    prev: string | undefined;
+    value: string | undefined;
+};
 
-export default function createMemory(init: Record<string, string> = {}) {
+export default function createMemory(onUpdate: (update: MemoryUpdate) => void, init: Record<string, string> = {}) {
     const values = new Map(Object.entries(init));
-
-    type UpdateNotification = {
-        key: string,
-        prev: string | undefined;
-        value: string | undefined
-    };
-
-    const { notify, subscribe } = createSubscriptions<UpdateNotification>();
 
     function set(key: string, value: string) {
         const prev = values.get(key);
 
         values.set(key, value);
-        notify({ key, value, prev });
+        onUpdate({ key, value, prev });
     }
 
     function del(key: string) {
@@ -24,7 +20,7 @@ export default function createMemory(init: Record<string, string> = {}) {
         const prev = values.get(key);
         values.delete(key);
 
-        notify({ key, value: undefined, prev });
+        onUpdate({ key, value: undefined, prev });
         return true;
     }
 
@@ -34,8 +30,6 @@ export default function createMemory(init: Record<string, string> = {}) {
         set,
         delete: del,
 
-        snapshot: () => Object.fromEntries(values),
-
-        subscribe
+        snapshot: () => Object.fromEntries(values)
     };
 }
