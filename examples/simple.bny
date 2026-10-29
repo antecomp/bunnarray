@@ -1,0 +1,67 @@
+@start
+Hey, $name. 
+How are you?  {
+    ?: Doing well!
+        That is great to hear. 
+        # will fall out of this skip and hit "wrapup" goto
+    ?: Not great.
+        @bad
+        Sorry to hear that. 
+        Well... 
+        -> elsewhere
+    ?: I've been... {
+        ?: Worse
+            Hey that's a start! 
+        ?: Better
+            -> bad
+    }
+    ?: I won't say
+        Why is that?  {
+            ?: Don't feel like it!
+                Verywell... 
+            ?: I don't know you!
+                You will! 
+        }
+}
+-> wrapup
+@elsewhere
+If you ever want to talk about it,
+[branch]
+    [when:slop=soy]
+        do not be afraid to
+[/branch]
+just let me know.
+@wrapup
+Aaaaa
+# Well thats it for this test... 
+# Just always loop-back to the beginning so we can test the other options.
+
+[skip:ta]
+Blah blah blah
+[/skip]
+Fallback
+This will run a condition
+[branch]
+    [when:check=result1]
+        I detect result 1
+        This like any other sequence
+        -> wrapup
+    [when:check=result2]
+        I detect result 2
+    [when:check=result3]
+        ->ta
+    [when:check=result4]
+        [branch]
+            [when:aaa=egg]
+                -> elsewhere
+        [/branch]
+[/branch]
+[branch]
+    [when:checkalt=rez]
+        Followup branch detected rez.
+[/branch]
+[skip:tx]
+Blah blah blah
+[/skip]
+This is a fallback, it should run regardless of the branch
+-> start

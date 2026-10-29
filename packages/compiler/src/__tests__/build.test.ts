@@ -1,7 +1,6 @@
 /** End-to-end checks from BunNarraY source through preprocessing, parsing, and IR lowering. */
 import { describe, expect, it } from 'vitest';
 import example from '../../../../examples/example.bny?raw';
-import main from '../../../../examples/main.bny?raw';
 import simple from '../../../../examples/simple.bny?raw';
 import testbranch from '../../../../examples/testbranch.bny?raw';
 import { build } from '../build';
@@ -16,7 +15,6 @@ function expectIR(source: string, instructions: Instruction[]) {
 describe('build', () => {
     it.each([
         ['example.bny', example],
-        ['main.bny', main],
         ['simple.bny', simple],
         ['testbranch.bny', testbranch]
     ])('compiles migrated example %s', (_name, source) => {
