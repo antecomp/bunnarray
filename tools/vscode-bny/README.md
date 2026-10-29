@@ -1,28 +1,40 @@
 # BNY Language Support
 
-Minimal VS Code language support for `.bny` dialogue files.
+VS Code syntax highlighting, snippets, and editor support for current `.bny` dialogue files. This extension is declarative: it does not provide compiler diagnostics, execution, or label navigation.
 
 Included:
 
-- syntax highlighting for comments, labels, gotos, option markers, skip blocks, branch blocks, branch cases, braces, directives, and `$variables`
-- bracket matching and auto-closing for `{}` and `<>`
-- snippets for `branch` and `skip`
-- `.bny` file association
+- Full-line and inline `#` comments.
+- Labels, gotos, skip blocks, branches, and choice blocks.
+- Option conditions (`[when:identifier=value]`) and IDs (`[id:name]`) in either order.
+- `:SET` assignments and deletion, `:SIGNAL`, `:YIELD`, `:SPEAKER`, and `:ALTERNATE`.
+- Speaker shorthand (`|name|` and `||`), including dialogue on the same line.
+- `$variables` in dialogue and `:SET` values. Option text, IDs, conditions, speaker names, and signal/yield values are literal strings.
+- Text escapes: `&lbrack;`, `&rbrack;`, `&lbrace;`, `&rbrace;`, `&hash;`, `&pipe;`, and `&amp;`.
+- Bracket matching, auto-closing, and surrounding for `{}` and `[]`.
+- `.bny` file association.
+
+Snippet prefixes: `choice`, `option-when`, `option-id`, `branch`, `when`, `skip`, `set`, `unset`, `speaker`, `speaker-inline`, `alternate`, `signal`, `yield`, `label`, and `goto`.
+
+See the [language guide](../../doc/language.md) and [feature tour](../../examples/feature-tour.bny) for syntax and runtime behavior.
+
+## Changes in 2.1.0
+
+Legacy angle-bracket tags such as `<face:thinking>` and `<signal:keygiven>` no longer receive directive highlighting, and `<` no longer auto-closes. The compiler treats these tags as ordinary dialogue text. Use `:SIGNAL keygiven` to emit a signal, or `:YIELD identifier` to pause for a consumer action. There is no built-in face-change directive; consumers can implement one using signals or yields.
 
 ## Use it locally
 
-1. Open VS Code.
-2. Run `Extensions: Install from VSIX...` if you package it first, or `Developer: Install Extension from Location...` if your VS Code build supports that command.
-3. Point it at this folder:
+Install a packaged VSIX using `Extensions: Install from VSIX...`, or use `Developer: Install Extension from Location...` if your VS Code build provides it, pointing to `tools/vscode-bny`.
 
-```text
-tools/vscode-bny
+To run an Extension Development Host from a terminal:
+
+```sh
+code --extensionDevelopmentPath="$PWD/tools/vscode-bny"
 ```
 
-For extension development, you can also open this folder directly in VS Code and press `F5` to launch an Extension Development Host.
+Optional settings to prioritize snippets and reduce word completion noise:
 
-As a suggestion, you should also add this to your settings.json to reduce autocomplete noise:
-```
+```json
 {
   "[bny]": {
     "editor.snippetSuggestions": "top",

@@ -142,9 +142,11 @@
 }
 
 || He slides a small diskette across the table
-:SIGNAL cache_handover_animation
+   :SIGNAL cache_handover_animation
+   
 |MAN| Enjoy your contraband
-:YIELD return_camera
+      :YIELD return_camera
+
 |MAN| Included with the mod are some coordinates.
       You see, even if commericial VI-LINKs eject when nearing The Fringe, ASCM still monitors the perimeter.
       Usually just to catch delirious people, but they're also looking for folks like you.

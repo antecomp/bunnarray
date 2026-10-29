@@ -2,7 +2,7 @@
   "name": "bny-language",
   "displayName": "BNY Language Support",
   "description": "Syntax highlighting and editor support for BNY dialogue files.",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "publisher": "local",
   "engines": {
     "vscode": "^1.85.0"
