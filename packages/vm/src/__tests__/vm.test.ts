@@ -250,6 +250,41 @@ describe('VM', () => {
         ]);
     });
 
+    it.each<Instruction>([
+        { op: 'SPEAKER', value: 'Captain $name$missing' },
+        { op: 'ALTERNATE', speakers: ['Captain $name$missing'] }
+    ])('interpolates speakers using current memory for each line: %j', instruction => {
+        const { vm, emissions } = runtime([
+            instruction,
+            { op: 'SAY', text: 'One' },
+            { op: 'SAY', text: 'Two' },
+            { op: 'END' }
+        ], { name: 'Alice' });
+        expect(vm.start()).toBe('next');
+        vm.memory.set('name', 'Bob');
+        expect(vm.next()).toBe('end');
+        expect(emissions.filter(emission => emission.kind === 'say')).toEqual([
+            say('One', 'Captain Alice'), say('Two', 'Captain Bob')
+        ]);
+    });
+
+    it('interpolates alternating speakers while preserving narration and single-pass expansion', () => {
+        const { vm, emissions } = runtime([
+            { op: 'ALTERNATE', speakers: ['$name', null, '$missing'] },
+            { op: 'SAY', text: 'One' },
+            { op: 'SAY', text: 'Two' },
+            { op: 'SAY', text: 'Three' },
+            { op: 'ALTERNATE', speakers: [] },
+            { op: 'SAY', text: 'Four' },
+            { op: 'END' }
+        ], { name: '$other', other: 'Alice' });
+        let wait = vm.start();
+        while (wait === 'next') wait = vm.next();
+        expect(emissions).toEqual([
+            say('One', '$other'), say('Two'), say('Three', ''), say('Four', ''), { kind: 'end' }
+        ]);
+    });
+
     it('rotates speakers and stops rotation when a speaker is set', () => {
         const { vm, emissions } = runtime([
             { op: 'ALTERNATE', speakers: ['Alice', 'Bob', null] },

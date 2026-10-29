@@ -256,7 +256,7 @@ The VM emits "Choose your route." before the yield. Resuming emits the options w
 The browser demo displays dialogue, signals, and yields in emission order. It offers Continue for `'next'` and `'yield'` pauses, and buttons for visible options when waiting for `'select'`. A game integration can resume a yield after its own action completes.
 
 ### Runtime Variables
-The same string memory is used by branch and option conditions, and by `$variables` in dialogue and `:SET` values:
+The same string memory is used by branch and option conditions, and by `$variables` in dialogue, speaker names, and `:SET` values. Speaker names (including `:ALTERNATE` names) are interpolated for each dialogue line using current memory:
 ```bny
 :SET name=Rabbit
 Hello, $name.

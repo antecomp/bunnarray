@@ -87,7 +87,7 @@ export function createVM(program: Program, { handler: emit, memory: initialMemor
             speaker = alternateSpeakers[nextAlternate];
             nextAlternate = (nextAlternate + 1) % alternateSpeakers.length;
         }
-        return speaker;
+        return speaker === null ? null : interpolate(speaker);
     }
 
     function stopWith(wait: Wait): Wait {
