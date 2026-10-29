@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "@bunnarray/compiler": "0.1.0",
-    "@bunnarray/vm": "0.1.0"
+    "@bunnarray/vm": "0.1.0",
+    "codejar": "^4.3.0"
   }
 }

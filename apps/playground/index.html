@@ -7,11 +7,70 @@
   <title>BunNarraY Demo</title>
   <script type="module" src="/src/main.ts" defer></script>
   <style>
-    textarea {
-      width: 500px;
-      height: 450px;
-      font-size: 1.05em;
+    .source-editor-shell {
+      --gutter-width: 4.5em;
+      position: relative;
+      box-sizing: border-box;
+      height: max(450px, 50vh);
+      border: 1px solid #767676;
+      border-radius: 4px;
+      font: 1.05em/1.5 monospace;
+      overflow: hidden;
     }
+
+    #source-editor, .editor-line-mirror {
+      box-sizing: border-box;
+      padding: 12px;
+      font: inherit;
+      tab-size: 4;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+
+    #source-editor {
+      margin-left: var(--gutter-width);
+      width: calc(100% - var(--gutter-width));
+      height: 100%;
+      overflow: auto;
+      background-image: linear-gradient(#edf2fb, #edf2fb);
+      background-repeat: no-repeat;
+      background-position: 0 var(--active-line-top, 12px);
+      background-size: 100% var(--active-line-height, 1.5em);
+    }
+
+    .source-editor-shell:focus-within { border-color: #355a9d; box-shadow: 0 0 0 1px #355a9d; }
+
+    .editor-line-numbers {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: var(--gutter-width);
+      box-sizing: border-box;
+      padding-top: 12px;
+      border-right: 1px solid #ddd;
+      background: #f6f6f6;
+      color: #666;
+      text-align: right;
+      overflow: hidden;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .editor-line-number { padding-right: 12px; box-sizing: border-box; }
+    .editor-line-number.is-active { background: #e0e8f6; color: #234578; font-weight: bold; }
+
+    .editor-line-mirror {
+      position: absolute;
+      top: 0;
+      left: var(--gutter-width);
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .bny-comment { color: #596b54; }
+    .bny-keyword { color: #7936a0; }
+    .bny-reference { color: #165e91; }
+    .bny-variable { color: #925211; }
+    .bny-escape { color: #a33040; }
 
     #compile-button {
       padding: 10px;
@@ -48,7 +107,13 @@
 </head>
 
 <body>
-    <textarea id="demo-textarea" width="500" height="450"></textarea>
+    <div class="source-editor-shell">
+      <div class="editor-line-numbers" aria-hidden="true"><div id="line-numbers"></div></div>
+      <div id="source-editor" role="textbox" aria-multiline="true" aria-label="BNY source"
+        aria-describedby="editor-help" tabindex="0" autocapitalize="off" autocorrect="off" spellcheck="true"></div>
+      <div id="line-mirror" class="editor-line-mirror" aria-hidden="true"></div>
+    </div>
+    <small id="editor-help">Tab to indent; Shift+Tab to unindent. Escape to focus Compile.</small>
     <br>
     <button id="compile-button">Compile</button>
     <br>
