@@ -128,7 +128,7 @@ export class DialogueVisitor extends BaseVisitor {
         return {
             type: 'set',
             identifier: (ctx.Identifier[0].image.trim()),
-            value: value === undefined ? undefined : decodeText(value.trim())
+            value: value === undefined ? null : decodeText(value.trim())
         };
     }
 
@@ -137,7 +137,7 @@ export class DialogueVisitor extends BaseVisitor {
         return {
             type: 'signal',
             identifier: (ctx.Identifier[0].image.trim()),
-            value: value === undefined ? undefined : decodeText(value.trim())
+            ...(value === undefined ? {} : { value: decodeText(value.trim()) })
         };
     }
 
@@ -146,7 +146,7 @@ export class DialogueVisitor extends BaseVisitor {
         return {
             type: 'yield',
             identifier: (ctx.Identifier[0].image.trim()),
-            value: value === undefined ? undefined : decodeText(value.trim())
+            ...(value === undefined ? {} : { value: decodeText(value.trim()) })
         };
     }
 

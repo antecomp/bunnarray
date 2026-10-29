@@ -10,7 +10,7 @@ import { DialogueLexer, Text } from '../language/lexer';
 import preprocess from '../language/preprocess';
 
 function expectIR(source: string, instructions: Instruction[]) {
-    expect(build(source)).toEqual({ version: { major: 1, minor: 0, patch: 'indev' }, instructions });
+    expect(build(source)).toStrictEqual({ version: { major: 1, minor: 0, patch: 'indev' }, instructions });
 }
 
 describe('build', () => {
@@ -552,7 +552,7 @@ how has life been treating you?`, [
                 Continue.`, [
                 { op: 'SET', identifier: 'state', value: 'ready' },
                 { op: 'SET', identifier: '_quest2', value: '[open] & waiting' },
-                { op: 'SET', identifier: 'state', value: undefined },
+                { op: 'SET', identifier: 'state', value: null },
                 { op: 'SAY', text: 'Continue.' },
                 { op: 'END' }
             ]);
@@ -564,9 +564,9 @@ how has life been treating you?`, [
                 :YIELD inspect
                 :YIELD action: front &amp; back
                 Done.`, [
-                { op: 'SIGNAL', identifier: 'opened', value: undefined },
+                { op: 'SIGNAL', identifier: 'opened' },
                 { op: 'SIGNAL', identifier: 'quest', value: 'complete' },
-                { op: 'YIELD', identifier: 'inspect', value: undefined },
+                { op: 'YIELD', identifier: 'inspect' },
                 { op: 'YIELD', identifier: 'action', value: 'front & back' },
                 { op: 'SAY', text: 'Done.' },
                 { op: 'END' }
@@ -598,7 +598,7 @@ how has life been treating you?`, [
                 { op: 'CHOICE', choices: [{ text: 'Accept', target: 2 }], fallback: 6 },
                 { op: 'SET', identifier: 'accepted', value: 'yes' },
                 { op: 'SIGNAL', identifier: 'choice', value: 'accepted' },
-                { op: 'YIELD', identifier: 'save', value: undefined },
+                { op: 'YIELD', identifier: 'save' },
                 { op: 'JUMP', target: 6 },
                 { op: 'SAY', text: 'After.' },
                 { op: 'END' }

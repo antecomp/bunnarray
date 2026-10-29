@@ -79,7 +79,7 @@ describe('runner with vm', () => {
     it('resumes consecutive yields and handles the next pause without a new emission', () => {
         run([
             { op: 'SAY', text: 'Before' },
-            { op: 'YIELD', identifier: 'first', value: undefined },
+            { op: 'YIELD', identifier: 'first' },
             { op: 'YIELD', identifier: 'second', value: 'payload' },
             { op: 'SAY', text: 'After' },
             { op: 'END' }

@@ -50,7 +50,7 @@ describe('VM', () => {
 
     it('emits signals without pausing and defers side effects after yields', () => {
         const { vm, emissions } = runtime([
-            { op: 'SIGNAL', identifier: 'opened', value: undefined },
+            { op: 'SIGNAL', identifier: 'opened' },
             { op: 'YIELD', identifier: 'action', value: 'front & back' },
             { op: 'SET', identifier: 'done', value: 'yes' },
             { op: 'SIGNAL', identifier: 'closed', value: 'done' },
@@ -70,8 +70,8 @@ describe('VM', () => {
     it('resumes consecutive yields without allowing the next line automatically', () => {
         const { vm, emissions } = runtime([
             { op: 'SAY', text: 'Before' },
-            { op: 'YIELD', identifier: 'first', value: undefined },
-            { op: 'YIELD', identifier: 'second', value: undefined },
+            { op: 'YIELD', identifier: 'first' },
+            { op: 'YIELD', identifier: 'second' },
             { op: 'SAY', text: 'After' },
             { op: 'END' }
         ]);
@@ -85,7 +85,7 @@ describe('VM', () => {
 
     it('allows the first line after a leading yield', () => {
         const { vm, emissions } = runtime([
-            { op: 'YIELD', identifier: 'action', value: undefined },
+            { op: 'YIELD', identifier: 'action' },
             { op: 'SAY', text: 'Hello' },
             { op: 'END' }
         ]);
@@ -126,7 +126,7 @@ describe('VM', () => {
     it('evaluates choice conditions after resuming a yield', () => {
         const { vm, emissions } = runtime([
             { op: 'SAY', text: 'Question' },
-            { op: 'YIELD', identifier: 'inspect', value: undefined },
+            { op: 'YIELD', identifier: 'inspect' },
             { op: 'CHOICE', choices: [
                 { text: 'Unlock', target: 3, condition: { identifier: 'key', value: 'yes' } }
             ], fallback: 5 },
@@ -179,7 +179,7 @@ describe('VM', () => {
         const { vm, emissions } = runtime([
             { op: 'SET', identifier: 'greeting', value: 'Hello $name' },
             { op: 'SAY', text: '$greeting $missing' },
-            { op: 'SET', identifier: 'name', value: undefined },
+            { op: 'SET', identifier: 'name', value: null },
             { op: 'END' }
         ], { name: 'Rabbit' });
         expect(vm.start()).toBe('end');

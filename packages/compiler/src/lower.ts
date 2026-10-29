@@ -132,7 +132,7 @@ export function lower(ast: DialogueAST): Program {
             case 'signal': {
                 emit(INS('SIGNAL', {
                     identifier: statement.identifier,
-                    value: statement.value
+                    ...(statement.value === undefined ? {} : { value: statement.value })
                 }));
                 break;
             }
@@ -140,7 +140,7 @@ export function lower(ast: DialogueAST): Program {
             case 'yield': {
                 emit(INS('YIELD', {
                     identifier: statement.identifier,
-                    value: statement.value
+                    ...(statement.value === undefined ? {} : { value: statement.value })
                 }));
                 break;                
             }

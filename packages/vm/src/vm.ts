@@ -107,7 +107,7 @@ export function createVM(program: Program, { handler: emit, memory: initialMemor
                     continue;
 
                 case 'SET':
-                    if (ins.value === undefined) memory.delete(ins.identifier);
+                    if (ins.value === null) memory.delete(ins.identifier);
                     else memory.set(ins.identifier, interpolate(ins.value));
                     pc++;
                     continue;

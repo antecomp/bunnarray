@@ -27,17 +27,17 @@ export type Instruction =
     | {
         op: 'SET';
         identifier: string,
-        value: string | undefined
+        value: string | null
     }
     | {
         op: 'SIGNAL';
         identifier: string,
-        value: string | undefined
+        value?: string
     }
     | {
         op: 'YIELD';
         identifier: string,
-        value: string | undefined
+        value?: string
     }
     | {
         op: 'SPEAKER';

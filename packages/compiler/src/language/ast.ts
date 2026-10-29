@@ -55,19 +55,19 @@ export type BranchCase = {
 export type SetStatement = {
     type: 'set';
     identifier: string,
-    value: string | undefined
+    value: string | null
 };
 
 export type SignalStatement = {
     type: 'signal';
     identifier: string,
-    value: string | undefined
+    value?: string
 };
 
 export type YieldStatement = {
     type: 'yield';
     identifier: string,
-    value: string | undefined;
+    value?: string;
 };
 
 export type SkipStatement = {
