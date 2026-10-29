@@ -23,6 +23,9 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
             case 'say':
                 actionEntry = appendEntry(`${emission.speaker ?? '(NARRATOR)'}: ${emission.text}`);
                 break;
+            case 'memory':
+                appendEntry(`Memory changed: ${emission.key}: ${JSON.stringify(emission.prev) ?? '(unset)'} → ${JSON.stringify(emission.value) ?? '(unset)'}`);
+                break;
             case 'signal':
             case 'yield': {
                 const label = emission.kind === 'signal' ? 'Signal' : 'Yield';
