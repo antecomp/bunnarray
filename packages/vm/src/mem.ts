@@ -13,8 +13,6 @@ export default function createMemory(init: Record<string, string> = {}) {
 
     function set(key: string, value: string) {
         const prev = values.get(key);
-        
-        // if (previous === value) return;
 
         values.set(key, value);
         notify({ key, value, prev });

@@ -19,7 +19,6 @@ export type Statement =
 export type SayStatement = {
     type: 'say';
     text: string;
-    // direcives: Record<string, string>;
 };
 
 export type ChoiceStatement = {
@@ -43,7 +42,7 @@ export type Condition = {
 
 export type BranchStatement = {
     type: 'branch';
-    cases: BranchCase[] // first true case wins
+    cases: BranchCase[]
 };
 
 export type BranchCase = {
