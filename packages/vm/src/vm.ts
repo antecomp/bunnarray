@@ -10,7 +10,8 @@ const VM_VERSION = {
 } as const satisfies Version;
 
 function formatVersion(ver: Version): string {
-    return `${ver.major}.${ver.minor}-${ver.patch}`;
+    return `${ver.major}.${ver.minor}` 
+        + ver.patch ? '-' + ver.patch : '';
 }
 
 export type Option = { text: string; id?: string };
