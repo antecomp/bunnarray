@@ -1,6 +1,8 @@
 import type { EqualityCondition, Operation, Program, Version } from './instructions';
 import createMemory, { type MemoryUpdate } from './mem';
 
+const INSTRUCTION_BUDGET = 100_000;
+
 const VM_VERSION = {
     major: 1,
     minor: 0,
@@ -97,8 +99,12 @@ export function createVM(program: Program, { handler: emit, memory: initialMemor
 
     function run(): Wait {
         waiting = null;
+        let instructionsRemaining = INSTRUCTION_BUDGET;
 
         for (; ;) {
+            if (instructionsRemaining-- <= 0)
+                throw new Error(`Instruction budget (${INSTRUCTION_BUDGET}) exceeded at pc ${pc}. Do you have an infinite loop?`);
+
             if (!Number.isInteger(pc) || pc < 0 || pc >= program.instructions.length)
                 throw new Error(`pc (${pc}) out of program range!`);
 

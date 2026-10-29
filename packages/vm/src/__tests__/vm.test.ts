@@ -15,6 +15,32 @@ function say(text: string, speaker: string | null = null): Emission {
 }
 
 describe('VM', () => {
+    it('stops infinite loops when the instruction budget is exceeded', () => {
+        const { vm } = runtime([{ op: 'JUMP', target: 0 }, { op: 'END' }]);
+        expect(() => vm.start()).toThrow('Instruction budget (100000) exceeded at pc 0');
+    });
+
+    it.each([100_000, 100_001])('enforces the instruction budget for a program of %i instructions', count => {
+        const instructions: Instruction[] = Array.from({ length: count - 1 }, () => ({
+            op: 'SPEAKER', value: null
+        }));
+        instructions.push({ op: 'END' });
+        const { vm } = runtime(instructions);
+        if (count === 100_000) expect(vm.start()).toBe('end');
+        else expect(() => vm.start()).toThrow('Instruction budget (100000) exceeded at pc 100000');
+    });
+
+    it('resets the instruction budget when execution resumes', () => {
+        const instructions: Instruction[] = Array.from({ length: 60_000 }, () => ({
+            op: 'SPEAKER', value: null
+        }));
+        instructions.push({ op: 'YIELD', identifier: 'pause' }, { op: 'JUMP', target: 0 }, { op: 'END' });
+        const { vm } = runtime(instructions);
+        expect(vm.start()).toBe('yield');
+        expect(vm.resume()).toBe('yield');
+        expect(vm.resume()).toBe('yield');
+    });
+
     it.each<{ instructions: Instruction[] }>([
         { instructions: [] },
         { instructions: [{ op: 'SAY', text: 'Missing END' }] },
