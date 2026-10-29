@@ -24,8 +24,6 @@ export function buildDebug(raw: string) {
         return null;
     }
 
-    console.log('lex', lex);
-
     parser.input = lex.tokens;
     const cst = parser.dialogue();
     if (parser.errors.length > 0) {
@@ -33,15 +31,9 @@ export function buildDebug(raw: string) {
         return null;
     }
 
-    console.log('cst', cst);
-
     const ast = visitor.visit(cst) as DialogueAST;
 
-    console.log('ast', ast);
-
     const ir = lower(ast);
-
-    console.log(ir);
 
     const end = performance.now();
     console.log(`𑣲₍ ᐢ. .ᐢ₎ : Compiled in ${end - begin}ms!`);
