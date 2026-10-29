@@ -1,4 +1,4 @@
-import stock from '../../../examples/feature-tour.bny?raw';
+import stock from '../../../examples/man.bny?raw';
 import { buildDebug } from './buildDebug';
 import formatIR from './visualize/formatIR';
 import runDialogue from './runner';
