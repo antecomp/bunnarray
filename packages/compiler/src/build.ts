@@ -1,13 +1,11 @@
 import { DialogueAST } from './language/ast';
 import { DialogueLexer } from './language/lexer';
 import parser from './language/parser';
+import visitor from './language/visitor';
 import preprocess from './language/preprocess';
-import { DialogueVisitor } from './language/visitor';
 import type { Program } from '@bunnarray/vm';
 import { lower } from './lower';
 import { CompilerSyntaxError, getLexDiagnostics, getParseDiagnostics } from './syntaxDiagnostics';
-
-const visitor = new DialogueVisitor();
 
 export function build(raw: string): Program {
     const normalized = preprocess(raw);

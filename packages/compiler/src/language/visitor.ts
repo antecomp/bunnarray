@@ -43,7 +43,7 @@ children has keys named after the matched parser rules or tokens, and each value
     - Optional rules and alternatives may leave a key absent, so use ?.[0] or ?? [] where appropriate.
 */
 
-export class DialogueVisitor extends BaseVisitor {
+class DialogueVisitor extends BaseVisitor {
     constructor() {
         super();
         this.validateVisitor();
@@ -193,3 +193,5 @@ export class DialogueVisitor extends BaseVisitor {
     }
 }
 
+const visitor = new DialogueVisitor();
+export default visitor;

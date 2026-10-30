@@ -2,14 +2,12 @@ import {
     type DialogueAST,
     DialogueLexer,
     preprocess,
-    DialogueVisitor,
+    visitor,
     lower,
     formatLexErrors,
     formatParseErrors,
     parser
 } from '@bunnarray/compiler';
-
-const visitor = new DialogueVisitor();
 
 export function buildDebug(raw: string) {
     const begin = performance.now();

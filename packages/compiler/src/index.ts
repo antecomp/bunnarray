@@ -3,7 +3,7 @@ export { lower } from './lower';
 export { DialogueLexer } from './language/lexer';
 export { default as parser } from './language/parser';
 export { default as preprocess } from './language/preprocess';
-export { DialogueVisitor } from './language/visitor';
+export { default as visitor } from './language/visitor';
 export { formatLexErrors, formatParseErrors } from './formatSyntaxErrors';
 export { CompilerSyntaxError, getLexDiagnostics, getParseDiagnostics } from './syntaxDiagnostics';
 export type { SyntaxDiagnostic } from './syntaxDiagnostics';
