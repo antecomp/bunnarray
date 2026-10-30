@@ -68,7 +68,7 @@ import {
     allTokens
 } from './lexer';
 
-export class DialogueParser extends CstParser {
+class DialogueParser extends CstParser {
     constructor() {
         super(allTokens);
         this.performSelfAnalysis();
@@ -232,3 +232,6 @@ export class DialogueParser extends CstParser {
     });
 
 }
+
+const parser = new DialogueParser();
+export default parser;

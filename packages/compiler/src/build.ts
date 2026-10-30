@@ -1,13 +1,12 @@
 import { DialogueAST } from './language/ast';
 import { DialogueLexer } from './language/lexer';
-import { DialogueParser } from './language/parser';
+import parser from './language/parser';
 import preprocess from './language/preprocess';
 import { DialogueVisitor } from './language/vistor';
 import type { Program } from '@bunnarray/vm';
 import { lower } from './lower';
 import { formatLexErrors, formatParseErrors } from './formatSyntaxErrors';
 
-const parser = new DialogueParser();
 const visitor = new DialogueVisitor();
 
 export function build(raw: string): Program {

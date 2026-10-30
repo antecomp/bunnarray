@@ -1,15 +1,14 @@
 import {
     type DialogueAST,
     DialogueLexer,
-    DialogueParser,
     preprocess,
     DialogueVisitor,
     lower,
     formatLexErrors,
-    formatParseErrors
+    formatParseErrors,
+    parser
 } from '@bunnarray/compiler';
 
-const parser = new DialogueParser();
 const visitor = new DialogueVisitor();
 
 export function buildDebug(raw: string) {

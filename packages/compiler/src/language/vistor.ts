@@ -1,7 +1,6 @@
 import type * as A from './ast';
 
-import { DialogueParser } from './parser';
-const parser = new DialogueParser();
+import parser from './parser';
 const BaseVisitor = parser.getBaseCstVisitorConstructor();
 
 const escapedCharacters: Record<string, string> = {
