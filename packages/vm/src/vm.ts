@@ -14,8 +14,17 @@ function formatVersion(ver: Version): string {
         + (ver.patch ? '-' + ver.patch : '');
 }
 
+/**
+ * A selectable option shown to the player.
+ */
 export type Option = { text: string; id?: string };
 
+/**
+ * A single event emitted by the virtual machine while running a program.
+ *
+ * The VM emits these values to let the host application render dialogue,
+ * update memory, react to signals, or present choices.
+ */
 export type Emission =
     | { kind: 'say'; text: string; speaker: string | null }
     | ({ kind: 'memory' } & MemoryUpdate)
@@ -37,11 +46,17 @@ export type Wait = 'next' | 'select' | 'yield' | 'end';
 type EmissionHandler = (emission: Emission) => void;
 type Choice = Operation<'CHOICE'>['choices'][number];
 
+/**
+ * Configuration used to create a VM instance.
+ */
 export type VMOptions = {
     memory?: Record<string, string>
     handler: EmissionHandler
 };
 
+/**
+ * Runtime interface for driving a compiled instruction program.
+ */
 export type VM = {
     memory: ReturnType<typeof createMemory>;
     start(): Wait;
@@ -50,6 +65,14 @@ export type VM = {
     resume(): Wait;
 };
 
+/**
+ * Creates a bunnarray virtual machine.
+ * 
+ * See project README for usage instructions.
+ *
+ * @param program The program to execute.
+ * @param options Runtime configuration including the emission handler and initial memory.
+ */
 export function createVM(program: Program, { handler: emit, memory: initialMemory }: VMOptions): VM {
     if (program.version.major !== VM_VERSION.major)
         throw new Error(
