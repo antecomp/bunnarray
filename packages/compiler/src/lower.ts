@@ -20,7 +20,8 @@ export function lower(ast: DialogueAST): Program {
     const pos = () => instructions.length;
 
     function defineLabel(name: string) {
-        if (labels[name] !== undefined) throw new Error('duplicate label');
+        // TODO: Eventually try to carry symbol references through and make this a more informative error type.
+        if (labels[name] !== undefined) throw new Error(`duplicate label: ${name}`);
         labels[name] = pos();
     }
 
@@ -165,7 +166,7 @@ export function lower(ast: DialogueAST): Program {
     emit({ op: 'END' });
 
     unresolvedGotos.forEach(pending => {
-        if(labels[pending.target] === undefined) throw new Error('encountered goto to unknown label ' + pending.target);
+        if(labels[pending.target] === undefined) throw new Error('encountered goto to unknown label: ' + pending.target);
 
         pending.jump.target = labels[pending.target];
     });
