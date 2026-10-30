@@ -1,5 +1,5 @@
 import type * as AST from './ast';
-import type * as CST from './bunnarray-cst';
+import type * as CST from './cst';
 
 import parser from './parser';
 const BaseVisitor = parser.getBaseCstVisitorConstructor();
