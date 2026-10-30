@@ -2,7 +2,7 @@ import { DialogueAST } from './language/ast';
 import { DialogueLexer } from './language/lexer';
 import parser from './language/parser';
 import preprocess from './language/preprocess';
-import { DialogueVisitor } from './language/vistor';
+import { DialogueVisitor } from './language/visitor';
 import type { Program } from '@bunnarray/vm';
 import { lower } from './lower';
 import { formatLexErrors, formatParseErrors } from './formatSyntaxErrors';
