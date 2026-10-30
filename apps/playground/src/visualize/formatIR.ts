@@ -1,8 +1,11 @@
 import type { Program } from '@bunnarray/vm';
 
-/** Format a Program as an instruction listing with indented branch targets. */
+/** Format a Program as a versioned instruction listing with indented branch targets. */
 export default function formatIR(program: Program): string {
-    return program.instructions.map((instruction, index) => {
+    const { major, minor, patch } = program.version;
+    const version = `${major}.${minor}${patch === undefined ? '' : `-${patch}`}`;
+
+    return `version: ${version}\n` + program.instructions.map((instruction, index) => {
         const prefix = `${index}: ${instruction.op}:`;
 
         switch (instruction.op) {
@@ -13,6 +16,7 @@ export default function formatIR(program: Program): string {
                     + instruction.choices.map(choice =>
                         `    ${choice.condition === undefined ? '' :
                             `[when:${choice.condition.identifier}=${JSON.stringify(choice.condition.value)}] `}`
+                        + `${choice.id === undefined ? '' : `[id:${JSON.stringify(choice.id)}] `}`
                         + `${JSON.stringify(choice.text)} -> ${choice.target}\n`
                     ).join('')
                     + `    fallback -> ${instruction.fallback}\n`;
@@ -27,15 +31,18 @@ export default function formatIR(program: Program): string {
             case 'END':
                 return `${prefix}\n`;
             case 'SET':
-                return `${prefix} ${instruction.identifier} = ${instruction.value}\n`;
+                return `${prefix} ${instruction.identifier} = ${JSON.stringify(instruction.value)}\n`;
             case 'SIGNAL':
                 return `${prefix} ${instruction.identifier}${instruction.value === undefined ? '' : ` = ${JSON.stringify(instruction.value)}`}\n`;
             case 'YIELD':
                 return `${prefix} ${instruction.identifier}${instruction.value === undefined ? '' : ` = ${JSON.stringify(instruction.value)}`}\n`;
             case 'SPEAKER':
-                return `${prefix} ${instruction.value}\n`;
+                return `${prefix} ${JSON.stringify(instruction.value)}\n`;
             case 'ALTERNATE':
                 return `${prefix} ${JSON.stringify(instruction.speakers)}\n`;
+            default:
+                const exhuastive: never = instruction;
+                throw new Error(`Unformatted syntax node: ${exhuastive}`);
         }
     }).join('');
 }
