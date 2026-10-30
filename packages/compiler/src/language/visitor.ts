@@ -1,4 +1,5 @@
-import type * as A from './ast';
+import type * as AST from './ast';
+import type * as CST from './bunnarray-cst';
 
 import parser from './parser';
 const BaseVisitor = parser.getBaseCstVisitorConstructor();
@@ -48,14 +49,14 @@ export class DialogueVisitor extends BaseVisitor {
         this.validateVisitor();
     }
 
-    dialogue(ctx: any): A.DialogueAST {
+    dialogue(ctx: CST.DialogueCstChildren): AST.DialogueAST {
         return {
             type: 'dialogue',
-            statements: (ctx.statement ?? []).map((s: any) => this.visit(s))
+            statements: (ctx.statement ?? []).map(s => this.visit(s))
         };
     }
 
-    statement(ctx: any): A.Statement {
+    statement(ctx: CST.StatementCstChildren): AST.Statement {
         const node =
             ctx.say?.[0] ?? ctx.choice?.[0] ??
             ctx.skip?.[0] ?? ctx.label?.[0] ?? ctx.goto?.[0] ??
@@ -63,51 +64,53 @@ export class DialogueVisitor extends BaseVisitor {
             ctx.signal?.[0] ?? ctx.branch?.[0] ?? ctx.yield?.[0]
             ;
 
+        if (!node) throw new Error('Statement has no matching CST node');
+
         return this.visit(node);
     }
 
-    say(ctx: any): A.SayStatement {
+    say(ctx: CST.SayCstChildren): AST.SayStatement {
         return {
             type: 'say',
             text: decodeText(ctx.Text[0].image.trim())
         };
     }
 
-    choice(ctx: any): A.ChoiceStatement {
+    choice(ctx: CST.ChoiceCstChildren): AST.ChoiceStatement {
         return {
             type: 'choice',
-            branches: (ctx.choiceBranch ?? []).map((branch: any) => this.visit(branch))
+            branches: (ctx.choiceBranch ?? []).map(branch => this.visit(branch))
         };
     }
 
-    choiceBranch(ctx: any): A.ChoiceBranch {
+    choiceBranch(ctx: CST.ChoiceBranchCstChildren): AST.ChoiceBranch {
         return {
             type: 'choiceBranch',
             text: decodeText(ctx.Text[0].image.trim()),
-            statements: (ctx.statement ?? []).map((s: any) => this.visit(s)),
+            statements: (ctx.statement ?? []).map(s => this.visit(s)),
             condition: ctx.when && this.visit(ctx.when),
             id: ctx.id && this.visit(ctx.id)
         };
     }
 
-    id(ctx: any) { return decodeText(ctx.Text[0].image.trim()); }
+    id(ctx: CST.IdCstChildren) { return decodeText(ctx.Text[0].image.trim()); }
 
-    branch(ctx: any): A.BranchStatement {
+    branch(ctx: CST.BranchCstChildren): AST.BranchStatement {
         return {
             type: 'branch',
-            cases: (ctx.branchCase ?? []).map((bcase: any) => this.visit(bcase))
+            cases: (ctx.branchCase ?? []).map(bcase => this.visit(bcase))
         };
     }
 
-    branchCase(ctx: any): A.BranchCase {
+    branchCase(ctx: CST.BranchCaseCstChildren): AST.BranchCase {
         return {
             type: 'branchCase',
             condition: this.visit(ctx.when),
-            statements: (ctx.statement ?? []).map((s: any) => this.visit(s))
+            statements: (ctx.statement ?? []).map(s => this.visit(s))
         };
     }
 
-    when(ctx: any): A.Condition {
+    when(ctx: CST.WhenCstChildren): AST.Condition {
         return {
             type: 'equals',
             identifier: (ctx.Identifier[0].image.trim()),
@@ -115,15 +118,15 @@ export class DialogueVisitor extends BaseVisitor {
         };
     }
 
-    skip(ctx: any): A.SkipStatement {
+    skip(ctx: CST.SkipCstChildren): AST.SkipStatement {
         return {
             type: 'skip',
             label: decodeText(ctx.Text[0].image.trim()),
-            statements: (ctx.statement ?? []).map((s: any) => this.visit(s))
+            statements: (ctx.statement ?? []).map(s => this.visit(s))
         };
     }
 
-    set(ctx: any): A.SetStatement {
+    set(ctx: CST.SetCstChildren): AST.SetStatement {
         const value: string | undefined = ctx.Text?.[0]?.image;
         return {
             type: 'set',
@@ -132,7 +135,7 @@ export class DialogueVisitor extends BaseVisitor {
         };
     }
 
-    signal(ctx: any): A.SignalStatement {
+    signal(ctx: CST.SignalCstChildren): AST.SignalStatement {
         const value: string | undefined = ctx.Text?.[0]?.image;
         return {
             type: 'signal',
@@ -141,7 +144,7 @@ export class DialogueVisitor extends BaseVisitor {
         };
     }
 
-    yield(ctx: any): A.YieldStatement {
+    yield(ctx: CST.YieldCstChildren): AST.YieldStatement {
         const value: string | undefined = ctx.Text?.[0]?.image;
         return {
             type: 'yield',
@@ -150,21 +153,21 @@ export class DialogueVisitor extends BaseVisitor {
         };
     }
 
-    label(ctx: any): A.LabelStatement {
+    label(ctx: CST.LabelCstChildren): AST.LabelStatement {
         return {
             type: 'label',
             name: decodeText(ctx.Text[0].image.trim())
         };
     }
 
-    goto(ctx: any): A.GotoStatement {
+    goto(ctx: CST.GotoCstChildren): AST.GotoStatement {
         return {
             type: 'goto',
             target: decodeText(ctx.Text[0].image.trim())
         };
     }
 
-    speaker(ctx: any): A.SpeakerStatement {
+    speaker(ctx: CST.SpeakerCstChildren): AST.SpeakerStatement {
         const im = ctx.Text?.[0]?.image;
         return {
             type: 'speaker',
@@ -172,11 +175,15 @@ export class DialogueVisitor extends BaseVisitor {
         };
     }
 
-    shorthandSpeaker(ctx: any): A.SpeakerStatement {
-        return this.speaker(ctx);
+    shorthandSpeaker(ctx: CST.ShorthandSpeakerCstChildren): AST.SpeakerStatement {
+        const im = ctx.Text?.[0]?.image;
+        return {
+            type: 'speaker',
+            value: im ? decodeText(im.trim()) : null
+        };
     }
 
-    alternate(ctx: any): A.AlternateStatement {
+    alternate(ctx: CST.AlternateCstChildren): AST.AlternateStatement {
         const text: string | undefined = ctx.Text?.[0]?.image;
         const speakers = text === undefined
             ? []
