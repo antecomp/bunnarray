@@ -19,9 +19,9 @@ const UNRESOLVED = -1;
 export function lower(ast: DialogueAST): Program {
     const instructions: Instruction[] = [];
     const labels: Record<string, number> = Object.create(null); // <- removes prototype names.
-    const unresolvedGotos: { fromIndex: number, target: string }[] = [];
+    const unresolvedGotos: { jump: Operation<'JUMP'>, target: string }[] = [];
 
-    const emit = (next: Instruction) => instructions.push(next) - 1;
+    const emit = (next: Instruction) => { instructions.push(next); };
     const pos = () => instructions.length;
 
     function defineLabel(name: string) {
@@ -44,9 +44,10 @@ export function lower(ast: DialogueAST): Program {
                 break;
 
             case 'goto': {
-                const jumpIndex = emit(INS('JUMP', { target: UNRESOLVED }));
+                const jump = INS('JUMP', { target: UNRESOLVED });
+                emit(jump);
                 unresolvedGotos.push({
-                    fromIndex: jumpIndex,
+                    jump,
                     target: statement.target
                 });
                 break;
@@ -171,7 +172,7 @@ export function lower(ast: DialogueAST): Program {
     unresolvedGotos.forEach(pending => {
         if(labels[pending.target] === undefined) throw new Error('encountered goto to unknown label ' + pending.target);
 
-        (instructions[pending.fromIndex] as Operation<'JUMP'>).target = labels[pending.target];
+        pending.jump.target = labels[pending.target];
     });
 
     return { 
