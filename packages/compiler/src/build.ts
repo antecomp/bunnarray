@@ -7,6 +7,14 @@ import type { Program } from '@bunnarray/vm';
 import { lower } from './lower';
 import { CompilerSyntaxError, getLexDiagnostics, getParseDiagnostics } from './syntaxDiagnostics';
 
+/**
+ * Compiles raw BunNarraY dialogue source into a program.
+ *
+ * @throws a {@link CompilerSyntaxError} when lexing or parsing fails.
+ *
+ * @param raw Raw dialogue source.
+ * @returns The compiled VM program.
+ */
 export function build(raw: string): Program {
     const normalized = preprocess(raw);
     const lex = DialogueLexer.tokenize(normalized);

@@ -1,5 +1,8 @@
 import type { ILexingError, IRecognitionException } from 'chevrotain';
 
+/**
+ * A normalized compiler syntax diagnostic produced by the lexer or parser.
+ */
 export interface SyntaxDiagnostic {
     kind: 'lex' | 'parse';
     message: string;
@@ -19,6 +22,9 @@ function getLocation(source: string, offset: number, line?: number, column?: num
     return { offset: locationOffset, line: lines.length, column: lines[lines.length - 1].length + 1 };
 }
 
+/**
+ * Converts lexical analysis errors into normalized compiler diagnostics.
+ */
 export function getLexDiagnostics(errors: ILexingError[], source: string): SyntaxDiagnostic[] {
     return errors.map(error => ({
         kind: 'lex',
@@ -27,6 +33,9 @@ export function getLexDiagnostics(errors: ILexingError[], source: string): Synta
     }));
 }
 
+/**
+ * Converts parser recognition errors into normalized compiler diagnostics.
+ */
 export function getParseDiagnostics(errors: IRecognitionException[], source: string): SyntaxDiagnostic[] {
     return errors.map(error => ({
         kind: 'parse',
@@ -35,15 +44,25 @@ export function getParseDiagnostics(errors: IRecognitionException[], source: str
     }));
 }
 
+/**
+ * Formats one or more syntax diagnostics into a readable multi-line compiler error message.
+ */
 export function formatDiagnostics(diagnostics: SyntaxDiagnostic[]): string {
     return diagnostics.map(({ kind, line, column, message }) =>
         `${kind === 'lex' ? 'Lex' : 'Parse'} error at line ${line}, column ${column}: ${message}`
     ).join('\n');
 }
 
+/**
+ * Error raised when the BunNarraY compiler encounters one or more syntax issues.
+ * The original diagnostics remain attached for callers that need structured error details.
+ */
 export class CompilerSyntaxError extends SyntaxError {
     readonly diagnostics: SyntaxDiagnostic[];
 
+    /**
+     * Creates a syntax error from a batch of normalized diagnostics.
+     */
     constructor(diagnostics: SyntaxDiagnostic[]) {
         super(formatDiagnostics(diagnostics));
         this.name = 'CompilerSyntaxError';
