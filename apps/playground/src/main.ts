@@ -1,5 +1,5 @@
 import stock from '../../../examples/man.bny?raw';
-import { buildDebug } from './buildDebug';
+import { build } from '@bunnarray/compiler';
 import formatIR from './visualize/formatIR';
 import runDialogue from './runner';
 import { CodeJar } from 'codejar';
@@ -33,10 +33,12 @@ if (import.meta.hot) import.meta.hot.dispose(() => {
 
 compileButton.onclick = () => {
     dialogueStack.replaceChildren();
-    const rez = buildDebug(jar.toString());
-    if (rez) {
-        console.log(rez);
-        IRVis.innerText = formatIR(rez.ir);
-        runDialogue(rez.ir, dialogueStack);
+    IRVis.innerText = '';
+    try {
+        const program = build(jar.toString());
+        IRVis.innerText = formatIR(program);
+        runDialogue(program, dialogueStack);
+    } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
     }
 };

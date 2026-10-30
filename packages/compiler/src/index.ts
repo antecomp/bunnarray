@@ -1,10 +1,3 @@
 export { build } from './build';
-export { lower } from './lower';
-export { DialogueLexer } from './language/lexer';
-export { default as parser } from './language/parser';
-export { default as preprocess } from './language/preprocess';
-export { default as visitor } from './language/visitor';
-export { formatLexErrors, formatParseErrors } from './formatSyntaxErrors';
-export { CompilerSyntaxError, getLexDiagnostics, getParseDiagnostics } from './syntaxDiagnostics';
+export { CompilerSyntaxError } from './syntaxDiagnostics';
 export type { SyntaxDiagnostic } from './syntaxDiagnostics';
-export type { ChoiceBranch, BranchCase, DialogueAST, Statement } from './language/ast';

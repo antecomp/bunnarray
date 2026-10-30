@@ -1,16 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import {
-    build,
-    CompilerSyntaxError,
-    DialogueLexer,
-    formatLexErrors,
-    formatParseErrors,
-    getLexDiagnostics,
-    getParseDiagnostics,
-    parser,
-    preprocess
-} from '../index';
+import { build, CompilerSyntaxError } from '../index';
 import type { SyntaxDiagnostic } from '../index';
+import { DialogueLexer } from '../language/lexer';
+import parser from '../language/parser';
+import preprocess from '../language/preprocess';
+import { formatDiagnostics, getLexDiagnostics, getParseDiagnostics } from '../syntaxDiagnostics';
 
 describe('syntax diagnostics', () => {
     it('exposes each lexer error as JSON-serializable data while preserving readable formatting', () => {
@@ -23,7 +17,7 @@ describe('syntax diagnostics', () => {
             { kind: 'lex', message: errors[1].message, line: 2, column: 6, offset: 15 }
         ]);
         expect(JSON.parse(JSON.stringify(diagnostics))).toEqual(diagnostics);
-        expect(formatLexErrors(errors, source)).toBe(
+        expect(formatDiagnostics(diagnostics)).toBe(
             `Lex error at line 1, column 6: ${errors[0].message}\nLex error at line 2, column 6: ${errors[1].message}`
         );
     });
@@ -39,7 +33,7 @@ describe('syntax diagnostics', () => {
         expect(diagnostics.length).toBeGreaterThan(0);
         expect(diagnostics[0]).toEqual({ kind: 'parse', message: parser.errors[0].message, line, column, offset });
         expect(JSON.parse(JSON.stringify(diagnostics))).toEqual(diagnostics);
-        expect(formatParseErrors(parser.errors, source)).toBe(diagnostics.map(diagnostic =>
+        expect(formatDiagnostics(diagnostics)).toBe(diagnostics.map(diagnostic =>
             `Parse error at line ${diagnostic.line}, column ${diagnostic.column}: ${diagnostic.message}`
         ).join('\n'));
     });
@@ -68,7 +62,6 @@ describe('syntax diagnostics', () => {
     it('returns empty diagnostics and formatted strings for empty error lists', () => {
         expect(getLexDiagnostics([], '')).toEqual([]);
         expect(getParseDiagnostics([], '')).toEqual([]);
-        expect(formatLexErrors([], '')).toBe('');
-        expect(formatParseErrors([], '')).toBe('');
+        expect(formatDiagnostics([])).toBe('');
     });
 });
