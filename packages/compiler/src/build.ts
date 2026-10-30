@@ -10,9 +10,6 @@ import { formatLexErrors, formatParseErrors } from './formatSyntaxErrors';
 const visitor = new DialogueVisitor();
 
 export function build(raw: string): Program {
-    const begin = performance.now();
-    console.log('𑣲₍ ᐢ. .ᐢ₎ : Compiling .bny dialogue...');
-
     const normalized = preprocess(raw);
     const lex = DialogueLexer.tokenize(normalized);
 
@@ -29,9 +26,5 @@ export function build(raw: string): Program {
     const ast = visitor.visit(cst) as DialogueAST;
 
     const program = lower(ast);
-
-    const end = performance.now();
-    console.log(`𑣲₍ ᐢ. .ᐢ₎ : Compiled in ${end - begin}ms!`);
-
     return program;
 }
