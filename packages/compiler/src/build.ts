@@ -5,7 +5,7 @@ import preprocess from './language/preprocess';
 import { DialogueVisitor } from './language/visitor';
 import type { Program } from '@bunnarray/vm';
 import { lower } from './lower';
-import { formatLexErrors, formatParseErrors } from './formatSyntaxErrors';
+import { CompilerSyntaxError, getLexDiagnostics, getParseDiagnostics } from './syntaxDiagnostics';
 
 const visitor = new DialogueVisitor();
 
@@ -14,13 +14,13 @@ export function build(raw: string): Program {
     const lex = DialogueLexer.tokenize(normalized);
 
     if (lex.errors.length > 0) {
-        throw new Error(formatLexErrors(lex.errors, normalized));
+        throw new CompilerSyntaxError(getLexDiagnostics(lex.errors, normalized));
     }
 
     parser.input = lex.tokens;
     const cst = parser.dialogue();
     if (parser.errors.length > 0) {
-        throw new Error(formatParseErrors(parser.errors, normalized));
+        throw new CompilerSyntaxError(getParseDiagnostics(parser.errors, normalized));
     }
 
     const ast = visitor.visit(cst) as DialogueAST;
