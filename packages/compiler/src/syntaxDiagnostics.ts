@@ -1,6 +1,5 @@
 import type { ILexingError, IRecognitionException } from 'chevrotain';
 
-/** Locations refer to preprocessed input: lines/columns are 1-based, offsets are 0-based. */
 export interface SyntaxDiagnostic {
     kind: 'lex' | 'parse';
     message: string;

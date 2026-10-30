@@ -34,14 +34,6 @@ function splitSpeakerNames(text: string): string[] {
     return names;
 }
 
-/* visit looks at the node type (name) and calls the corresponding function
-this function is passed the children of that node (coventially called ctx)
-
-children has keys named after the matched parser rules or tokens, and each value is an array.
-    - MANY and AT_LEAST_ONE can put several items in that array.
-    - A single SUBRULE or CONSUME gives you a one-item array, so you use [0].
-    - Optional rules and alternatives may leave a key absent, so use ?.[0] or ?? [] where appropriate.
-*/
 
 class DialogueVisitor extends BaseVisitor {
     constructor() {

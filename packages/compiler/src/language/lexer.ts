@@ -90,7 +90,8 @@ export const LabelToken = createToken({
     pattern: /@[ \t]*/
 });
 
-// -- Remaining text ---
+// --- Remaining text ---
+
 // Ignore whitespace between syntax tokens (for example, the gap in `} {`).
 // Spaces inside a Text token are consumed by Text and remain part of its image.
 export const Whitespace = createToken({

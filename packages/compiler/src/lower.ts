@@ -1,8 +1,3 @@
-/**
- * @fileoverview
- * Takes our Dialogue AST and "lowers" it into a linear set of instructions.
- */
-
 import { DialogueAST, Statement } from './language/ast';
 import type { Instruction, Opcode, Operation, Program } from '@bunnarray/vm';
 
