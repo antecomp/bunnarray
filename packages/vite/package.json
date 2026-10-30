@@ -1,6 +1,6 @@
 {
   "name": "@bunnarray/vite",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MPL-2.0",
   "type": "module",
   "files": ["dist", "client.d.ts"],
@@ -24,6 +24,6 @@
     "@bunnarray/vm": "0.1.0"
   },
   "peerDependencies": {
-    "vite": "^6.0.0"
+    "vite": "^6.0.0 || ^7.0.0 || ^8.0.0"
   }
 }

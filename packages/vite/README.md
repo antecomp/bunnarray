@@ -2,7 +2,7 @@
 
 Compile `.bny` imports into [BunNarraY](https://github.com/antecomp/bunnarray) VM programs during Vite development and production builds.
 
-Install `@bunnarray/vite` and `@bunnarray/vm` in a Vite project, then add the plugin:
+Install `@bunnarray/vite` and `@bunnarray/vm` in a Vite 6, 7, or 8 project, then add the plugin:
 
 ```ts
 // vite.config.ts
