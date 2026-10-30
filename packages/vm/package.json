@@ -2,7 +2,17 @@
   "name": "@bunnarray/vm",
   "version": "0.1.0",
   "type": "module",
+  "files": ["dist"],
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
