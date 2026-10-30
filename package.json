@@ -12,8 +12,8 @@
     "build": "tsc && vite build apps/playground --config apps/playground/vite.config.ts",
     "preview": "vite preview apps/playground --config apps/playground/vite.config.ts",
     "test": "vitest run",
-    "lint": "eslint \"**/*.{ts,tsx}\"",
-    "lint:fix": "eslint \"**/*.{ts,tsx}\" --fix"
+    "lint": "eslint \"**/*.ts\"",
+    "lint:fix": "eslint \"**/*.ts\" --fix"
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^5.10.0",
