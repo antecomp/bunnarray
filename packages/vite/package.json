@@ -1,0 +1,25 @@
+{
+  "name": "@bunnarray/vite",
+  "version": "0.1.0",
+  "license": "MPL-2.0",
+  "type": "module",
+  "files": ["dist"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsdown"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@bunnarray/compiler": "0.1.0"
+  },
+  "peerDependencies": {
+    "vite": "^6.0.0"
+  }
+}
