@@ -9,8 +9,11 @@
   ],
   "scripts": {
     "dev": "vite apps/playground --config apps/playground/vite.config.ts",
+    "build:packages": "npm run build -w @bunnarray/vm && npm run build -w @bunnarray/compiler",
+    "prebuild": "npm run build:packages",
     "build": "tsc && vite build apps/playground --config apps/playground/vite.config.ts",
     "preview": "vite preview apps/playground --config apps/playground/vite.config.ts",
+    "pretest": "npm run build:packages",
     "test": "vitest run",
     "lint": "eslint \"**/*.ts\"",
     "lint:fix": "eslint \"**/*.ts\" --fix"
