@@ -2,8 +2,18 @@
   "name": "@bunnarray/compiler",
   "version": "0.1.0",
   "type": "module",
+  "files": ["dist"],
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsdown"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "@bunnarray/vm": "0.1.0",
