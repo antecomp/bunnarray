@@ -6,7 +6,19 @@
       "include": "#comment"
     },
     {
-      "include": "#variable"
+      "include": "#option"
+    },
+    {
+      "include": "#set"
+    },
+    {
+      "include": "#signal"
+    },
+    {
+      "include": "#speaker"
+    },
+    {
+      "include": "#speaker-shorthand"
     },
     {
       "include": "#skip-tag"
@@ -15,7 +27,7 @@
       "include": "#branch-tag"
     },
     {
-      "include": "#branch-case"
+      "include": "#condition"
     },
     {
       "include": "#label"
@@ -24,82 +36,101 @@
       "include": "#goto"
     },
     {
-      "include": "#option"
+      "include": "#escape"
     },
     {
-      "include": "#directive"
+      "include": "#variable"
     },
     {
       "include": "#brace"
     }
   ],
   "repository": {
-    "variable": {
-      "patterns": [
-        {
-          "name": "variable.other.bny",
-          "match": "\\$[A-Za-z_][A-Za-z0-9_]*"
-        }
-      ]
-    },
     "comment": {
-      "patterns": [
-        {
-          "name": "comment.line.number-sign.bny",
-          "match": "^\\s*#.*$"
-        }
-      ]
+      "name": "comment.line.number-sign.bny",
+      "match": "#.*$"
+    },
+    "escape": {
+      "name": "constant.character.escape.bny",
+      "match": "&(lbrack|rbrack|lbrace|rbrace|hash|pipe|amp);"
+    },
+    "variable": {
+      "name": "variable.other.bny",
+      "match": "\\$[A-Za-z_][A-Za-z0-9_]*"
     },
     "label": {
-      "patterns": [
-        {
-          "name": "meta.label.bny",
-          "match": "^(\\s*)(@)(\\s*)([^#{}\\n].*?)\\s*$",
-          "captures": {
-            "2": {
-              "name": "keyword.control.label.bny"
-            },
-            "4": {
-              "name": "entity.name.label.bny"
+      "name": "meta.label.bny",
+      "match": "^[ \\t]*(@)[ \\t]*([^#{}\\[\\]|\\n]+)",
+      "captures": {
+        "1": {
+          "name": "keyword.control.label.bny"
+        },
+        "2": {
+          "name": "entity.name.label.bny",
+          "patterns": [
+            {
+              "include": "#escape"
             }
-          }
+          ]
         }
-      ]
+      }
+    },
+    "goto": {
+      "name": "meta.goto.bny",
+      "match": "^[ \\t]*(->)[ \\t]*([^#{}\\[\\]|\\n]+)",
+      "captures": {
+        "1": {
+          "name": "keyword.control.goto.bny"
+        },
+        "2": {
+          "name": "entity.name.label.bny",
+          "patterns": [
+            {
+              "include": "#escape"
+            }
+          ]
+        }
+      }
     },
     "skip-tag": {
       "patterns": [
         {
           "name": "meta.block.skip.begin.bny",
-          "match": "^(\\s*)(\\[)(skip)(:)([^\\]\\n]+)(\\])\\s*$",
+          "match": "(\\[)(skip)(:)([^\\]#\\n]+)(\\])",
           "captures": {
-            "2": {
+            "1": {
               "name": "punctuation.definition.tag.begin.bny"
             },
-            "3": {
+            "2": {
               "name": "keyword.control.skip.bny"
             },
-            "4": {
+            "3": {
               "name": "punctuation.separator.key-value.bny"
             },
-            "5": {
-              "name": "entity.name.label.bny"
+            "4": {
+              "name": "entity.name.label.bny",
+              "patterns": [
+                {
+                  "include": "#escape"
+                }
+              ]
             },
-            "6": {
+            "5": {
               "name": "punctuation.definition.tag.end.bny"
             }
           }
         },
         {
           "name": "meta.block.skip.end.bny",
-          "match": "^(\\s*)(\\[\\/)(skip)(\\])\\s*$",
+          "match": "(\\[/)(skip)(\\])",
           "captures": {
-            "2": {
+            "1": {
               "name": "punctuation.definition.tag.begin.bny"
             },
-            "3": {
+            "2": {
               "name": "keyword.control.skip.bny"
             },
-            "4": {
+            "3": {
               "name": "punctuation.definition.tag.end.bny"
             }
           }
@@ -107,123 +138,185 @@
       ]
     },
     "branch-tag": {
-      "patterns": [
-        {
-          "name": "meta.branch.begin.bny",
-          "match": "^(\\s*)(\\[)(branch)(\\])\\s*$",
-          "captures": {
-            "2": {
-              "name": "punctuation.definition.tag.begin.bny"
-            },
-            "3": {
-              "name": "keyword.control.branch.bny"
-            },
-            "4": {
-              "name": "punctuation.definition.tag.end.bny"
-            }
-          }
+      "name": "meta.branch.bny",
+      "match": "(\\[/?)(branch)(\\])",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.tag.begin.bny"
         },
-        {
-          "name": "meta.branch.end.bny",
-          "match": "^(\\s*)(\\[\\/)(branch)(\\])\\s*$",
-          "captures": {
-            "2": {
-              "name": "punctuation.definition.tag.begin.bny"
-            },
-            "3": {
-              "name": "keyword.control.branch.bny"
-            },
-            "4": {
-              "name": "punctuation.definition.tag.end.bny"
-            }
-          }
+        "2": {
+          "name": "keyword.control.branch.bny"
+        },
+        "3": {
+          "name": "punctuation.definition.tag.end.bny"
         }
-      ]
+      }
     },
-    "branch-case": {
-      "patterns": [
-        {
-          "name": "meta.branch.case.bny",
-          "match": "^(\\s*)(\\[)(when)(:)([A-Za-z_][A-Za-z0-9_]*)(\\s*=\\s*)([^\\]\\n]+)(\\])\\s*$",
-          "captures": {
-            "2": {
-              "name": "punctuation.definition.tag.begin.bny"
-            },
-            "3": {
-              "name": "keyword.control.branch-case.bny"
-            },
-            "4": {
-              "name": "punctuation.separator.key-value.bny"
-            },
-            "5": {
-              "name": "variable.other.bny"
-            },
-            "6": {
-              "name": "keyword.operator.assignment.bny"
-            },
-            "7": {
-              "name": "constant.other.branch-value.bny"
-            },
-            "8": {
-              "name": "punctuation.definition.tag.end.bny"
+    "condition": {
+      "name": "meta.condition.bny",
+      "match": "(\\[)(when)(:)[ \\t]*([A-Za-z_][A-Za-z0-9_]*)[ \\t]*(=)([^\\]#\\n]+)(\\])",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.tag.begin.bny"
+        },
+        "2": {
+          "name": "keyword.control.branch-case.bny"
+        },
+        "3": {
+          "name": "punctuation.separator.key-value.bny"
+        },
+        "4": {
+          "name": "variable.other.bny"
+        },
+        "5": {
+          "name": "keyword.operator.assignment.bny"
+        },
+        "6": {
+          "name": "constant.other.branch-value.bny",
+          "patterns": [
+            {
+              "include": "#escape"
             }
-          }
+          ]
+        },
+        "7": {
+          "name": "punctuation.definition.tag.end.bny"
         }
-      ]
+      }
     },
-    "goto": {
-      "patterns": [
-        {
-          "name": "meta.goto.bny",
-          "match": "^(\\s*)(->)(\\s*)([^#{}\\n].*?)\\s*$",
-          "captures": {
-            "2": {
-              "name": "keyword.control.goto.bny"
-            },
-            "4": {
-              "name": "entity.name.label.bny"
+    "option-id": {
+      "name": "meta.option.id.bny",
+      "match": "(\\[)(id)(:)([^\\]#\\n]+)(\\])",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.tag.begin.bny"
+        },
+        "2": {
+          "name": "keyword.other.option-id.bny"
+        },
+        "3": {
+          "name": "punctuation.separator.key-value.bny"
+        },
+        "4": {
+          "name": "entity.name.option.bny",
+          "patterns": [
+            {
+              "include": "#escape"
             }
-          }
+          ]
+        },
+        "5": {
+          "name": "punctuation.definition.tag.end.bny"
         }
-      ]
+      }
     },
     "option": {
+      "name": "meta.option.bny",
+      "begin": "^[ \\t]*(\\?:)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.option.bny"
+        }
+      },
+      "end": "(?=[#{}])|$",
+      "contentName": "string.unquoted.option-text.bny",
       "patterns": [
         {
-          "name": "meta.option.bny",
-          "match": "^(\\s*)(\\?:)(\\s*)(.*?)(\\s*)(\\{)?\\s*$",
-          "captures": {
-            "2": {
-              "name": "keyword.control.option.bny"
-            },
-            "4": {
-              "name": "string.unquoted.option-text.bny"
-            },
-            "6": {
-              "name": "punctuation.section.block.begin.bny"
-            }
-          }
+          "include": "#condition"
+        },
+        {
+          "include": "#option-id"
+        },
+        {
+          "include": "#escape"
         }
       ]
     },
-    "directive": {
-      "patterns": [
-        {
-          "name": "meta.directive.bny",
-          "match": "<([A-Za-z_][\\w-]*)(:)([^>]+)>",
-          "captures": {
-            "1": {
-              "name": "entity.name.function.directive.bny"
+    "set": {
+      "name": "meta.directive.set.bny",
+      "match": "^[ \\t]*(:SET)\\b[ \\t]+([A-Za-z_][A-Za-z0-9_]*)(?:[ \\t]*(=)([^#\\n]*))?",
+      "captures": {
+        "1": {
+          "name": "keyword.other.directive.bny"
+        },
+        "2": {
+          "name": "variable.other.bny"
+        },
+        "3": {
+          "name": "keyword.operator.assignment.bny"
+        },
+        "4": {
+          "name": "string.unquoted.set-value.bny",
+          "patterns": [
+            {
+              "include": "#escape"
             },
-            "2": {
-              "name": "punctuation.separator.key-value.bny"
-            },
-            "3": {
-              "name": "string.unquoted.directive-value.bny"
+            {
+              "include": "#variable"
             }
-          }
+          ]
         }
-      ]
+      }
+    },
+    "signal": {
+      "name": "meta.directive.signal.bny",
+      "match": "^[ \\t]*(:SIGNAL|:YIELD)\\b[ \\t]+([A-Za-z_][A-Za-z0-9_]*)(?:[ \\t]*(:)([^#\\n]*))?",
+      "captures": {
+        "1": {
+          "name": "keyword.control.directive.bny"
+        },
+        "2": {
+          "name": "entity.name.function.signal.bny"
+        },
+        "3": {
+          "name": "punctuation.separator.key-value.bny"
+        },
+        "4": {
+          "name": "string.unquoted.directive-value.bny",
+          "patterns": [
+            {
+              "include": "#escape"
+            }
+          ]
+        }
+      }
+    },
+    "speaker": {
+      "name": "meta.directive.speaker.bny",
+      "match": "^[ \\t]*(:SPEAKER|:ALTERNATE)\\b([^#\\n]*)",
+      "captures": {
+        "1": {
+          "name": "keyword.other.directive.bny"
+        },
+        "2": {
+          "name": "string.unquoted.speaker.bny",
+          "patterns": [
+            {
+              "include": "#escape"
+            }
+          ]
+        }
+      }
+    },
+    "speaker-shorthand": {
+      "name": "meta.speaker.bny",
+      "match": "^[ \\t]*(\\|)([^|#\\n]*)(\\|)",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.speaker.begin.bny"
+        },
+        "2": {
+          "name": "entity.name.speaker.bny",
+          "patterns": [
+            {
+              "include": "#escape"
+            }
+          ]
+        },
+        "3": {
+          "name": "punctuation.definition.speaker.end.bny"
+        }
+      }
     },
     "brace": {
       "patterns": [

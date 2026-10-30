@@ -17,5 +17,107 @@
       "    $0",
       "[/skip]"
     ]
+  },
+  "Choice Block": {
+    "prefix": "choice",
+    "description": "Insert a choice with two responses",
+    "body": [
+      "${1:Prompt} {",
+      "    ?: ${2:First option}",
+      "        ${3:Response}",
+      "    ?: ${4:Second option}",
+      "        $0",
+      "}"
+    ]
+  },
+  "Conditional Option": {
+    "prefix": "option-when",
+    "description": "Insert an option with a memory condition and ID",
+    "body": [
+      "?: [when:${1:identifier}=${2:value}] [id:${3:option_id}] ${4:Option text}",
+      "    $0"
+    ]
+  },
+  "Branch Case": {
+    "prefix": "when",
+    "description": "Insert a branch case",
+    "body": [
+      "[when:${1:identifier}=${2:value}]",
+      "    $0"
+    ]
+  },
+  "Option ID": {
+    "prefix": "option-id",
+    "description": "Attach a stable ID before option text",
+    "body": [
+      "[id:${1:option_id}]$0"
+    ]
+  },
+  "Set Memory": {
+    "prefix": "set",
+    "description": "Set memory; variables in the value are interpolated",
+    "body": [
+      ":SET ${1:identifier}=${2:value}$0"
+    ]
+  },
+  "Delete Memory": {
+    "prefix": "unset",
+    "description": "Delete a memory value",
+    "body": [
+      ":SET ${1:identifier}$0"
+    ]
+  },
+  "Speaker": {
+    "prefix": "speaker",
+    "description": "Set the speaker; omit the name for the narrator",
+    "body": [
+      ":SPEAKER ${1:name}",
+      "$0"
+    ]
+  },
+  "Speaker Shorthand": {
+    "prefix": "speaker-inline",
+    "description": "Set the speaker and write dialogue; || selects the narrator",
+    "body": [
+      "|${1:name}| $0"
+    ]
+  },
+  "Alternate Speakers": {
+    "prefix": "alternate",
+    "description": "Rotate speakers, then stop rotation",
+    "body": [
+      ":ALTERNATE ${1:Alice}; ${2:Bob}",
+      "$0",
+      ":ALTERNATE"
+    ]
+  },
+  "Signal": {
+    "prefix": "signal",
+    "description": "Emit a signal; the optional value is literal text",
+    "body": [
+      ":SIGNAL ${1:identifier}${2::value}$0"
+    ]
+  },
+  "Yield": {
+    "prefix": "yield",
+    "description": "Pause for the consumer; the optional value is literal text",
+    "body": [
+      ":YIELD ${1:identifier}${2::value}$0"
+    ]
+  },
+  "Label": {
+    "prefix": "label",
+    "description": "Define a jump target",
+    "body": [
+      "@${1:label}",
+      "$0"
+    ]
+  },
+  "Goto": {
+    "prefix": "goto",
+    "description": "Jump to a label",
+    "body": [
+      "->${1:label}$0"
+    ]
   }
 }

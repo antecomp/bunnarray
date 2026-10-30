@@ -1,0 +1,230 @@
+# A playable tour of the current BunNarraY language.
+# Run it more than once to explore the alternate options. Every route rejoins
+# the main tour, except the explicit replay choice near the end.
+# The playground needs no initial memory; all values are set in this file.
+# Authored by ChatGPT Sol.
+
+:SPEAKER Curator
+Welcome to the Clockwork Archive.
+This placard literally reads &lbrack;open&rbrack; &lbrace;carefully&rbrace; &hash;1.
+To print the escape itself, write &amp;lbrace; in the source.
+This sentence has a public ending. # This part is only a source comment.
+
+# A blank name in an alternating speaker list means the narrator.
+:ALTERNATE Curator; ; Clockwork Guide
+I will introduce the exhibits.
+The gears turn overhead.
+Please keep your hands inside the story.
+:ALTERNATE
+I am still the Clockwork Guide after the rotation stops.
+:SPEAKER
+The narrator takes over again.
+
+:SET visitor=traveler
+:SET mood=curious
+:SET key=missing
+:SET route=unset
+:SET souvenir=none
+
+Choose a name for your admission card. {
+    ?: [id:card_ada] Ada
+        :SET visitor=Ada
+        :SIGNAL card_written:Ada
+    ?: [id:card_bo] Bo
+        :SET visitor=Bo
+        :SIGNAL card_written:Bo
+}
+Welcome, $visitor. The admission card now shows your name.
+
+# The first matching branch wins. Both conditions below are true.
+:SET first_lamp=lit
+:SET second_lamp=lit
+[branch]
+    [when:first_lamp=lit]
+        The first lamp lights the hall.
+        :SIGNAL first_lamp
+    [when:second_lamp=lit]
+        The second lamp would speak only if the first were dark.
+[/branch]
+
+# An unmatched branch falls through without speaking.
+[branch]
+    [when:missing_exhibit=found]
+        This line is unreachable with the memory set above.
+[/branch]
+We arrive at the display cases.
+
+# Both [when] and [id] orders are accepted on individual options.
+# The plain option stays visible for every memory state.
+How should we inspect the first cabinet? {
+    ?: [when:mood=curious] [id:look_close] Look closely
+        :SPEAKER Curator
+        The latch is shaped like a small moon.
+        :SPEAKER
+        :SET key=brass
+        :SIGNAL key_found:brass
+    ?: [id:ask_guide] [when:mood=curious] Ask the guide
+        :ALTERNATE Curator; Clockwork Guide
+        Is that a key beneath the glass?
+        Yes. I will lift the cover for you.
+        :ALTERNATE
+        :SET key=brass
+    ?: [id:walk_past] Walk past
+        We leave the key where it is.
+}
+All three cabinet answers rejoin here; your key is $key.
+
+# Prompted nested options, with a branch and a yield inside one answer.
+Which mechanism shall we try next? {
+    ?: [id:music_box] The music box
+        Which tune? {
+            ?: [id:waltz] A waltz
+                :SET tune=waltz
+                :YIELD wind_box:waltz
+                The box plays a $tune for $visitor.
+            ?: [id:march] A march
+                :SET tune=march
+                :SIGNAL music_started:march
+                The brass drummer keeps time.
+        }
+        The music box closes, whichever tune you chose.
+    ?: [id:telescope] The telescope
+        # A bare nested choice has no new spoken prompt.
+        {
+            ?: [id:near] Focus nearby
+                :SET focus=near
+                A brass rabbit fills the lens.
+            ?: [id:far] Focus far away
+                :SET focus=far
+                A distant observatory comes into view.
+        }
+        [branch]
+            [when:focus=near]
+                The rabbit waves at $visitor.
+            [when:focus=far]
+                The observatory beacon flashes twice.
+        [/branch]
+    ?: [id:sealed_drawer] The sealed drawer
+        [branch]
+            [when:key=brass]
+                The brass key fits.
+                :SIGNAL drawer_opened
+            [when:key=missing]
+                Without a key, we leave it sealed.
+        [/branch]
+}
+We meet again at the center of the gallery.
+
+# Adjacent choice blocks chain without a fresh prompt. The first answer sets
+# memory for the second, and both answers fall into the shared line.
+Choose a souvenir, then a wrapping. {
+    ?: [id:gear] A tiny gear
+        :SET souvenir=gear
+    ?: [id:map] A folded map
+        :SET souvenir=map
+} {
+    ?: [id:paper] Brown paper
+        :SET wrapping=paper
+    ?: [id:ribbon] Blue ribbon
+        :SET wrapping=ribbon
+}
+Your $souvenir arrives with $wrapping.
+
+# A yield separates this spoken prompt from its bare choice. Conditional
+# options are checked when the visitor resumes from the yield.
+The route display is about to light up.
+:YIELD reveal_routes:gallery
+{
+    ?: [when:key=brass] [id:locked_stair] Unlock the spiral stair
+        :SET route=stair
+        :SIGNAL route_chosen:stair
+    ?: [id:bridge] Cross the bridge
+        :SET route=bridge
+    ?: [id:lift] Take the lift
+        :SET route=lift
+}
+
+# An option may lead to a branch, which may lead to another choice.
+[branch]
+    [when:route=stair]
+        The key turns in the stairwell door.
+        [branch]
+            [when:key=brass]
+                A second lock opens too.
+                :YIELD climb_stairs
+        [/branch]
+    [when:route=bridge]
+        The bridge sways under $visitor.
+        Do you stop at the midpoint? {
+            ?: [id:pause] Yes
+                :SIGNAL bridge_photo
+                We take in the view.
+            ?: [id:continue] No
+                We keep walking.
+        }
+    [when:route=lift]
+        The lift rattles to the top floor.
+[/branch]
+Every route reaches the observatory.
+
+# Every option in this choice is hidden. The VM skips the empty option list
+# and continues to the next line after speaking the prompt.
+The closed midnight exhibit has no available entrances. {
+    ?: [when:hour=midnight] Enter the moon room
+        This answer cannot appear in a normal run.
+    ?: [when:permit=gold] Enter the star room
+        Neither can this one.
+}
+We continue past the closed exhibit without selecting anything.
+
+# This branch mixes two memory values. A brass key takes the first case even
+# on the lift route; its nested branch can then miss and fall through.
+[branch]
+    [when:key=brass]
+        [branch]
+            [when:route=stair]
+                The key and the stair route reveal a hidden constellation.
+            [when:route=bridge]
+                The key glints over the bridge chart.
+        [/branch]
+    [when:route=lift]
+        The lift ticket unlocks an upper shelf.
+[/branch]
+The observatory clock strikes once.
+
+# SET without a value deletes a variable. A missing variable interpolates as
+# an empty string, so the final pair of brackets below is empty.
+:SET temporary=ink
+The temporary mark is $temporary.
+:SET temporary
+The temporary mark is now &lbrack;$temporary&rbrack;.
+
+# A choice can jump forward into a skip block. Linear execution skips it.
+Would you like the optional attic tour? {
+    ?: [id:attic] Yes, show me
+        ->attic
+    ?: [id:stay] Stay in the observatory
+        The curator nods and leaves the attic closed.
+}
+->after_attic
+[skip:attic]
+    :SPEAKER Curator
+    Only curious visitors see this hidden room.
+    :SIGNAL attic_entered
+    :YIELD unfold_attic_ladder
+    The ledger names $visitor as today's explorer.
+    :SPEAKER
+    ->after_attic
+[/skip]
+@after_attic
+The tour ends beside the great clock.
+
+# The backward goto replays the last choice; the other answer reaches END.
+@last_chance
+Shall we check the clock once more? {
+    ?: [id:again] Yes, repeat this question
+        ->last_chance
+    ?: [id:finish] No, finish the tour
+        :SIGNAL tour_complete
+}
+Goodbye, $visitor.
