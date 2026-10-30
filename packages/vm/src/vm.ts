@@ -41,6 +41,14 @@ export function EM<E extends Emission['kind']>(
     return { kind, ...config } as Extract<Emission, { kind: E }>;
 }
 
+/**
+ * Describes why the VM is waiting and what the host should do next.
+ *
+ * - `next`: Call `next()` to continue after a dialogue emission.
+ * - `select`: Call `choose(index)` to select one of the emitted options.
+ * - `yield`: Call `resume()` when the host is ready to continue.
+ * - `end`: Execution has finished; no further action is required.
+ */
 export type Wait = 'next' | 'select' | 'yield' | 'end';
 
 type EmissionHandler = (emission: Emission) => void;
@@ -70,7 +78,7 @@ export type VM = {
  * 
  * See project README for usage instructions.
  *
- * @param program The program to execute.
+ * @param program The program (compiled by @bunnarray/compiler) to execute.
  * @param options Runtime configuration including the emission handler and initial memory.
  */
 export function createVM(program: Program, { handler: emit, memory: initialMemory }: VMOptions): VM {
