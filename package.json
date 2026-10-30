@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "dev": "vite apps/playground --config apps/playground/vite.config.ts",
-    "build:packages": "npm run build -w @bunnarray/vm && npm run build -w @bunnarray/compiler",
+    "build:packages": "npm run build -w @bunnarray/vm && npm run build -w @bunnarray/compiler && npm run build -w @bunnarray/vite",
     "prebuild": "npm run build:packages",
     "build": "tsc && vite build apps/playground --config apps/playground/vite.config.ts",
     "preview": "vite preview apps/playground --config apps/playground/vite.config.ts",
