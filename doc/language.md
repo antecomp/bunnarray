@@ -111,7 +111,7 @@ What should we do? {
 ```
 Conditions are checked when the VM reaches the choice. Every matching option is shown in its original order. If none are available, the VM continues after the choice block without showing an empty option list; a preceding prompt is still spoken as dialogue.
 
-Prefix an option with `[id:name]` to attach an identifier to the option emitted by the VM:
+Prefix an option with `[id:name]` to attach an identifier to the option returned by the VM:
 ```bny
 Where next? {
     ?: [id:garden] Garden
@@ -120,7 +120,7 @@ Where next? {
         The key fits.
 }
 ```
-`[id:...]` and `[when:...]` can appear in either order before the option text. IDs are optional strings; the VM does not use them to choose a branch. The `options` emission contains entries such as `{ text: 'Garden', id: 'garden' }`, with `id` absent for untagged options. Call `vm.choose(index)` with the **zero-based index in the visible option list**, after the VM returns `'select'`. Hidden options do not occupy an index. Option text and IDs are fixed strings; `$variables` in them are not interpolated.
+`[id:...]` and `[when:...]` can appear in either order before the option text. IDs are optional strings; the VM does not use them to choose a branch. A `{ kind: 'select' }` wait contains an `options` array with entries such as `{ text: 'Garden', id: 'garden' }`; `id` is optional for untagged options. Call `vm.choose(index)` with the **zero-based index in that visible option list**. Hidden options do not occupy an index. Option text and IDs are fixed strings; `$variables` in them are not interpolated.
 
 ### Labels and Gotos
 A label marks a position in the script; it does not emit dialogue. Put `@label` before any statement you want to jump to. For example:
@@ -220,24 +220,20 @@ The door won't open {
         The lock clicks open.
 }
 ```
-The handler receives `{ kind: 'yield', identifier, value }`, and the execution call returns `'yield'`. The value is `undefined` when omitted and is a literal string otherwise. The consumer can perform an action, wait for an animation, or update `vm.memory` before calling `vm.resume()`. A yield pauses execution; a signal continues immediately.
+The execution call returns `{ kind: 'yield', identifier, value }`. The value is `undefined` when omitted and is a literal string otherwise. The consumer can perform an action, wait for an animation, or update `vm.memory` before calling `vm.resume()`. A yield pauses execution; a signal continues immediately through the emission handler.
 
 For example, handling the leading yield in the script above:
 ```ts
-let action: { identifier: string; value: string | undefined } | undefined;
 const vm = createVM(build(source), {
-    handler: emission => {
-        if (emission.kind === 'yield') action = emission;
-        else console.log(emission); // Render dialogue and options in your application.
-    }
+    handler: emission => console.log(emission) // Render dialogue and signals in your application.
 });
 let wait = vm.start();
-if (wait === 'yield' && action) {
-    await performAction(action.identifier, action.value); // Your application's action handler.
+if (wait.kind === 'yield') {
+    await performAction(wait.identifier, wait.value); // Your application's action handler.
     wait = vm.resume();
 }
 ```
-Dialogue is emitted immediately. For `A`, `B`, `:YIELD action`, starting emits A and returns `'next'`; calling `vm.next()` emits B followed by the yield and returns `'yield'`. Resuming preserves the line pause: if another dialogue line follows, the VM returns `'next'` before emitting it. A leading yield allows the first dialogue line to be emitted when resumed.
+Dialogue is emitted immediately. For `A`, `B`, `:YIELD action`, starting emits A and returns `{ kind: 'next' }`; calling `vm.next()` emits B and returns `{ kind: 'yield', identifier: 'action', value: undefined }`. Resuming preserves the line pause: if another dialogue line follows, the VM returns `{ kind: 'next' }` before emitting it. A leading yield allows the first dialogue line to be emitted when resumed.
 
 To delay choices until an action finishes, put a yield between their prompt and a bare choice block:
 ```bny
@@ -250,9 +246,9 @@ Choose your route.
         Up the trail.
 }
 ```
-The VM emits "Choose your route." before the yield. Resuming emits the options without repeating the prompt. Choice conditions are evaluated after the action resumes.
+The VM emits "Choose your route." before returning the yield wait. Resuming returns the options without repeating the prompt. Choice conditions are evaluated after the action resumes.
 
-The browser demo displays dialogue, signals, and yields in emission order. It offers Continue for `'next'` and `'yield'` pauses, and buttons for visible options when waiting for `'select'`. A game integration can resume a yield after its own action completes.
+The browser demo displays dialogue and signals as they are emitted, and shows each yield when the VM pauses. It offers Continue for `next` and `yield` waits, and buttons for the options in a `select` wait. A game integration can resume a yield after its own action completes.
 
 ### Runtime Variables
 The same string memory is used by branch and option conditions, and by `$variables` in dialogue, speaker names, and `:SET` values. Speaker names (including `:ALTERNATE` names) are interpolated for each dialogue line using current memory:
@@ -279,4 +275,4 @@ vm.memory.set('dragon', 'slain');
 const name = vm.memory.get('name');
 vm.memory.delete('dragon');
 ```
-Conditions read memory when the VM reaches the block, so changes made before then affect the selected case. The VM also emits `{ kind: 'end' }` when the script finishes. `start()`, `next()`, `choose(index)`, and `resume()` return a wait state: `'next'` means call `next()` for the following dialogue line, `'select'` means choose from the emitted visible options, `'yield'` means call `resume()` after handling the yield, and `'end'` means execution has finished. Call only the method appropriate for the current wait state.
+Conditions read memory when the VM reaches the block, so changes made before then affect the selected case. The VM also emits `{ kind: 'end' }` when the script finishes. `start()`, `next()`, `choose(index)`, and `resume()` return a wait object: `next` means call `next()` for the following dialogue line, `select` contains visible options for `choose(index)`, `yield` contains the action identifier and optional value for handling before `resume()`, and `end` means execution has finished. Check `wait.kind` and call only the method appropriate for that wait.

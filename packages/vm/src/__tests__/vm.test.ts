@@ -26,7 +26,7 @@ describe('VM', () => {
         }));
         instructions.push({ op: 'END' });
         const { vm } = runtime(instructions);
-        if (count === 100_000) expect(vm.start()).toBe('end');
+        if (count === 100_000) expect(vm.start().kind).toBe('end');
         else expect(() => vm.start()).toThrow('Instruction budget (100000) exceeded at pc 100000');
     });
 
@@ -36,9 +36,9 @@ describe('VM', () => {
         }));
         instructions.push({ op: 'YIELD', identifier: 'pause' }, { op: 'JUMP', target: 0 }, { op: 'END' });
         const { vm } = runtime(instructions);
-        expect(vm.start()).toBe('yield');
-        expect(vm.resume()).toBe('yield');
-        expect(vm.resume()).toBe('yield');
+        expect(vm.start().kind).toBe('yield');
+        expect(vm.resume().kind).toBe('yield');
+        expect(vm.resume().kind).toBe('yield');
     });
 
     it.each<{ instructions: Instruction[] }>([
@@ -68,13 +68,13 @@ describe('VM', () => {
             { op: 'CHOICE', choices: [{ text: 'Invalid', target: 2 }], fallback: 1 },
             { op: 'END' }
         ]);
-        expect(vm.start()).toBe('select');
+        expect(vm.start().kind).toBe('select');
         expect(() => vm.choose(0)).toThrow('pc (2) out of program range!');
     });
 
     it('ends an empty program and only starts once', () => {
         const { vm, emissions } = runtime([{ op: 'END' }]);
-        expect(vm.start()).toBe('end');
+        expect(vm.start().kind).toBe('end');
         expect(emissions).toEqual([{ kind: 'end' }]);
         expect(() => vm.start()).toThrow('VM already started');
     });
@@ -86,11 +86,11 @@ describe('VM', () => {
             { op: 'SAY', text: 'Third' },
             { op: 'END' }
         ]);
-        expect(vm.start()).toBe('next');
+        expect(vm.start().kind).toBe('next');
         expect(emissions).toEqual([say('First')]);
-        expect(vm.next()).toBe('next');
+        expect(vm.next().kind).toBe('next');
         expect(emissions).toEqual([say('First'), say('Second')]);
-        expect(vm.next()).toBe('end');
+        expect(vm.next().kind).toBe('end');
         expect(emissions).toEqual([say('First'), say('Second'), say('Third'), { kind: 'end' }]);
     });
 
@@ -101,7 +101,7 @@ describe('VM', () => {
             { op: 'SAY', text: 'Reached' },
             { op: 'END' }
         ]);
-        expect(vm.start()).toBe('end');
+        expect(vm.start().kind).toBe('end');
         expect(emissions).toEqual([say('Reached'), { kind: 'end' }]);
     });
 
@@ -113,13 +113,10 @@ describe('VM', () => {
             { op: 'SIGNAL', identifier: 'closed', value: 'done' },
             { op: 'END' }
         ]);
-        expect(vm.start()).toBe('yield');
-        expect(emissions).toMatchObject([
-            { kind: 'signal', identifier: 'opened', value: undefined },
-            { kind: 'yield', identifier: 'action', value: 'front & back' }
-        ]);
+        expect(vm.start()).toEqual({ kind: 'yield', identifier: 'action', value: 'front & back' });
+        expect(emissions).toEqual([{ kind: 'signal', identifier: 'opened', value: undefined }]);
         expect(vm.memory.get('done')).toBeUndefined();
-        expect(vm.resume()).toBe('end');
+        expect(vm.resume().kind).toBe('end');
         expect(vm.memory.get('done')).toBe('yes');
         expect(emissions[emissions.length - 2]).toMatchObject({ kind: 'signal', identifier: 'closed', value: 'done' });
     });
@@ -132,11 +129,11 @@ describe('VM', () => {
             { op: 'SAY', text: 'After' },
             { op: 'END' }
         ]);
-        expect(vm.start()).toBe('yield');
-        expect(vm.resume()).toBe('yield');
-        expect(vm.resume()).toBe('next');
+        expect(vm.start()).toEqual({ kind: 'yield', identifier: 'first', value: undefined });
+        expect(vm.resume()).toEqual({ kind: 'yield', identifier: 'second', value: undefined });
+        expect(vm.resume().kind).toBe('next');
         expect(emissions.filter(emission => emission.kind === 'say')).toEqual([say('Before')]);
-        expect(vm.next()).toBe('end');
+        expect(vm.next().kind).toBe('end');
         expect(emissions.filter(emission => emission.kind === 'say')).toEqual([say('Before'), say('After')]);
     });
 
@@ -146,9 +143,9 @@ describe('VM', () => {
             { op: 'SAY', text: 'Hello' },
             { op: 'END' }
         ]);
-        expect(vm.start()).toBe('yield');
-        expect(vm.resume()).toBe('end');
-        expect(emissions[1]).toEqual(say('Hello'));
+        expect(vm.start()).toEqual({ kind: 'yield', identifier: 'action', value: undefined });
+        expect(vm.resume().kind).toBe('end');
+        expect(emissions[0]).toEqual(say('Hello'));
     });
 
     it.each([0, 1])('follows visible choice %i and rejoins after the branch', index => {
@@ -168,15 +165,15 @@ describe('VM', () => {
             { op: 'SAY', text: 'After' },
             { op: 'END' }
         ]);
-        expect(vm.start()).toBe('select');
-        expect(emissions).toEqual([say('Pick one'), { kind: 'options', options: [
+        expect(vm.start()).toEqual({ kind: 'select', options: [
             { text: 'Left', id: 'left' },
-            { text: 'Right' }
-        ] }]);
+            { text: 'Right', id: undefined }
+        ] });
+        expect(emissions).toEqual([say('Pick one')]);
         expect(() => vm.choose(2)).toThrow('Invalid choice index: 2');
-        expect(vm.choose(index)).toBe('next');
-        expect(emissions[2]).toEqual(say(index === 0 ? 'Left branch' : 'Right branch'));
-        expect(vm.next()).toBe('end');
+        expect(vm.choose(index).kind).toBe('next');
+        expect(emissions[1]).toEqual(say(index === 0 ? 'Left branch' : 'Right branch'));
+        expect(vm.next().kind).toBe('end');
         expect(emissions.slice(-2)).toEqual([say('After'), { kind: 'end' }]);
     });
 
@@ -191,11 +188,11 @@ describe('VM', () => {
             { op: 'JUMP', target: 5 },
             { op: 'END' }
         ]);
-        expect(vm.start()).toBe('yield');
+        expect(vm.start()).toEqual({ kind: 'yield', identifier: 'inspect', value: undefined });
         vm.memory.set('key', 'yes');
-        expect(vm.resume()).toBe('select');
-        expect(emissions[emissions.length - 1]).toEqual({ kind: 'options', options: [{ text: 'Unlock' }] });
-        expect(vm.choose(0)).toBe('end');
+        expect(vm.resume()).toEqual({ kind: 'select', options: [{ text: 'Unlock', id: undefined }] });
+        expect(emissions[emissions.length - 1]).toEqual({ kind: 'memory', key: 'key', prev: undefined, value: 'yes' });
+        expect(vm.choose(0).kind).toBe('end');
         expect(emissions[emissions.length - 2]).toEqual(say('Opened'));
     });
 
@@ -210,9 +207,9 @@ describe('VM', () => {
             { op: 'SAY', text: 'After' },
             { op: 'END' }
         ]);
-        expect(vm.start()).toBe('next');
+        expect(vm.start().kind).toBe('next');
         expect(emissions).toEqual([say('Question')]);
-        expect(vm.next()).toBe('end');
+        expect(vm.next().kind).toBe('end');
         expect(emissions).toEqual([say('Question'), say('After'), { kind: 'end' }]);
     });
 
@@ -239,7 +236,7 @@ describe('VM', () => {
             { op: 'SET', identifier: 'name', value: null },
             { op: 'END' }
         ], { name: 'Rabbit' });
-        expect(vm.start()).toBe('end');
+        expect(vm.start().kind).toBe('end');
         expect(emissions).toEqual([
             { kind: 'memory', key: 'greeting', prev: undefined, value: 'Hello Rabbit' },
             say('Hello Rabbit '),
@@ -286,9 +283,9 @@ describe('VM', () => {
             { op: 'SAY', text: 'Two' },
             { op: 'END' }
         ], { name: 'Alice' });
-        expect(vm.start()).toBe('next');
+        expect(vm.start().kind).toBe('next');
         vm.memory.set('name', 'Bob');
-        expect(vm.next()).toBe('end');
+        expect(vm.next().kind).toBe('end');
         expect(emissions.filter(emission => emission.kind === 'say')).toEqual([
             say('One', 'Captain Alice'), say('Two', 'Captain Bob')
         ]);
@@ -305,7 +302,7 @@ describe('VM', () => {
             { op: 'END' }
         ], { name: '$other', other: 'Alice' });
         let wait = vm.start();
-        while (wait === 'next') wait = vm.next();
+        while (wait.kind === 'next') wait = vm.next();
         expect(emissions).toEqual([
             say('One', '$other'), say('Two'), say('Three', ''), say('Four', ''), { kind: 'end' }
         ]);
@@ -325,7 +322,7 @@ describe('VM', () => {
             { op: 'END' }
         ]);
         let wait = vm.start();
-        while (wait === 'next') wait = vm.next();
+        while (wait.kind === 'next') wait = vm.next();
         expect(emissions).toEqual([
             say('One', 'Alice'), say('Two', 'Bob'), say('Three'), say('Four', 'Alice'),
             say('Five', 'Carol'), say('Six'), { kind: 'end' }
@@ -349,7 +346,7 @@ describe('VM', () => {
             { op: 'SAY', text: 'Fallback' },
             { op: 'END' }
         ], memory);
-        expect(vm.start()).toBe('end');
+        expect(vm.start().kind).toBe('end');
         expect(emissions).toEqual([say(text), { kind: 'end' }]);
     });
 
@@ -360,7 +357,7 @@ describe('VM', () => {
             { op: 'SAY', text: 'Matched' },
             { op: 'END' }
         ] }, { memory: { state: '' }, handler: emission => emissions.push(emission) });
-        expect(vm.start()).toBe('end');
+        expect(vm.start().kind).toBe('end');
         expect(emissions).toEqual([say('Matched'), { kind: 'end' }]);
     });
 
@@ -372,7 +369,7 @@ describe('VM', () => {
             { op: 'SAY', text: 'Matched' },
             { op: 'END' }
         ], { state: value });
-        expect(vm.start()).toBe('end');
+        expect(vm.start().kind).toBe('end');
         expect(emissions).toEqual([say('Matched'), { kind: 'end' }]);
     });
 });

@@ -14,12 +14,11 @@ describe('compiled programs in the VM', () => {
             Still Carol too.
             || Narration.`), { handler: emission => emissions.push(emission) });
 
-        expect(vm.start()).toBe('next');
-        expect(vm.next()).toBe('select');
-        expect(emissions[2]).toEqual({ kind: 'options', options: [{ text: 'A | B' }] });
-        expect(vm.choose(0)).toBe('next');
-        expect(vm.next()).toBe('next');
-        expect(vm.next()).toBe('end');
+        expect(vm.start().kind).toBe('next');
+        expect(vm.next()).toEqual({ kind: 'select', options: [{ text: 'A | B', id: undefined }] });
+        expect(vm.choose(0).kind).toBe('next');
+        expect(vm.next().kind).toBe('next');
+        expect(vm.next().kind).toBe('end');
         expect(emissions.filter(emission => emission.kind === 'say')).toEqual([
             { kind: 'say', text: 'Hello.', speaker: 'Alice' },
             { kind: 'say', text: 'Choose', speaker: 'Carol' },
@@ -42,17 +41,15 @@ describe('compiled programs in the VM', () => {
 
         const emissions: Emission[] = [];
         const vm = createVM(restored, { handler: emission => emissions.push(emission) });
-        expect(vm.start()).toBe('yield');
+        expect(vm.start()).toEqual({ kind: 'yield', identifier: 'inspect', value: undefined });
         expect(vm.memory.get('name')).toBeUndefined();
-        expect(vm.resume()).toBe('yield');
-        expect(vm.resume()).toBe('end');
+        expect(vm.resume()).toEqual({ kind: 'yield', identifier: 'action', value: 'continue' });
+        expect(vm.resume().kind).toBe('end');
         expect(emissions).toEqual([
             { kind: 'memory', key: 'name', prev: undefined, value: 'Rabbit' },
             { kind: 'memory', key: 'name', prev: 'Rabbit', value: undefined },
             { kind: 'signal', identifier: 'opened', value: undefined },
             { kind: 'signal', identifier: 'status', value: 'ready' },
-            { kind: 'yield', identifier: 'inspect', value: undefined },
-            { kind: 'yield', identifier: 'action', value: 'continue' },
             { kind: 'say', text: 'Name: ', speaker: null },
             { kind: 'end' }
         ]);
@@ -69,10 +66,11 @@ describe('compiled programs in the VM', () => {
         After`);
         const vm = createVM(program, { handler: emission => emissions.push(emission) });
 
-        expect(vm.start()).toBe('select');
-        expect(emissions[1]).toEqual({ kind: 'options', options: [{ text: 'Left' }, { text: 'Right' }] });
-        expect(vm.choose(1)).toBe('next');
-        expect(vm.next()).toBe('end');
+        expect(vm.start()).toEqual({ kind: 'select', options: [
+            { text: 'Left', id: undefined }, { text: 'Right', id: undefined }
+        ] });
+        expect(vm.choose(1).kind).toBe('next');
+        expect(vm.next().kind).toBe('end');
         expect(emissions.filter(emission => emission.kind === 'say').map(emission => emission.text))
             .toEqual(['Choose', 'Right branch', 'After']);
     });
@@ -83,11 +81,10 @@ describe('compiled programs in the VM', () => {
             handler: emission => emissions.push(emission)
         });
 
-        expect(vm.start()).toBe('yield');
+        expect(vm.start()).toEqual({ kind: 'yield', identifier: 'inspect', value: undefined });
         vm.memory.set('key', 'yes');
-        expect(vm.resume()).toBe('end');
+        expect(vm.resume().kind).toBe('end');
         expect(emissions).toEqual([
-            { kind: 'yield', identifier: 'inspect', value: undefined },
             { kind: 'memory', key: 'key', prev: undefined, value: 'yes' },
             { kind: 'say', text: 'Opened', speaker: null },
             { kind: 'end' }

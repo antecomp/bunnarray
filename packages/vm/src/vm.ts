@@ -23,7 +23,7 @@ export type Option = { text: string; id?: string };
  * A single event emitted by the virtual machine while running a program.
  *
  * The VM emits these values to let the host application render dialogue,
- * update memory, react to signals, or present choices.
+ * update memory, or react to signals.
  */
 export type Emission =
     | { kind: 'say'; text: string; speaker: string | null }
@@ -43,16 +43,15 @@ function EM<E extends Emission['kind']>(
  * Describes why the VM is waiting and what the host should do next.
  *
  * - `next`: Call `next()` to continue after a dialogue emission.
- * - `select`: Call `choose(index)` to select one of the emitted options.
+ * - `select`: Call `choose(index)` using the options on this wait value.
  * - `yield`: Call `resume()` when the host is ready to continue.
  * - `end`: Execution has finished; no further action is required.
  */
-// export type Wait = 'next' | 'select' | 'yield' | 'end';
 export type Wait =
     | { kind: 'next' }
     | { kind: 'select', options: Option[] }
     | { kind: 'yield', identifier: string, value: string | undefined }
-    | { kind: 'end' }
+    | { kind: 'end' };
 
 export type WaitKind = Wait['kind'];
 

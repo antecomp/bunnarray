@@ -635,7 +635,7 @@ how has life been treating you?`, [
     });
 
     it('rejects gotos to missing labels and duplicate labels', () => {
-        expect(() => build('->missing')).toThrow('encountered goto to unknown label missing');
+        expect(() => build('->missing')).toThrow('encountered goto to unknown label: missing');
         expect(() => build('@same\nFirst.\n@same\nSecond.')).toThrow('duplicate label');
     });
 
