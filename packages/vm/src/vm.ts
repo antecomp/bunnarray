@@ -102,9 +102,7 @@ export function createVM(
     const memory = createMemory(update => emit(EM('memory', update)), initialMemory);
 
     let pc = 0;
-    let started = false;
     let canExecSay = true;              // allow printing the say and continue (next or automatically)
-    let visibleChoices: Choice[] = [];  // snapshot of visible choices
 
     let speaker: string | null = null;
     let alternateSpeakers: (string | null)[] = [];
@@ -203,27 +201,34 @@ export function createVM(
                     pc++;
                     continue;
 
-                case 'CHOICE':
-                    visibleChoices = ins.choices.filter(
+                case 'CHOICE': {
+                    const choices = ins.choices.filter(
                         choice => choice.condition === undefined || matches(choice.condition)
                     );
-                    if (visibleChoices.length === 0) {
+                    if (choices.length === 0) {
                         pc = ins.fallback;
                         continue;
                     }
+                    const select = once((choice: Choice) => {
+                        pc = choice.target;
+                        canExecSay = true;
+                        run()
+                    });
+
                     return pause({
                         kind: 'select',
-                        options: visibleChoices.map(({text, id}) => ({text, id})),
-                        resume: once((index: number) => {
-                            const choice = visibleChoices[index];
+                        options: choices.map(({text, id}) => ({text, id})),
+                        resume(index) {
+                            const choice = Number.isInteger(index)
+                                ? choices[index]
+                                : undefined;
                             if (!choice)
-                                throw new Error(`Invalid choice index: ${index}`);
+                                throw new Error (`Invalid choice index: ${index}`);
 
-                            pc = choice.target;
-                            canExecSay = true;
-                            run();
-                        })
+                            select(choice);
+                        }
                     })
+                }
 
                 case 'END':
                     return pause({kind: 'end'});
@@ -239,8 +244,6 @@ export function createVM(
         memory,
 
         start: once(() => {
-            if (started) throw new Error('VM already started');
-            started = true;
             canExecSay = true;
             run();
         }, 'VM already started!')
