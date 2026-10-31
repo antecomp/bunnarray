@@ -1,3 +1,4 @@
+import once from '../once';
 import type { EqualityCondition, Operation, Program, Version } from './instructions';
 import createMemory, { type MemoryUpdate } from './mem';
 
@@ -29,10 +30,9 @@ export type Emission =
     | { kind: 'say'; text: string; speaker: string | null }
     | ({ kind: 'memory' } & MemoryUpdate)
     | { kind: 'signal'; identifier: string; value: string | undefined }
-    | { kind: 'end' };
 
 export type EmissionKind = Emission['kind'];
-export type EmissionBody<K extends EmissionKind> = Extract<Emission, {kind: K}>
+export type EmissionBody<K extends EmissionKind> = Extract<Emission, { kind: K }>
 
 /** Constructs an Emission */
 function EM<E extends Emission['kind']>(
@@ -42,32 +42,28 @@ function EM<E extends Emission['kind']>(
     return { kind, ...config } as Extract<Emission, { kind: E }>;
 }
 
-/**
- * Describes why the VM is waiting and what the host should do next.
- *
- * - `next`: Call `next()` to continue after a dialogue emission.
- * - `select`: Call `choose(index)` using the options on this wait value.
- * - `yield`: Call `resume()` when the host is ready to continue.
- * - `end`: Execution has finished; no further action is required.
- */
-export type Wait =
-    | { kind: 'next' }
-    | { kind: 'select', options: Option[] }
-    | { kind: 'yield', identifier: string, value: string | undefined }
-    | { kind: 'end' };
-
-export type WaitKind = Wait['kind'];
-export type WaitBody<K extends WaitKind> = Extract<Wait, {kind: K}>
-
 export type EmissionHandler = (emission: Emission) => void;
 export type Choice = Operation<'CHOICE'>['choices'][number];
+
+
+export type Pause =
+    | { kind: 'next', resume: VoidFunction }
+    | { kind: 'select', options: Option[], resume: (index: number) => void }
+    | { kind: 'yield', identifier: string, value: string | undefined, resume: VoidFunction }
+    | { kind: 'end' }
+
+export type PauseKind = Pause['kind'];
+export type PauseBody<K extends PauseKind> = Extract<Pause, { kind: K }>
+
+export type PauseHandler = (pause: Pause) => void;
 
 /**
  * Configuration used to create a VM instance.
  */
 export type VMOptions = {
     memory?: Record<string, string>
-    handler: EmissionHandler
+    onEmission: EmissionHandler
+    onPause: PauseHandler
 };
 
 /**
@@ -75,10 +71,7 @@ export type VMOptions = {
  */
 export type VM = {
     memory: ReturnType<typeof createMemory>;
-    start(): Wait;
-    next(): Wait;
-    choose(index: number): Wait;
-    resume(): Wait;
+    start: VoidFunction;
 };
 
 /**
@@ -89,7 +82,14 @@ export type VM = {
  * @param program The program (compiled by @bunnarray/compiler) to execute.
  * @param options Runtime configuration including the emission handler and initial memory.
  */
-export function createVM(program: Program, { handler: emit, memory: initialMemory }: VMOptions): VM {
+export function createVM(
+    program: Program,
+    {
+        onEmission: emit,
+        onPause: pause,
+        memory: initialMemory
+    }: VMOptions
+): VM {
     if (program.version.major !== VM_VERSION.major)
         throw new Error(
             `Program version ${formatVersion(program.version)} `
@@ -103,7 +103,6 @@ export function createVM(program: Program, { handler: emit, memory: initialMemor
 
     let pc = 0;
     let started = false;
-    let waiting: Wait | null = null;    // what the consumer owes before resuming.
     let canExecSay = true;              // allow printing the say and continue (next or automatically)
     let visibleChoices: Choice[] = [];  // snapshot of visible choices
 
@@ -132,17 +131,7 @@ export function createVM(program: Program, { handler: emit, memory: initialMemor
         return speaker === null ? null : interpolate(speaker);
     }
 
-    function stopWith<W extends Wait['kind']>(
-        kind: W,
-        config: Omit<Extract<Wait, { kind: W }>, 'kind'>
-    ): Extract<Wait, { kind: W }> {
-        const result = { kind, ...config } as Extract<Wait, { kind: W }>;
-        waiting = result;
-        return result;
-    }
-
-    function run(): Wait {
-        waiting = null;
+    function run(): void {
         let instructionsRemaining = INSTRUCTION_BUDGET;
 
         for (; ;) {
@@ -189,11 +178,23 @@ export function createVM(program: Program, { handler: emit, memory: initialMemor
 
                 case 'YIELD':
                     pc++;
-                    return stopWith('yield', { identifier: ins.identifier, value: ins.value });
+                    return pause({
+                        kind: 'yield',
+                        identifier: ins.identifier,
+                        value: ins.value,
+                        resume: once(run)
+                    })
 
                 case 'SAY':
                     // Pause *before* execution.
-                    if (!canExecSay) return stopWith('next', {});
+                    //if (!canExecSay) return stopWith('next', {});
+                    if (!canExecSay) return pause({
+                        kind: 'next',
+                        resume: once(() => {
+                            canExecSay = true;
+                            run();
+                        })
+                    })
                     canExecSay = false;
                     emit(EM('say', {
                         text: interpolate(ins.text),
@@ -210,16 +211,22 @@ export function createVM(program: Program, { handler: emit, memory: initialMemor
                         pc = ins.fallback;
                         continue;
                     }
-                    return stopWith('select', {
-                        options: visibleChoices.map(choice => ({
-                            text: choice.text,
-                            id: choice.id
-                        }))
-                    });
+                    return pause({
+                        kind: 'select',
+                        options: visibleChoices.map(({text, id}) => ({text, id})),
+                        resume: once((index: number) => {
+                            const choice = visibleChoices[index];
+                            if (!choice)
+                                throw new Error(`Invalid choice index: ${index}`);
+
+                            pc = choice.target;
+                            canExecSay = true;
+                            run();
+                        })
+                    })
 
                 case 'END':
-                    emit({ kind: 'end' });
-                    return stopWith('end', {});
+                    return pause({kind: 'end'});
 
                 default:
                     const exhaustive: never = ins;
@@ -228,46 +235,14 @@ export function createVM(program: Program, { handler: emit, memory: initialMemor
         }
     }
 
-    // --- API ---
-    function expectWaiting(expectation: WaitKind, caller: string): void {
-        if (waiting?.kind !== expectation) {
-            throw new Error(
-                `${caller}() called, but the VM is `
-                + (waiting === null ? 'not paused' : `waiting for '${waiting.kind}'`)
-            );
-        }
-    }
-
     return {
         memory,
 
-        start(): Wait {
+        start: once(() => {
             if (started) throw new Error('VM already started');
             started = true;
             canExecSay = true;
-            return run();
-        },
-
-        next(): Wait {
-            expectWaiting('next', 'next');
-            canExecSay = true;
-            return run();
-        },
-
-        choose(index: number): Wait {
-            expectWaiting('select', 'choose');
-            const choice = visibleChoices[index];
-            if (!choice) throw new Error('Invalid choice index: ' + index);
-            pc = choice.target;
-            canExecSay = true;
-            return run();
-        },
-
-        // doesn't affect canExecSay -- inherits how we should block from above
-        resume(): Wait {
-            expectWaiting('yield', 'resume');
-            return run();
-        }
-
+            run();
+        }, 'VM already started!')
     };
 }

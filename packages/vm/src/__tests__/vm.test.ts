@@ -5,7 +5,7 @@ function runtime(instructions: Instruction[], initialMemory?: Record<string, str
     const emissions: Emission[] = [];
     const vm = createVM({ version: { major: 1, minor: 0 }, instructions }, {
         memory: initialMemory,
-        handler: emission => emissions.push(emission)
+        onEmission: emission => emissions.push(emission)
     });
     return { vm, emissions };
 }
@@ -251,7 +251,7 @@ describe('VM', () => {
         const emissions: Emission[] = [];
         const vm = createVM({ version: { major: 1, minor: 0 }, instructions: [{ op: 'END' }] }, {
             memory: { key: 'initial' },
-            handler: emission => {
+            onEmission: emission => {
                 if (emission.kind === 'memory') {
                     expect(vm.memory.get(emission.key)).toBe(emission.value);
                 }
@@ -356,7 +356,7 @@ describe('VM', () => {
             { op: 'BRANCH', cases: [{ condition: { identifier: 'state', value: '' }, target: 1 }], fallback: 2 },
             { op: 'SAY', text: 'Matched' },
             { op: 'END' }
-        ] }, { memory: { state: '' }, handler: emission => emissions.push(emission) });
+        ] }, { memory: { state: '' }, onEmission: emission => emissions.push(emission) });
         expect(vm.start().kind).toBe('end');
         expect(emissions).toEqual([say('Matched'), { kind: 'end' }]);
     });
