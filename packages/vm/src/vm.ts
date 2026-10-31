@@ -1,4 +1,4 @@
-import once from '../once';
+import once from './once';
 import type { EqualityCondition, Operation, Program, Version } from './instructions';
 import createMemory, { type MemoryUpdate } from './mem';
 

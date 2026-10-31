@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import once, { OnceConsumedError } from '../../once';
+import once, { OnceConsumedError } from '../once';
 
 describe('once', () => {
     it('forwards arguments and the return value, then throws a distinct error', () => {
