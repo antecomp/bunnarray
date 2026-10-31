@@ -1,10 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { createVM, type Emission } from '@bunnarray/vm';
+import { createVM, type Emission, type Pause, type PauseBody } from '@bunnarray/vm';
 import { build } from '../index';
+
+function capture(pauses: Pause[]) {
+    return <K extends Pause['kind']>(kind: K): PauseBody<K> => {
+        const latest = pauses[pauses.length - 1];
+        expect(latest?.kind).toBe(kind);
+        return latest as PauseBody<K>;
+    };
+}
 
 describe('compiled programs in the VM', () => {
     it('persists shorthand speakers through choices and stops speaker rotation', () => {
         const emissions: Emission[] = [];
+        const pauses: Pause[] = [];
+        const pause = capture(pauses);
         const vm = createVM(build(`:ALTERNATE Alice; Bob
             Hello.
             |Carol| Choose {
@@ -12,13 +22,18 @@ describe('compiled programs in the VM', () => {
                     Still Carol.
             }
             Still Carol too.
-            || Narration.`), { handler: emission => emissions.push(emission) });
+            || Narration.`), { onEmission: emission => emissions.push(emission), onPause: pause => pauses.push(pause) });
 
-        expect(vm.start().kind).toBe('next');
-        expect(vm.next()).toEqual({ kind: 'select', options: [{ text: 'A | B', id: undefined }] });
-        expect(vm.choose(0).kind).toBe('next');
-        expect(vm.next().kind).toBe('next');
-        expect(vm.next().kind).toBe('end');
+        vm.start();
+        pause('next');
+        pause('next').resume();
+        expect(pause('select')).toEqual({ kind: 'select', options: [{ text: 'A | B', id: undefined }], resume: expect.any(Function) });
+        pause('select').resume(0);
+        pause('next');
+        pause('next').resume();
+        pause('next');
+        pause('next').resume();
+        pause('end');
         expect(emissions.filter(emission => emission.kind === 'say')).toEqual([
             { kind: 'say', text: 'Hello.', speaker: 'Alice' },
             { kind: 'say', text: 'Choose', speaker: 'Carol' },
@@ -40,23 +55,29 @@ describe('compiled programs in the VM', () => {
         expect(restored).toStrictEqual(program);
 
         const emissions: Emission[] = [];
-        const vm = createVM(restored, { handler: emission => emissions.push(emission) });
-        expect(vm.start()).toEqual({ kind: 'yield', identifier: 'inspect', value: undefined });
+        const pauses: Pause[] = [];
+        const pause = capture(pauses);
+        const vm = createVM(restored, { onEmission: emission => emissions.push(emission), onPause: pause => pauses.push(pause) });
+        vm.start();
+        expect(pause('yield')).toEqual({ kind: 'yield', identifier: 'inspect', value: undefined, resume: expect.any(Function) });
         expect(vm.memory.get('name')).toBeUndefined();
-        expect(vm.resume()).toEqual({ kind: 'yield', identifier: 'action', value: 'continue' });
-        expect(vm.resume().kind).toBe('end');
+        pause('yield').resume();
+        expect(pause('yield')).toEqual({ kind: 'yield', identifier: 'action', value: 'continue', resume: expect.any(Function) });
+        pause('yield').resume();
+        pause('end');
         expect(emissions).toEqual([
             { kind: 'memory', key: 'name', prev: undefined, value: 'Rabbit' },
             { kind: 'memory', key: 'name', prev: 'Rabbit', value: undefined },
             { kind: 'signal', identifier: 'opened', value: undefined },
             { kind: 'signal', identifier: 'status', value: 'ready' },
-            { kind: 'say', text: 'Name: ', speaker: null },
-            { kind: 'end' }
+            { kind: 'say', text: 'Name: ', speaker: null }
         ]);
     });
 
     it('runs a compiled choice and rejoins the dialogue', () => {
         const emissions: Emission[] = [];
+        const pauses: Pause[] = [];
+        const pause = capture(pauses);
         const program = build(`Choose {
             ?: Left
                 Left branch
@@ -64,30 +85,36 @@ describe('compiled programs in the VM', () => {
                 Right branch
         }
         After`);
-        const vm = createVM(program, { handler: emission => emissions.push(emission) });
+        const vm = createVM(program, { onEmission: emission => emissions.push(emission), onPause: pause => pauses.push(pause) });
 
-        expect(vm.start()).toEqual({ kind: 'select', options: [
+        vm.start();
+        expect(pause('select')).toEqual({ kind: 'select', options: [
             { text: 'Left', id: undefined }, { text: 'Right', id: undefined }
-        ] });
-        expect(vm.choose(1).kind).toBe('next');
-        expect(vm.next().kind).toBe('end');
+        ], resume: expect.any(Function) });
+        pause('select').resume(1);
+        pause('next');
+        pause('next').resume();
+        pause('end');
         expect(emissions.filter(emission => emission.kind === 'say').map(emission => emission.text))
             .toEqual(['Choose', 'Right branch', 'After']);
     });
 
     it('resumes a compiled yield with updated memory', () => {
         const emissions: Emission[] = [];
+        const pauses: Pause[] = [];
+        const pause = capture(pauses);
         const vm = createVM(build(':YIELD inspect\n[branch]\n[when:key=yes]\nOpened\n[/branch]'), {
-            handler: emission => emissions.push(emission)
+            onEmission: emission => emissions.push(emission), onPause: pause => pauses.push(pause)
         });
 
-        expect(vm.start()).toEqual({ kind: 'yield', identifier: 'inspect', value: undefined });
+        vm.start();
+        expect(pause('yield')).toEqual({ kind: 'yield', identifier: 'inspect', value: undefined, resume: expect.any(Function) });
         vm.memory.set('key', 'yes');
-        expect(vm.resume().kind).toBe('end');
+        pause('yield').resume();
+        pause('end');
         expect(emissions).toEqual([
             { kind: 'memory', key: 'key', prev: undefined, value: 'yes' },
-            { kind: 'say', text: 'Opened', speaker: null },
-            { kind: 'end' }
+            { kind: 'say', text: 'Opened', speaker: null }
         ]);
     });
 });

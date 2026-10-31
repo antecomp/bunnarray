@@ -1,13 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { createVM, type Emission, type Instruction, type VM } from '../index';
+import { createVM, type Emission, type Instruction, type Pause, type PauseBody } from '../index';
 
-function runtime(instructions: Instruction[], initialMemory?: Record<string, string>): { vm: VM; emissions: Emission[] } {
+function runtime(instructions: Instruction[], initialMemory?: Record<string, string>) {
     const emissions: Emission[] = [];
+    const pauses: Pause[] = [];
     const vm = createVM({ version: { major: 1, minor: 0 }, instructions }, {
         memory: initialMemory,
-        onEmission: emission => emissions.push(emission)
+        onEmission: emission => emissions.push(emission),
+        onPause: pause => pauses.push(pause)
     });
-    return { vm, emissions };
+    function pause<K extends Pause['kind']>(kind: K): PauseBody<K> {
+        const latest = pauses[pauses.length - 1];
+        expect(latest?.kind).toBe(kind);
+        return latest as PauseBody<K>;
+    }
+    return { vm, emissions, pauses, pause };
 }
 
 function say(text: string, speaker: string | null = null): Emission {
@@ -25,9 +32,11 @@ describe('VM', () => {
             op: 'SPEAKER', value: null
         }));
         instructions.push({ op: 'END' });
-        const { vm } = runtime(instructions);
-        if (count === 100_000) expect(vm.start().kind).toBe('end');
-        else expect(() => vm.start()).toThrow('Instruction budget (100000) exceeded at pc 100000');
+        const { vm, pause } = runtime(instructions);
+        if (count === 100_000) {
+            vm.start();
+            pause('end');
+        } else expect(() => vm.start()).toThrow('Instruction budget (100000) exceeded at pc 100000');
     });
 
     it('resets the instruction budget when execution resumes', () => {
@@ -35,10 +44,39 @@ describe('VM', () => {
             op: 'SPEAKER', value: null
         }));
         instructions.push({ op: 'YIELD', identifier: 'pause' }, { op: 'JUMP', target: 0 }, { op: 'END' });
-        const { vm } = runtime(instructions);
-        expect(vm.start().kind).toBe('yield');
-        expect(vm.resume().kind).toBe('yield');
-        expect(vm.resume().kind).toBe('yield');
+        const { vm, pause } = runtime(instructions);
+        vm.start();
+        pause('yield');
+        pause('yield').resume();
+        pause('yield');
+        pause('yield').resume();
+        pause('yield');
+    });
+
+    it('synchronously resumes many yields without overflowing the stack (needs a trampoline)', () => {
+        const count = 20_000;
+        const instructions: Instruction[] = Array.from({ length: count }, () => ({
+            op: 'YIELD', identifier: 'automatic'
+        }));
+        instructions.push({ op: 'END' });
+        let resumed = 0;
+        let ended = false;
+        const vm = createVM({ version: { major: 1, minor: 0 }, instructions }, {
+            onEmission: () => {},
+            onPause: pause => {
+                if (pause.kind === 'yield') {
+                    resumed++;
+                    // A host may complete a yield immediately (e.g. an already-cached asset).
+                    // Calling run() recursively for each resume grows the JavaScript stack.
+                    pause.resume();
+                } else if (pause.kind === 'end') ended = true;
+            }
+        });
+
+        // Intentionally red until the VM drives synchronous resumes through a trampoline.
+        expect(() => vm.start()).not.toThrow();
+        expect(resumed).toBe(count);
+        expect(ended).toBe(true);
     });
 
     it.each<{ instructions: Instruction[] }>([
@@ -64,92 +102,108 @@ describe('VM', () => {
     });
 
     it('rejects an out-of-range selected choice target', () => {
-        const { vm } = runtime([
+        const { vm, pause } = runtime([
             { op: 'CHOICE', choices: [{ text: 'Invalid', target: 2 }], fallback: 1 },
             { op: 'END' }
         ]);
-        expect(vm.start().kind).toBe('select');
-        expect(() => vm.choose(0)).toThrow('pc (2) out of program range!');
+        vm.start();
+        pause('select');
+        expect(() => pause('select').resume(0)).toThrow('pc (2) out of program range!');
     });
 
     it('ends an empty program and only starts once', () => {
-        const { vm, emissions } = runtime([{ op: 'END' }]);
-        expect(vm.start().kind).toBe('end');
-        expect(emissions).toEqual([{ kind: 'end' }]);
+        const { vm, emissions, pauses, pause } = runtime([{ op: 'END' }]);
+        expect(pauses).toEqual([]);
+        expect(vm.start()).toBeUndefined();
+        expect(pause('end')).toEqual({ kind: 'end' });
+        expect(pauses).toHaveLength(1);
+        expect(emissions).toEqual([]);
         expect(() => vm.start()).toThrow('VM already started');
     });
 
     it('emits consecutive lines once, pausing before each following line', () => {
-        const { vm, emissions } = runtime([
+        const { vm, emissions, pause } = runtime([
             { op: 'SAY', text: 'First' },
             { op: 'SAY', text: 'Second' },
             { op: 'SAY', text: 'Third' },
             { op: 'END' }
         ]);
-        expect(vm.start().kind).toBe('next');
+        vm.start();
+        pause('next');
         expect(emissions).toEqual([say('First')]);
-        expect(vm.next().kind).toBe('next');
+        pause('next').resume();
+        pause('next');
         expect(emissions).toEqual([say('First'), say('Second')]);
-        expect(vm.next().kind).toBe('end');
-        expect(emissions).toEqual([say('First'), say('Second'), say('Third'), { kind: 'end' }]);
+        pause('next').resume();
+        pause('end');
+        expect(emissions).toEqual([say('First'), say('Second'), say('Third')]);
     });
 
     it('jumps past skipped instructions', () => {
-        const { vm, emissions } = runtime([
+        const { vm, emissions, pause } = runtime([
             { op: 'JUMP', target: 2 },
             { op: 'SAY', text: 'Skipped' },
             { op: 'SAY', text: 'Reached' },
             { op: 'END' }
         ]);
-        expect(vm.start().kind).toBe('end');
-        expect(emissions).toEqual([say('Reached'), { kind: 'end' }]);
+        vm.start();
+        pause('end');
+        expect(emissions).toEqual([say('Reached')]);
     });
 
     it('emits signals without pausing and defers side effects after yields', () => {
-        const { vm, emissions } = runtime([
+        const { vm, emissions, pause } = runtime([
             { op: 'SIGNAL', identifier: 'opened' },
             { op: 'YIELD', identifier: 'action', value: 'front & back' },
             { op: 'SET', identifier: 'done', value: 'yes' },
             { op: 'SIGNAL', identifier: 'closed', value: 'done' },
             { op: 'END' }
         ]);
-        expect(vm.start()).toEqual({ kind: 'yield', identifier: 'action', value: 'front & back' });
+        vm.start();
+        expect(pause('yield')).toEqual({ kind: 'yield', identifier: 'action', value: 'front & back', resume: expect.any(Function) });
         expect(emissions).toEqual([{ kind: 'signal', identifier: 'opened', value: undefined }]);
         expect(vm.memory.get('done')).toBeUndefined();
-        expect(vm.resume().kind).toBe('end');
+        pause('yield').resume();
+        pause('end');
         expect(vm.memory.get('done')).toBe('yes');
-        expect(emissions[emissions.length - 2]).toMatchObject({ kind: 'signal', identifier: 'closed', value: 'done' });
+        expect(emissions[emissions.length - 1]).toMatchObject({ kind: 'signal', identifier: 'closed', value: 'done' });
     });
 
     it('resumes consecutive yields without allowing the next line automatically', () => {
-        const { vm, emissions } = runtime([
+        const { vm, emissions, pause } = runtime([
             { op: 'SAY', text: 'Before' },
             { op: 'YIELD', identifier: 'first' },
             { op: 'YIELD', identifier: 'second' },
             { op: 'SAY', text: 'After' },
             { op: 'END' }
         ]);
-        expect(vm.start()).toEqual({ kind: 'yield', identifier: 'first', value: undefined });
-        expect(vm.resume()).toEqual({ kind: 'yield', identifier: 'second', value: undefined });
-        expect(vm.resume().kind).toBe('next');
+        vm.start();
+        expect(pause('yield')).toEqual({ kind: 'yield', identifier: 'first', value: undefined, resume: expect.any(Function) });
+        pause('yield').resume();
+        expect(pause('yield')).toEqual({ kind: 'yield', identifier: 'second', value: undefined, resume: expect.any(Function) });
+        pause('yield').resume();
+        pause('next');
         expect(emissions.filter(emission => emission.kind === 'say')).toEqual([say('Before')]);
-        expect(vm.next().kind).toBe('end');
+        pause('next').resume();
+        pause('end');
         expect(emissions.filter(emission => emission.kind === 'say')).toEqual([say('Before'), say('After')]);
     });
 
     it('allows the first line after a leading yield', () => {
-        const { vm, emissions } = runtime([
+        const { vm, emissions, pause } = runtime([
             { op: 'YIELD', identifier: 'action' },
             { op: 'SAY', text: 'Hello' },
             { op: 'END' }
         ]);
-        expect(vm.start()).toEqual({ kind: 'yield', identifier: 'action', value: undefined });
-        expect(vm.resume().kind).toBe('end');
+        vm.start();
+        expect(pause('yield')).toEqual({ kind: 'yield', identifier: 'action', value: undefined, resume: expect.any(Function) });
+        pause('yield').resume();
+        pause('end');
         expect(emissions[0]).toEqual(say('Hello'));
     });
 
     it.each([0, 1])('follows visible choice %i and rejoins after the branch', index => {
-        const { vm, emissions } = runtime([
+        const { vm, emissions, pause } = runtime([
             { op: 'SAY', text: 'Pick one' },
             { op: 'CHOICE', choices: [
                 { text: 'Hidden', target: 2, id: 'hidden', condition: { identifier: 'hidden', value: 'yes' } },
@@ -165,20 +219,23 @@ describe('VM', () => {
             { op: 'SAY', text: 'After' },
             { op: 'END' }
         ]);
-        expect(vm.start()).toEqual({ kind: 'select', options: [
+        vm.start();
+        expect(pause('select')).toEqual({ kind: 'select', options: [
             { text: 'Left', id: 'left' },
             { text: 'Right', id: undefined }
-        ] });
+        ], resume: expect.any(Function) });
         expect(emissions).toEqual([say('Pick one')]);
-        expect(() => vm.choose(2)).toThrow('Invalid choice index: 2');
-        expect(vm.choose(index).kind).toBe('next');
+        expect(() => pause('select').resume(2)).toThrow('Invalid choice index: 2');
+        pause('select').resume(index);
+        pause('next');
         expect(emissions[1]).toEqual(say(index === 0 ? 'Left branch' : 'Right branch'));
-        expect(vm.next().kind).toBe('end');
-        expect(emissions.slice(-2)).toEqual([say('After'), { kind: 'end' }]);
+        pause('next').resume();
+        pause('end');
+        expect(emissions[emissions.length - 1]).toEqual(say('After'));
     });
 
     it('evaluates choice conditions after resuming a yield', () => {
-        const { vm, emissions } = runtime([
+        const { vm, emissions, pause } = runtime([
             { op: 'SAY', text: 'Question' },
             { op: 'YIELD', identifier: 'inspect' },
             { op: 'CHOICE', choices: [
@@ -188,16 +245,19 @@ describe('VM', () => {
             { op: 'JUMP', target: 5 },
             { op: 'END' }
         ]);
-        expect(vm.start()).toEqual({ kind: 'yield', identifier: 'inspect', value: undefined });
+        vm.start();
+        expect(pause('yield')).toEqual({ kind: 'yield', identifier: 'inspect', value: undefined, resume: expect.any(Function) });
         vm.memory.set('key', 'yes');
-        expect(vm.resume()).toEqual({ kind: 'select', options: [{ text: 'Unlock', id: undefined }] });
+        pause('yield').resume();
+        expect(pause('select')).toEqual({ kind: 'select', options: [{ text: 'Unlock', id: undefined }], resume: expect.any(Function) });
         expect(emissions[emissions.length - 1]).toEqual({ kind: 'memory', key: 'key', prev: undefined, value: 'yes' });
-        expect(vm.choose(0).kind).toBe('end');
-        expect(emissions[emissions.length - 2]).toEqual(say('Opened'));
+        pause('select').resume(0);
+        pause('end');
+        expect(emissions[emissions.length - 1]).toEqual(say('Opened'));
     });
 
     it('skips empty choices without emitting an option list or repeating the prompt', () => {
-        const { vm, emissions } = runtime([
+        const { vm, emissions, pause } = runtime([
             { op: 'SAY', text: 'Question' },
             { op: 'CHOICE', choices: [
                 { text: 'Hidden', target: 2, condition: { identifier: 'hidden', value: 'yes' } }
@@ -207,41 +267,46 @@ describe('VM', () => {
             { op: 'SAY', text: 'After' },
             { op: 'END' }
         ]);
-        expect(vm.start().kind).toBe('next');
+        vm.start();
+        pause('next');
         expect(emissions).toEqual([say('Question')]);
-        expect(vm.next().kind).toBe('end');
-        expect(emissions).toEqual([say('Question'), say('After'), { kind: 'end' }]);
+        pause('next').resume();
+        pause('end');
+        expect(emissions).toEqual([say('Question'), say('After')]);
     });
 
-    it('rejects actions at the wrong pause and after ending', () => {
-        const { vm } = runtime([
-            { op: 'SAY', text: 'First' },
-            { op: 'SAY', text: 'Second' },
-            { op: 'END' }
-        ]);
-        expect(() => vm.next()).toThrow('not paused');
-        expect(() => vm.choose(0)).toThrow('not paused');
-        expect(() => vm.resume()).toThrow('not paused');
+    it.each(['next', 'yield', 'select'] as const)('consumes each %s resume callback once', kind => {
+        const instructions: Instruction[] = kind === 'next'
+            ? [{ op: 'SAY', text: 'First' }, { op: 'SAY', text: 'Second' }]
+            : kind === 'yield'
+                ? [{ op: 'YIELD', identifier: 'pause' }]
+                : [{ op: 'CHOICE', choices: [{ text: 'Continue', target: 1 }], fallback: 1 }];
+        const { vm, pause } = runtime([...instructions, { op: 'END' }]);
         vm.start();
-        expect(() => vm.choose(0)).toThrow("waiting for 'next'");
-        expect(() => vm.resume()).toThrow("waiting for 'next'");
-        vm.next();
-        expect(() => vm.next()).toThrow("waiting for 'end'");
+        // Retain the callback: the latest pause changes when it is consumed.
+        const current = pause(kind);
+        const resume = () => {
+            if (current.kind === 'select') current.resume(0);
+            else current.resume();
+        };
+        resume();
+        pause('end');
+        expect(resume).toThrow('Callback already consumed');
     });
 
     it('interpolates memory, stores interpolated values, and deletes values', () => {
-        const { vm, emissions } = runtime([
+        const { vm, emissions, pause } = runtime([
             { op: 'SET', identifier: 'greeting', value: 'Hello $name' },
             { op: 'SAY', text: '$greeting $missing' },
             { op: 'SET', identifier: 'name', value: null },
             { op: 'END' }
         ], { name: 'Rabbit' });
-        expect(vm.start().kind).toBe('end');
+        vm.start();
+        pause('end');
         expect(emissions).toEqual([
             { kind: 'memory', key: 'greeting', prev: undefined, value: 'Hello Rabbit' },
             say('Hello Rabbit '),
-            { kind: 'memory', key: 'name', prev: 'Rabbit', value: undefined },
-            { kind: 'end' }
+            { kind: 'memory', key: 'name', prev: 'Rabbit', value: undefined }
         ]);
         expect(vm.memory.get('greeting')).toBe('Hello Rabbit');
         expect(vm.memory.get('name')).toBeUndefined();
@@ -251,6 +316,7 @@ describe('VM', () => {
         const emissions: Emission[] = [];
         const vm = createVM({ version: { major: 1, minor: 0 }, instructions: [{ op: 'END' }] }, {
             memory: { key: 'initial' },
+            onPause: () => {},
             onEmission: emission => {
                 if (emission.kind === 'memory') {
                     expect(vm.memory.get(emission.key)).toBe(emission.value);
@@ -277,22 +343,24 @@ describe('VM', () => {
         { op: 'SPEAKER', value: 'Captain $name$missing' },
         { op: 'ALTERNATE', speakers: ['Captain $name$missing'] }
     ])('interpolates speakers using current memory for each line: %j', instruction => {
-        const { vm, emissions } = runtime([
+        const { vm, emissions, pause } = runtime([
             instruction,
             { op: 'SAY', text: 'One' },
             { op: 'SAY', text: 'Two' },
             { op: 'END' }
         ], { name: 'Alice' });
-        expect(vm.start().kind).toBe('next');
+        vm.start();
+        pause('next');
         vm.memory.set('name', 'Bob');
-        expect(vm.next().kind).toBe('end');
+        pause('next').resume();
+        pause('end');
         expect(emissions.filter(emission => emission.kind === 'say')).toEqual([
             say('One', 'Captain Alice'), say('Two', 'Captain Bob')
         ]);
     });
 
     it('interpolates alternating speakers while preserving narration and single-pass expansion', () => {
-        const { vm, emissions } = runtime([
+        const { vm, emissions, pauses, pause } = runtime([
             { op: 'ALTERNATE', speakers: ['$name', null, '$missing'] },
             { op: 'SAY', text: 'One' },
             { op: 'SAY', text: 'Two' },
@@ -301,15 +369,16 @@ describe('VM', () => {
             { op: 'SAY', text: 'Four' },
             { op: 'END' }
         ], { name: '$other', other: 'Alice' });
-        let wait = vm.start();
-        while (wait.kind === 'next') wait = vm.next();
+        vm.start();
+        while (pauses[pauses.length - 1].kind === 'next') pause('next').resume();
+        pause('end');
         expect(emissions).toEqual([
-            say('One', '$other'), say('Two'), say('Three', ''), say('Four', ''), { kind: 'end' }
+            say('One', '$other'), say('Two'), say('Three', ''), say('Four', '')
         ]);
     });
 
     it('rotates speakers and stops rotation when a speaker is set', () => {
-        const { vm, emissions } = runtime([
+        const { vm, emissions, pauses, pause } = runtime([
             { op: 'ALTERNATE', speakers: ['Alice', 'Bob', null] },
             { op: 'SAY', text: 'One' },
             { op: 'SAY', text: 'Two' },
@@ -321,11 +390,12 @@ describe('VM', () => {
             { op: 'SAY', text: 'Six' },
             { op: 'END' }
         ]);
-        let wait = vm.start();
-        while (wait.kind === 'next') wait = vm.next();
+        vm.start();
+        while (pauses[pauses.length - 1].kind === 'next') pause('next').resume();
+        pause('end');
         expect(emissions).toEqual([
             say('One', 'Alice'), say('Two', 'Bob'), say('Three'), say('Four', 'Alice'),
-            say('Five', 'Carol'), say('Six'), { kind: 'end' }
+            say('Five', 'Carol'), say('Six')
         ]);
     });
 
@@ -334,7 +404,7 @@ describe('VM', () => {
         [{ first: 'no', second: 'yes' }, 'Second'],
         [{ first: 'no', second: 'no' }, 'Fallback']
     ] as const)('runs the first matching branch for %j', (memory, text) => {
-        const { vm, emissions } = runtime([
+        const { vm, emissions, pause } = runtime([
             { op: 'BRANCH', cases: [
                 { condition: { identifier: 'first', value: 'yes' }, target: 1 },
                 { condition: { identifier: 'second', value: 'yes' }, target: 3 }
@@ -346,30 +416,32 @@ describe('VM', () => {
             { op: 'SAY', text: 'Fallback' },
             { op: 'END' }
         ], memory);
-        expect(vm.start().kind).toBe('end');
-        expect(emissions).toEqual([say(text), { kind: 'end' }]);
+        vm.start();
+        pause('end');
+        expect(emissions).toEqual([say(text)]);
     });
 
     it('matches empty memory values in instructions', () => {
-        const emissions: Emission[] = [];
-        const vm = createVM({ version: { major: 1, minor: 0 }, instructions: [
+        const { vm, emissions, pause } = runtime([
             { op: 'BRANCH', cases: [{ condition: { identifier: 'state', value: '' }, target: 1 }], fallback: 2 },
             { op: 'SAY', text: 'Matched' },
             { op: 'END' }
-        ] }, { memory: { state: '' }, onEmission: emission => emissions.push(emission) });
-        expect(vm.start().kind).toBe('end');
-        expect(emissions).toEqual([say('Matched'), { kind: 'end' }]);
+        ], { state: '' });
+        vm.start();
+        pause('end');
+        expect(emissions).toEqual([say('Matched')]);
     });
 
     it.each(['toString', 'constructor', '__proto__'])('matches literal branch value %j', value => {
-        const { vm, emissions } = runtime([
+        const { vm, emissions, pause } = runtime([
             { op: 'BRANCH', cases: [
                 { condition: { identifier: 'state', value }, target: 1 }
             ], fallback: 2 },
             { op: 'SAY', text: 'Matched' },
             { op: 'END' }
         ], { state: value });
-        expect(vm.start().kind).toBe('end');
-        expect(emissions).toEqual([say('Matched'), { kind: 'end' }]);
+        vm.start();
+        pause('end');
+        expect(emissions).toEqual([say('Matched')]);
     });
 });
