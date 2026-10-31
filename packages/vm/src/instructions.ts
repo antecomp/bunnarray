@@ -53,6 +53,7 @@ export type Opcode = Instruction['op'];
 
 export type Operation<O extends Opcode> = Extract<Instruction, { op: O }>;
 
+// TODO RENAME THIS TO SOMETHING MORE UNIQUE AND ORIGINAL.
 /** A compiled BunNarraY program. This is to be passed to the interpreter (createVM) */
 export type Program = {
     instructions: Instruction[]
