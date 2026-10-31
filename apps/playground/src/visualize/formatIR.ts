@@ -1,7 +1,7 @@
-import type { Program } from '@bunnarray/vm';
+import type { BnyProgram } from '@bunnarray/vm';
 
-/** Format a Program as a versioned instruction listing with indented branch targets. */
-export default function formatIR(program: Program): string {
+/** Format a BnyProgram as a versioned instruction listing with indented branch targets. */
+export default function formatIR(program: BnyProgram): string {
     const { major, minor, patch } = program.version;
     const version = `${major}.${minor}${patch === undefined ? '' : `-${patch}`}`;
 

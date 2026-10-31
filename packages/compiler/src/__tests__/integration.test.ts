@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { createVM, type Emission, type Pause, type PauseBody } from '@bunnarray/vm';
+import { createVM, type BnyEmission, type BnyPause, type BnyPauseBody } from '@bunnarray/vm';
 import { build } from '../index';
 
-function capture(pauses: Pause[]) {
-    return <K extends Pause['kind']>(kind: K): PauseBody<K> => {
+function capture(pauses: BnyPause[]) {
+    return <K extends BnyPause['kind']>(kind: K): BnyPauseBody<K> => {
         const latest = pauses[pauses.length - 1];
         expect(latest?.kind).toBe(kind);
-        return latest as PauseBody<K>;
+        return latest as BnyPauseBody<K>;
     };
 }
 
 describe('compiled programs in the VM', () => {
     it('persists shorthand speakers through choices and stops speaker rotation', () => {
-        const emissions: Emission[] = [];
-        const pauses: Pause[] = [];
+        const emissions: BnyEmission[] = [];
+        const pauses: BnyPause[] = [];
         const pause = capture(pauses);
         const vm = createVM(build(`:ALTERNATE Alice; Bob
             Hello.
@@ -54,8 +54,8 @@ describe('compiled programs in the VM', () => {
         const restored = JSON.parse(JSON.stringify(program));
         expect(restored).toStrictEqual(program);
 
-        const emissions: Emission[] = [];
-        const pauses: Pause[] = [];
+        const emissions: BnyEmission[] = [];
+        const pauses: BnyPause[] = [];
         const pause = capture(pauses);
         const vm = createVM(restored, { onEmission: emission => emissions.push(emission), onPause: pause => pauses.push(pause) });
         vm.start();
@@ -75,8 +75,8 @@ describe('compiled programs in the VM', () => {
     });
 
     it('runs a compiled choice and rejoins the dialogue', () => {
-        const emissions: Emission[] = [];
-        const pauses: Pause[] = [];
+        const emissions: BnyEmission[] = [];
+        const pauses: BnyPause[] = [];
         const pause = capture(pauses);
         const program = build(`Choose {
             ?: Left
@@ -100,8 +100,8 @@ describe('compiled programs in the VM', () => {
     });
 
     it('resumes a compiled yield with updated memory', () => {
-        const emissions: Emission[] = [];
-        const pauses: Pause[] = [];
+        const emissions: BnyEmission[] = [];
+        const pauses: BnyPause[] = [];
         const pause = capture(pauses);
         const vm = createVM(build(':YIELD inspect\n[branch]\n[when:key=yes]\nOpened\n[/branch]'), {
             onEmission: emission => emissions.push(emission), onPause: pause => pauses.push(pause)

@@ -1,22 +1,22 @@
 import { DialogueAST, Statement } from './language/ast';
-import type { Instruction, Opcode, Operation, Program } from '@bunnarray/vm';
+import type { BnyInstruction, BnyOpcode, BnyOperation, BnyProgram } from '@bunnarray/vm';
 
-/** Construct an Instruction while lowering the AST. */
-function INS<O extends Opcode>(
+/** Construct a BnyInstruction while lowering the AST. */
+function INS<O extends BnyOpcode>(
     opcode: O,
-    config: Omit<Extract<Instruction, { op: O }>, 'op'>
-): Operation<O> {
-    return { op: opcode, ...config } as Operation<O>;
+    config: Omit<Extract<BnyInstruction, { op: O }>, 'op'>
+): BnyOperation<O> {
+    return { op: opcode, ...config } as BnyOperation<O>;
 }
 
 const UNRESOLVED = -1;
 
-export function lower(ast: DialogueAST): Program {
-    const instructions: Instruction[] = [];
+export function lower(ast: DialogueAST): BnyProgram {
+    const instructions: BnyInstruction[] = [];
     const labels: Record<string, number> = Object.create(null); // <- removes prototype names.
-    const unresolvedGotos: { jump: Operation<'JUMP'>, target: string }[] = [];
+    const unresolvedGotos: { jump: BnyOperation<'JUMP'>, target: string }[] = [];
 
-    const emit = (next: Instruction) => { instructions.push(next); };
+    const emit = (next: BnyInstruction) => { instructions.push(next); };
     const pos = () => instructions.length;
 
     function defineLabel(name: string) {
@@ -52,7 +52,7 @@ export function lower(ast: DialogueAST): Program {
             case 'choice': {
                 const currentChoice = INS('CHOICE', { choices: [], fallback: UNRESOLVED });
                 emit(currentChoice);
-                const exitJumps: Operation<'JUMP'>[] = [];
+                const exitJumps: BnyOperation<'JUMP'>[] = [];
 
                 statement.branches.forEach(branch => {
                     currentChoice.choices.push({
@@ -85,7 +85,7 @@ export function lower(ast: DialogueAST): Program {
             case 'branch': {
                 const currentBranch = INS('BRANCH', { cases: [], fallback: UNRESOLVED });
                 emit(currentBranch);
-                const exitJumps: Operation<'JUMP'>[] = [];
+                const exitJumps: BnyOperation<'JUMP'>[] = [];
 
                 statement.cases.forEach(branchCase => {
                     currentBranch.cases.push({

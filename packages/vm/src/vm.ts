@@ -1,8 +1,8 @@
 import once from './once';
-import type { EqualityCondition, Program, Version } from './instructions';
+import type { BnyEqualityCondition, BnyProgram, BnyVersion } from './instructions';
 import createMemory from './mem';
 import createTrampoline from './trampoline';
-import type { Emission, VM, VMOptions } from './types';
+import type { BnyEmission, BnyVM, BnyVMOptions } from './types';
 
 const INSTRUCTION_BUDGET = 100_000;
 
@@ -10,19 +10,19 @@ const VM_VERSION = {
     major: 1,
     minor: 0,
     patch: ''
-} as const satisfies Version;
+} as const satisfies BnyVersion;
 
-function formatVersion(ver: Version): string {
+function formatVersion(ver: BnyVersion): string {
     return `${ver.major}.${ver.minor}`
         + (ver.patch ? '-' + ver.patch : '');
 }
 
-/** Constructs an Emission */
-function EM<E extends Emission['kind']>(
+/** Constructs a BnyEmission */
+function EM<E extends BnyEmission['kind']>(
     kind: E,
-    config: Omit<Extract<Emission, { kind: E }>, 'kind'>
-): Extract<Emission, { kind: E }> {
-    return { kind, ...config } as Extract<Emission, { kind: E }>;
+    config: Omit<Extract<BnyEmission, { kind: E }>, 'kind'>
+): Extract<BnyEmission, { kind: E }> {
+    return { kind, ...config } as Extract<BnyEmission, { kind: E }>;
 }
 
 /**
@@ -34,13 +34,13 @@ function EM<E extends Emission['kind']>(
  * @param options Runtime configuration including the emission handler and initial memory.
  */
 export function createVM(
-    program: Program,
+    program: BnyProgram,
     {
         onEmission: emit,
         onPause: pause,
         memory: initialMemory
-    }: VMOptions
-): VM {
+    }: BnyVMOptions
+): BnyVM {
     if (program.version.major !== VM_VERSION.major)
         throw new Error(
             `Program version ${formatVersion(program.version)} `
@@ -78,7 +78,7 @@ export function createVM(
         );
     }
 
-    function matches(condition: EqualityCondition): boolean {
+    function matches(condition: BnyEqualityCondition): boolean {
         return memory.get(condition.identifier) === condition.value;
     }
 

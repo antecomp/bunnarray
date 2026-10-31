@@ -1,16 +1,16 @@
-export type EqualityCondition = {
+export type BnyEqualityCondition = {
     identifier: string;
     value: string;
 };
 
-export type Instruction =
+export type BnyInstruction =
     | { op: 'SAY'; text: string }
     | {
         op: 'CHOICE';
         choices: {
             text: string;
             target: number;
-            condition?: EqualityCondition;
+            condition?: BnyEqualityCondition;
             id?: string;
         }[];
         fallback: number;
@@ -18,7 +18,7 @@ export type Instruction =
     | {
         op: 'BRANCH';
         cases: {
-            condition: EqualityCondition;
+            condition: BnyEqualityCondition;
             target: number;
         }[];
         fallback: number;
@@ -49,18 +49,17 @@ export type Instruction =
     }
     | { op: 'END' };
 
-export type Opcode = Instruction['op'];
+export type BnyOpcode = BnyInstruction['op'];
 
-export type Operation<O extends Opcode> = Extract<Instruction, { op: O }>;
+export type BnyOperation<O extends BnyOpcode> = Extract<BnyInstruction, { op: O }>;
 
-// TODO RENAME THIS TO SOMETHING MORE UNIQUE AND ORIGINAL.
 /** A compiled BunNarraY program. This is to be passed to the interpreter (createVM) */
-export type Program = {
-    instructions: Instruction[];
-    version: Version;
+export type BnyProgram = {
+    instructions: BnyInstruction[];
+    version: BnyVersion;
 };
 
-export type Version = {
+export type BnyVersion = {
     major: number;
     minor: number;
     patch?: string;

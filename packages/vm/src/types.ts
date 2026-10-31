@@ -1,8 +1,8 @@
 import type createMemory from './mem';
-import type { MemoryUpdate } from './mem';
+import type { BnyMemoryUpdate } from './mem';
 
 /** A selectable option shown to the player. */
-export type Option = { text: string; id?: string };
+export type BnyOption = { text: string; id?: string };
 
 /**
  * A single event emitted by the virtual machine while running a program.
@@ -10,38 +10,38 @@ export type Option = { text: string; id?: string };
  * The VM emits these values to let the host application render dialogue,
  * update memory, or react to signals.
  */
-export type Emission =
+export type BnyEmission =
     | { kind: 'say'; text: string; speaker: string | null }
-    | ({ kind: 'memory' } & MemoryUpdate)
+    | ({ kind: 'memory' } & BnyMemoryUpdate)
     | { kind: 'signal'; identifier: string; value: string | undefined };
 
-export type EmissionKind = Emission['kind'];
-export type EmissionBody<K extends EmissionKind> = Extract<Emission, { kind: K }>;
-export type EmissionHandler = (emission: Emission) => void;
+export type BnyEmissionKind = BnyEmission['kind'];
+export type BnyEmissionBody<K extends BnyEmissionKind> = Extract<BnyEmission, { kind: K }>;
+export type BnyEmissionHandler = (emission: BnyEmission) => void;
 
-export type Pause =
+export type BnyPause =
     | { kind: 'next'; resume: VoidFunction }
-    | { kind: 'select'; options: Option[]; resume: (index: number) => void }
+    | { kind: 'select'; options: BnyOption[]; resume: (index: number) => void }
     | { kind: 'yield'; identifier: string; value: string | undefined; resume: VoidFunction }
     | { kind: 'end' };
 
-export type PauseKind = Pause['kind'];
-export type PauseBody<K extends PauseKind> = Extract<Pause, { kind: K }>;
-export type PauseHandler = (pause: Pause) => void;
+export type BnyPauseKind = BnyPause['kind'];
+export type BnyPauseBody<K extends BnyPauseKind> = Extract<BnyPause, { kind: K }>;
+export type BnyPauseHandler = (pause: BnyPause) => void;
 
 /**
  * Configuration used to create a VM instance.
  */
-export type VMOptions = {
+export type BnyVMOptions = {
     memory?: Record<string, string>;
-    onEmission: EmissionHandler;
-    onPause: PauseHandler;
+    onEmission: BnyEmissionHandler;
+    onPause: BnyPauseHandler;
 };
 
 /**
  * Runtime interface for driving a compiled instruction program.
  */
-export type VM = {
+export type BnyVM = {
     memory: ReturnType<typeof createMemory>;
     start: VoidFunction;
 };

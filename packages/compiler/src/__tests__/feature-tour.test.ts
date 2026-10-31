@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { createVM, type Emission, type Pause } from '@bunnarray/vm';
+import { createVM, type BnyEmission, type BnyPause } from '@bunnarray/vm';
 import { build } from '../index';
 import source from '../../../../examples/feature-tour.bny?raw';
 
-function play(picks: string[]): { emissions: Emission[]; pauses: Pause[] } {
-    const emissions: Emission[] = [];
-    const pauses: Pause[] = [];
+function play(picks: string[]): { emissions: BnyEmission[]; pauses: BnyPause[] } {
+    const emissions: BnyEmission[] = [];
+    const pauses: BnyPause[] = [];
     const vm = createVM(build(source), {
         onEmission: emission => emissions.push(emission),
         onPause: pause => pauses.push(pause)

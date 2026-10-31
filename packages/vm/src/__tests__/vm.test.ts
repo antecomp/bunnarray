@@ -1,23 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { createVM, type Emission, type Instruction, type Pause, type PauseBody } from '../index';
+import { createVM, type BnyEmission, type BnyInstruction, type BnyPause, type BnyPauseBody } from '../index';
 
-function runtime(instructions: Instruction[], initialMemory?: Record<string, string>) {
-    const emissions: Emission[] = [];
-    const pauses: Pause[] = [];
+function runtime(instructions: BnyInstruction[], initialMemory?: Record<string, string>) {
+    const emissions: BnyEmission[] = [];
+    const pauses: BnyPause[] = [];
     const vm = createVM({ version: { major: 1, minor: 0 }, instructions }, {
         memory: initialMemory,
         onEmission: emission => emissions.push(emission),
         onPause: pause => pauses.push(pause)
     });
-    function pause<K extends Pause['kind']>(kind: K): PauseBody<K> {
+    function pause<K extends BnyPause['kind']>(kind: K): BnyPauseBody<K> {
         const latest = pauses[pauses.length - 1];
         expect(latest?.kind).toBe(kind);
-        return latest as PauseBody<K>;
+        return latest as BnyPauseBody<K>;
     }
     return { vm, emissions, pauses, pause };
 }
 
-function say(text: string, speaker: string | null = null): Emission {
+function say(text: string, speaker: string | null = null): BnyEmission {
     return { kind: 'say', text, speaker };
 }
 
@@ -28,7 +28,7 @@ describe('VM', () => {
     });
 
     it.each([100_000, 100_001])('enforces the instruction budget for a program of %i instructions', count => {
-        const instructions: Instruction[] = Array.from({ length: count - 1 }, () => ({
+        const instructions: BnyInstruction[] = Array.from({ length: count - 1 }, () => ({
             op: 'SPEAKER', value: null
         }));
         instructions.push({ op: 'END' });
@@ -40,7 +40,7 @@ describe('VM', () => {
     });
 
     it('resets the instruction budget when execution resumes', () => {
-        const instructions: Instruction[] = Array.from({ length: 60_000 }, () => ({
+        const instructions: BnyInstruction[] = Array.from({ length: 60_000 }, () => ({
             op: 'SPEAKER', value: null
         }));
         instructions.push({ op: 'YIELD', identifier: 'pause' }, { op: 'JUMP', target: 0 }, { op: 'END' });
@@ -55,7 +55,7 @@ describe('VM', () => {
 
     it('synchronously resumes many yields without overflowing the stack (needs a trampoline)', () => {
         const count = 20_000;
-        const instructions: Instruction[] = Array.from({ length: count }, () => ({
+        const instructions: BnyInstruction[] = Array.from({ length: count }, () => ({
             op: 'YIELD', identifier: 'automatic'
         }));
         instructions.push({ op: 'END' });
@@ -79,7 +79,7 @@ describe('VM', () => {
         expect(ended).toBe(true);
     });
 
-    it.each<{ instructions: Instruction[] }>([
+    it.each<{ instructions: BnyInstruction[] }>([
         { instructions: [] },
         { instructions: [{ op: 'SAY', text: 'Missing END' }] },
         { instructions: [{ op: 'END' }, { op: 'SAY', text: 'After END' }] }
@@ -92,7 +92,7 @@ describe('VM', () => {
         expect(() => vm.start()).toThrow(`pc (${target}) out of program range!`);
     });
 
-    it.each<Instruction>([
+    it.each<BnyInstruction>([
         { op: 'BRANCH', cases: [{ condition: { identifier: 'state', value: 'yes' }, target: 2 }], fallback: 1 },
         { op: 'BRANCH', cases: [], fallback: 2 },
         { op: 'CHOICE', choices: [], fallback: 2 }
@@ -276,7 +276,7 @@ describe('VM', () => {
     });
 
     it.each(['next', 'yield', 'select'] as const)('consumes each %s resume callback once', kind => {
-        const instructions: Instruction[] = kind === 'next'
+        const instructions: BnyInstruction[] = kind === 'next'
             ? [{ op: 'SAY', text: 'First' }, { op: 'SAY', text: 'Second' }]
             : kind === 'yield'
                 ? [{ op: 'YIELD', identifier: 'pause' }]
@@ -313,7 +313,7 @@ describe('VM', () => {
     });
 
     it('emits host memory writes and deletions after applying them', () => {
-        const emissions: Emission[] = [];
+        const emissions: BnyEmission[] = [];
         const vm = createVM({ version: { major: 1, minor: 0 }, instructions: [{ op: 'END' }] }, {
             memory: { key: 'initial' },
             onPause: () => {},
@@ -339,7 +339,7 @@ describe('VM', () => {
         ]);
     });
 
-    it.each<Instruction>([
+    it.each<BnyInstruction>([
         { op: 'SPEAKER', value: 'Captain $name$missing' },
         { op: 'ALTERNATE', speakers: ['Captain $name$missing'] }
     ])('interpolates speakers using current memory for each line: %j', instruction => {

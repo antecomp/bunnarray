@@ -1,20 +1,20 @@
 export { createVM } from './vm';
 export type {
-    VM,
-    VMOptions,
-    Emission,
-    Option,
-    Pause,
-    EmissionHandler,
-    PauseHandler,
-    PauseBody,
-    EmissionBody
+    BnyVM,
+    BnyVMOptions,
+    BnyEmission,
+    BnyOption,
+    BnyPause,
+    BnyEmissionHandler,
+    BnyPauseHandler,
+    BnyPauseBody,
+    BnyEmissionBody
 } from './types';
 export type {
-    EqualityCondition,
-    Instruction,
-    Opcode,
-    Operation,
-    Program,
-    Version 
+    BnyEqualityCondition,
+    BnyInstruction,
+    BnyOpcode,
+    BnyOperation,
+    BnyProgram,
+    BnyVersion
 } from './instructions';

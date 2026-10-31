@@ -4,11 +4,11 @@ import example from '../../../../examples/example.bny?raw';
 import simple from '../../../../examples/simple.bny?raw';
 import testbranch from '../../../../examples/testbranch.bny?raw';
 import { build } from '../build';
-import type { Instruction } from '@bunnarray/vm';
+import type { BnyInstruction } from '@bunnarray/vm';
 import { DialogueLexer, Text } from '../language/lexer';
 import preprocess from '../language/preprocess';
 
-function expectIR(source: string, instructions: Instruction[]) {
+function expectIR(source: string, instructions: BnyInstruction[]) {
     expect(build(source)).toStrictEqual({ version: { major: 1, minor: 0, patch: 'indev' }, instructions });
 }
 

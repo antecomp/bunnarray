@@ -1,7 +1,7 @@
-import { createVM, type Emission, type Program, type Pause } from '@bunnarray/vm';
+import { createVM, type BnyEmission, type BnyProgram, type BnyPause } from '@bunnarray/vm';
 
 /** Append VM emissions and offer the action required by each pause. */
-export default function runDialogue(program: Program, stack: HTMLDivElement): void {
+export default function runDialogue(program: BnyProgram, stack: HTMLDivElement): void {
     let actionEntry: HTMLDivElement | null = null;
     function appendEntry(text?: string): HTMLDivElement {
         const entry = document.createElement('div');
@@ -16,7 +16,7 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
         return entry;
     }
 
-    function handleEmission(emission: Emission): void {
+    function handleEmission(emission: BnyEmission): void {
         switch (emission.kind) {
             case 'say':
                 actionEntry = appendEntry(`${emission.speaker ?? '(NARRATOR)'}: ${emission.text}`);
@@ -31,7 +31,7 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
         }
     }
 
-    function handlePause(pause: Pause): void {
+    function handlePause(pause: BnyPause): void {
         if (pause.kind === 'end') return;
 
         const actions = document.createElement('div');

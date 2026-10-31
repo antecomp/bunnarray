@@ -1,10 +1,10 @@
-export type MemoryUpdate = {
+export type BnyMemoryUpdate = {
     key: string;
     prev: string | undefined;
     value: string | undefined;
 };
 
-export default function createMemory(onUpdate: (update: MemoryUpdate) => void, init: Record<string, string> = {}) {
+export default function createMemory(onUpdate: (update: BnyMemoryUpdate) => void, init: Record<string, string> = {}) {
     const values = new Map(Object.entries(init));
 
     function set(key: string, value: string) {

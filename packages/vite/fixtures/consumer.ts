@@ -2,15 +2,15 @@
 
 import program from './story.bny';
 import source from './story.bny?raw';
-import { createVM, type Emission, type Program, type Pause } from '@bunnarray/vm';
+import { createVM, type BnyEmission, type BnyProgram, type BnyPause } from '@bunnarray/vm';
 
 // These assignments also check the published import declarations with tsc.
-export const story: Program = program;
+export const story: BnyProgram = program;
 export const rawSource: string = source;
 
 export function run() {
-    const emissions: Emission[] = [];
-    const pauses: Pause[] = [];
+    const emissions: BnyEmission[] = [];
+    const pauses: BnyPause[] = [];
     const vm = createVM(story, {
         onEmission: emission => emissions.push(emission),
         onPause: pause => pauses.push(pause)
