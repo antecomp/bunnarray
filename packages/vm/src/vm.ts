@@ -1,6 +1,7 @@
 import once from './once';
 import type { EqualityCondition, Operation, Program, Version } from './instructions';
 import createMemory, { type MemoryUpdate } from './mem';
+import createTrampoline from './trampoline';
 
 const INSTRUCTION_BUDGET = 100_000;
 
@@ -108,6 +109,7 @@ export function createVM(
     let alternateSpeakers: (string | null)[] = [];
     let nextAlternate = 0;
 
+    const schedule = createTrampoline();
 
     // --- util ---
     function interpolate(text: string): string {
@@ -180,17 +182,17 @@ export function createVM(
                         kind: 'yield',
                         identifier: ins.identifier,
                         value: ins.value,
-                        resume: once(run)
+                        resume: once(() => schedule(run))
                     })
 
                 case 'SAY':
                     // Pause *before* execution.
                     if (!canExecSay) return pause({
                         kind: 'next',
-                        resume: once(() => {
+                        resume: once(() => schedule(() => {
                             canExecSay = true;
                             run();
-                        })
+                        }))
                     })
                     canExecSay = false;
                     emit(EM('say', {
@@ -208,21 +210,21 @@ export function createVM(
                         pc = ins.fallback;
                         continue;
                     }
-                    const select = once((choice: Choice) => {
+                    const select = once((choice: Choice) => schedule(() => {
                         pc = choice.target;
                         canExecSay = true;
                         run()
-                    });
+                    }));
 
                     return pause({
                         kind: 'select',
-                        options: choices.map(({text, id}) => ({text, id})),
+                        options: choices.map(({ text, id }) => ({ text, id })),
                         resume(index) {
                             const choice = Number.isInteger(index)
                                 ? choices[index]
                                 : undefined;
                             if (!choice)
-                                throw new Error (`Invalid choice index: ${index}`);
+                                throw new Error(`Invalid choice index: ${index}`);
 
                             select(choice);
                         }
@@ -230,7 +232,7 @@ export function createVM(
                 }
 
                 case 'END':
-                    return pause({kind: 'end'});
+                    return pause({ kind: 'end' });
 
                 default:
                     const exhaustive: never = ins;
@@ -242,9 +244,9 @@ export function createVM(
     return {
         memory,
 
-        start: once(() => {
+        start: once(() => schedule(() => {
             canExecSay = true;
             run();
-        }, 'VM already started!')
+        }), 'VM already started!')
     };
 }
