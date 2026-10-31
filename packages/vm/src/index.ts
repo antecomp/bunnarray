@@ -11,7 +11,7 @@ export type {
     BnyEmissionBody
 } from './types';
 export type {
-    BnyEqualityCondition,
+    BnyCondition,
     BnyInstruction,
     BnyOpcode,
     BnyOperation,

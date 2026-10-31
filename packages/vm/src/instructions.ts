@@ -1,4 +1,4 @@
-export type BnyEqualityCondition = {
+export type BnyCondition = {
     identifier: string;
     value: string;
 };
@@ -10,7 +10,7 @@ export type BnyInstruction =
         choices: {
             text: string;
             target: number;
-            condition?: BnyEqualityCondition;
+            condition?: BnyCondition;
             id?: string;
         }[];
         fallback: number;
@@ -18,7 +18,7 @@ export type BnyInstruction =
     | {
         op: 'BRANCH';
         cases: {
-            condition: BnyEqualityCondition;
+            condition: BnyCondition;
             target: number;
         }[];
         fallback: number;

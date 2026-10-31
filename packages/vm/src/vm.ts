@@ -1,5 +1,5 @@
 import once from './once';
-import type { BnyEqualityCondition, BnyProgram, BnyVersion } from './instructions';
+import type { BnyCondition, BnyProgram, BnyVersion } from './instructions';
 import createMemory from './mem';
 import createTrampoline from './trampoline';
 import type { BnyEmission, BnyVM, BnyVMOptions } from './types';
@@ -78,7 +78,7 @@ export function createVM(
         );
     }
 
-    function matches(condition: BnyEqualityCondition): boolean {
+    function matches(condition: BnyCondition): boolean {
         return memory.get(condition.identifier) === condition.value;
     }
 
