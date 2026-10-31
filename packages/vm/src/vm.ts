@@ -1,5 +1,5 @@
 import once from './once';
-import type { EqualityCondition, Operation, Program, Version } from './instructions';
+import type { EqualityCondition, Program, Version } from './instructions';
 import createMemory, { type MemoryUpdate } from './mem';
 import createTrampoline from './trampoline';
 
@@ -16,9 +16,7 @@ function formatVersion(ver: Version): string {
         + (ver.patch ? '-' + ver.patch : '');
 }
 
-/**
- * A selectable option shown to the player.
- */
+/** A selectable option shown to the player. */
 export type Option = { text: string; id?: string };
 
 /**
@@ -34,6 +32,7 @@ export type Emission =
 
 export type EmissionKind = Emission['kind'];
 export type EmissionBody<K extends EmissionKind> = Extract<Emission, { kind: K }>
+export type EmissionHandler = (emission: Emission) => void;
 
 /** Constructs an Emission */
 function EM<E extends Emission['kind']>(
@@ -43,10 +42,6 @@ function EM<E extends Emission['kind']>(
     return { kind, ...config } as Extract<Emission, { kind: E }>;
 }
 
-export type EmissionHandler = (emission: Emission) => void;
-export type Choice = Operation<'CHOICE'>['choices'][number];
-
-
 export type Pause =
     | { kind: 'next', resume: VoidFunction }
     | { kind: 'select', options: Option[], resume: (index: number) => void }
@@ -55,7 +50,6 @@ export type Pause =
 
 export type PauseKind = Pause['kind'];
 export type PauseBody<K extends PauseKind> = Extract<Pause, { kind: K }>
-
 export type PauseHandler = (pause: Pause) => void;
 
 /**
@@ -220,7 +214,7 @@ export function createVM(
                         pc = ins.fallback;
                         continue;
                     }
-                    const select = continuation((choice: Choice) => {
+                    const select = continuation((choice: typeof choices[number]) => {
                         pc = choice.target;
                         canExecSay = true;
                         run();
