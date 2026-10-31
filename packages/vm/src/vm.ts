@@ -185,7 +185,6 @@ export function createVM(
 
                 case 'SAY':
                     // Pause *before* execution.
-                    //if (!canExecSay) return stopWith('next', {});
                     if (!canExecSay) return pause({
                         kind: 'next',
                         resume: once(() => {
