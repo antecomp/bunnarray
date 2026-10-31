@@ -112,6 +112,16 @@ export function createVM(
     const schedule = createTrampoline();
 
     // --- util ---
+    function continuation<T extends unknown[]>(
+        fn: (...args: T) => void,
+        message?: string
+    ): (...args: T) => void {
+        return once(
+            (...args: T) => schedule(() => fn(...args)),
+            message
+        );
+    }
+
     function interpolate(text: string): string {
         return text.replace(
             /\$([A-Za-z_][A-Za-z0-9_]*)/g,
@@ -182,17 +192,17 @@ export function createVM(
                         kind: 'yield',
                         identifier: ins.identifier,
                         value: ins.value,
-                        resume: once(() => schedule(run))
+                        resume: continuation(run)
                     })
 
                 case 'SAY':
                     // Pause *before* execution.
                     if (!canExecSay) return pause({
                         kind: 'next',
-                        resume: once(() => schedule(() => {
+                        resume: continuation(() => {
                             canExecSay = true;
                             run();
-                        }))
+                        })
                     })
                     canExecSay = false;
                     emit(EM('say', {
@@ -210,11 +220,11 @@ export function createVM(
                         pc = ins.fallback;
                         continue;
                     }
-                    const select = once((choice: Choice) => schedule(() => {
+                    const select = continuation((choice: Choice) => {
                         pc = choice.target;
                         canExecSay = true;
-                        run()
-                    }));
+                        run();
+                    });
 
                     return pause({
                         kind: 'select',
@@ -244,9 +254,6 @@ export function createVM(
     return {
         memory,
 
-        start: once(() => schedule(() => {
-            canExecSay = true;
-            run();
-        }), 'VM already started!')
+        start: continuation(run, 'VM already started!')
     };
 }
