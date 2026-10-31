@@ -31,6 +31,9 @@ export type Emission =
     | { kind: 'signal'; identifier: string; value: string | undefined }
     | { kind: 'end' };
 
+export type EmissionKind = Emission['kind'];
+export type EmissionBody<K extends EmissionKind> = Extract<Emission, {kind: K}>
+
 /** Constructs an Emission */
 function EM<E extends Emission['kind']>(
     kind: E,
@@ -54,6 +57,7 @@ export type Wait =
     | { kind: 'end' };
 
 export type WaitKind = Wait['kind'];
+export type WaitBody<K extends WaitKind> = Extract<Wait, {kind: K}>
 
 export type EmissionHandler = (emission: Emission) => void;
 export type Choice = Operation<'CHOICE'>['choices'][number];
