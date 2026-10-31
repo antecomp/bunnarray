@@ -19,7 +19,7 @@ describe('@bunnarray/vite', () => {
             expect(story.version.major).toBe(1);
             expect(rawSource).toBe('Hello from a .bny import.\n');
             expect(run()).toEqual({
-                wait: 'end',
+                wait: { kind: 'end' },
                 emissions: [
                     { kind: 'say', text: 'Hello from a .bny import.', speaker: null },
                     { kind: 'end' }

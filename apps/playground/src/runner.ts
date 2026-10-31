@@ -1,10 +1,8 @@
-import { createVM, type Emission, type Option, type Program, type Wait } from '@bunnarray/vm';
+import { createVM, type Emission, type Program, type Wait } from '@bunnarray/vm';
 
 /** Append VM emissions and offer the action required by each pause. */
 export default function runDialogue(program: Program, stack: HTMLDivElement): void {
     let actionEntry: HTMLDivElement | null = null;
-    let options: Option[] = [];
-
     function appendEntry(text?: string): HTMLDivElement {
         const entry = document.createElement('div');
         entry.className = 'dialogue-entry';
@@ -26,17 +24,10 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
             case 'memory':
                 appendEntry(`Memory changed: ${emission.key}: ${JSON.stringify(emission.prev) ?? '(unset)'} → ${JSON.stringify(emission.value) ?? '(unset)'}`);
                 break;
-            case 'signal':
-            case 'yield': {
-                const label = emission.kind === 'signal' ? 'Signal' : 'Yield';
-                const entry = appendEntry(`${label} emitted: ${emission.identifier}${emission.value === undefined ? '' : `: ${emission.value}`}`);
-                if (emission.kind === 'yield') actionEntry = entry;
+            case 'signal': {
+                appendEntry(`Signal emitted: ${emission.identifier}${emission.value === undefined ? '' : `: ${emission.value}`}`);
                 break;
             }
-            case 'options':
-                options = emission.options;
-                actionEntry ??= appendEntry();
-                break;
             case 'end':
                 break;
         }
@@ -46,9 +37,8 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
 
     function advance(run: () => Wait): void {
         actionEntry = null;
-        options = [];
         const wait = run();
-        if (wait === 'end') return;
+        if (wait.kind === 'end') return;
 
         const actions = document.createElement('div');
         actions.className = 'dialogue-actions';
@@ -70,10 +60,17 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
             actions.append(button);
         }
 
-        if (wait === 'select') {
-            options.forEach((option, index) => addButton(option.text, () => vm.choose(index)));
-        } else {
-            addButton('Continue', wait === 'next' ? () => vm.next() : () => vm.resume());
+        switch (wait.kind) {
+            case 'select':
+                wait.options.forEach((option, index) => addButton(option.text, () => vm.choose(index)));
+                break;
+            case 'next':
+                addButton('Continue', () => vm.next());
+                break;
+            case 'yield':
+                actionEntry = appendEntry(`Yield: ${wait.identifier}${wait.value === undefined ? '' : `: ${wait.value}`}`);
+                addButton('Continue', () => vm.resume());
+                break;
         }
 
         (actionEntry ?? appendEntry()).append(actions);
