@@ -1,7 +1,8 @@
 import once from './once';
 import type { EqualityCondition, Program, Version } from './instructions';
-import createMemory, { type MemoryUpdate } from './mem';
+import createMemory from './mem';
 import createTrampoline from './trampoline';
+import type { Emission, VM, VMOptions } from './types';
 
 const INSTRUCTION_BUDGET = 100_000;
 
@@ -16,24 +17,6 @@ function formatVersion(ver: Version): string {
         + (ver.patch ? '-' + ver.patch : '');
 }
 
-/** A selectable option shown to the player. */
-export type Option = { text: string; id?: string };
-
-/**
- * A single event emitted by the virtual machine while running a program.
- *
- * The VM emits these values to let the host application render dialogue,
- * update memory, or react to signals.
- */
-export type Emission =
-    | { kind: 'say'; text: string; speaker: string | null }
-    | ({ kind: 'memory' } & MemoryUpdate)
-    | { kind: 'signal'; identifier: string; value: string | undefined }
-
-export type EmissionKind = Emission['kind'];
-export type EmissionBody<K extends EmissionKind> = Extract<Emission, { kind: K }>
-export type EmissionHandler = (emission: Emission) => void;
-
 /** Constructs an Emission */
 function EM<E extends Emission['kind']>(
     kind: E,
@@ -42,36 +25,9 @@ function EM<E extends Emission['kind']>(
     return { kind, ...config } as Extract<Emission, { kind: E }>;
 }
 
-export type Pause =
-    | { kind: 'next', resume: VoidFunction }
-    | { kind: 'select', options: Option[], resume: (index: number) => void }
-    | { kind: 'yield', identifier: string, value: string | undefined, resume: VoidFunction }
-    | { kind: 'end' }
-
-export type PauseKind = Pause['kind'];
-export type PauseBody<K extends PauseKind> = Extract<Pause, { kind: K }>
-export type PauseHandler = (pause: Pause) => void;
-
-/**
- * Configuration used to create a VM instance.
- */
-export type VMOptions = {
-    memory?: Record<string, string>
-    onEmission: EmissionHandler
-    onPause: PauseHandler
-};
-
-/**
- * Runtime interface for driving a compiled instruction program.
- */
-export type VM = {
-    memory: ReturnType<typeof createMemory>;
-    start: VoidFunction;
-};
-
 /**
  * Creates a bunnarray virtual machine.
- * 
+ *
  * See project README for usage instructions.
  *
  * @param program The program (compiled by @bunnarray/compiler) to execute.
@@ -97,7 +53,7 @@ export function createVM(
     const memory = createMemory(update => emit(EM('memory', update)), initialMemory);
 
     let pc = 0;
-    let canExecSay = true;              // allow printing the say and continue (next or automatically)
+    let canExecSay = true; // allow printing the say and continue (next or automatically)
 
     let speaker: string | null = null;
     let alternateSpeakers: (string | null)[] = [];
@@ -105,7 +61,6 @@ export function createVM(
 
     const schedule = createTrampoline();
 
-    // --- util ---
     function continuation<T extends unknown[]>(
         fn: (...args: T) => void,
         message?: string
@@ -132,6 +87,7 @@ export function createVM(
             speaker = alternateSpeakers[nextAlternate];
             nextAlternate = (nextAlternate + 1) % alternateSpeakers.length;
         }
+
         return speaker === null ? null : interpolate(speaker);
     }
 
@@ -187,17 +143,20 @@ export function createVM(
                         identifier: ins.identifier,
                         value: ins.value,
                         resume: continuation(run)
-                    })
+                    });
 
                 case 'SAY':
                     // Pause *before* execution.
-                    if (!canExecSay) return pause({
-                        kind: 'next',
-                        resume: continuation(() => {
-                            canExecSay = true;
-                            run();
-                        })
-                    })
+                    if (!canExecSay) {
+                        return pause({
+                            kind: 'next',
+                            resume: continuation(() => {
+                                canExecSay = true;
+                                run();
+                            })
+                        });
+                    }
+
                     canExecSay = false;
                     emit(EM('say', {
                         text: interpolate(ins.text),
@@ -210,10 +169,12 @@ export function createVM(
                     const choices = ins.choices.filter(
                         choice => choice.condition === undefined || matches(choice.condition)
                     );
+
                     if (choices.length === 0) {
                         pc = ins.fallback;
                         continue;
                     }
+
                     const select = continuation((choice: typeof choices[number]) => {
                         pc = choice.target;
                         canExecSay = true;
@@ -232,7 +193,7 @@ export function createVM(
 
                             select(choice);
                         }
-                    })
+                    });
                 }
 
                 case 'END':
@@ -247,7 +208,6 @@ export function createVM(
 
     return {
         memory,
-
         start: continuation(run, 'VM already started!')
     };
 }

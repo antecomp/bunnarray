@@ -15,5 +15,5 @@ export default function createTrampoline(): ScheduleFunction {
             busy = false;
             queue.length = 0; // wipe queue
         }
-    }
+    };
 }

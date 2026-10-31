@@ -4,40 +4,40 @@ export type EqualityCondition = {
 };
 
 export type Instruction =
-    | { op: 'SAY', text: string }
+    | { op: 'SAY'; text: string }
     | {
-        op: 'CHOICE',
+        op: 'CHOICE';
         choices: {
             text: string;
             target: number;
             condition?: EqualityCondition;
             id?: string;
-        }[]
+        }[];
         fallback: number;
     }
     | {
-        op: 'BRANCH',
+        op: 'BRANCH';
         cases: {
             condition: EqualityCondition;
-            target: number
-        }[]
-        fallback: number
+            target: number;
+        }[];
+        fallback: number;
     }
     | { op: 'JUMP'; target: number }
     | {
         op: 'SET';
-        identifier: string,
-        value: string | null
+        identifier: string;
+        value: string | null;
     }
     | {
         op: 'SIGNAL';
-        identifier: string,
-        value?: string
+        identifier: string;
+        value?: string;
     }
     | {
         op: 'YIELD';
-        identifier: string,
-        value?: string
+        identifier: string;
+        value?: string;
     }
     | {
         op: 'SPEAKER';
@@ -56,8 +56,8 @@ export type Operation<O extends Opcode> = Extract<Instruction, { op: O }>;
 // TODO RENAME THIS TO SOMETHING MORE UNIQUE AND ORIGINAL.
 /** A compiled BunNarraY program. This is to be passed to the interpreter (createVM) */
 export type Program = {
-    instructions: Instruction[]
-    version: Version
+    instructions: Instruction[];
+    version: Version;
 };
 
 export type Version = {
