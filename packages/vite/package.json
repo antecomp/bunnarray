@@ -8,7 +8,7 @@
     "directory": "packages/vite"
   },
   "type": "module",
-  "files": ["dist", "client.d.ts"],
+  "files": ["dist", "client.d.ts", "LICENSE"],
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
