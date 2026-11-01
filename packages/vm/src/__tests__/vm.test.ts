@@ -275,7 +275,11 @@ describe('VM', () => {
         expect(emissions).toEqual([say('Question'), say('After')]);
     });
 
-    it.each(['next', 'yield', 'select'] as const)('consumes each %s resume callback once', kind => {
+    it.each([
+        ['next', 'next resume already called'],
+        ['yield', 'yield resume already called'],
+        ['select', 'selection resume already called']
+    ] as const)('consumes each %s resume callback once', (kind, error) => {
         const instructions: BnyInstruction[] = kind === 'next'
             ? [{ op: 'SAY', text: 'First' }, { op: 'SAY', text: 'Second' }]
             : kind === 'yield'
@@ -291,7 +295,7 @@ describe('VM', () => {
         };
         resume();
         pause('end');
-        expect(resume).toThrow('Callback already consumed');
+        expect(resume).toThrow(error);
     });
 
     it('interpolates memory, stores interpolated values, and deletes values', () => {
