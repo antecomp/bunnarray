@@ -3,7 +3,7 @@ import { DialogueLexer } from './language/lexer';
 import parser from './language/parser';
 import visitor from './language/visitor';
 import preprocess from './language/preprocess';
-import type { Program } from '@bunnarray/vm';
+import type { BnyProgram } from '@bunnarray/vm';
 import { lower } from './lower';
 import { CompilerSyntaxError, getLexDiagnostics, getParseDiagnostics } from './syntaxDiagnostics';
 
@@ -15,7 +15,7 @@ import { CompilerSyntaxError, getLexDiagnostics, getParseDiagnostics } from './s
  * @param raw Raw dialogue source.
  * @returns The compiled VM program.
  */
-export function build(raw: string): Program {
+export function build(raw: string): BnyProgram {
     const normalized = preprocess(raw);
     const lex = DialogueLexer.tokenize(normalized);
 

@@ -1,7 +1,7 @@
-import { createVM, type Emission, type Program, type Wait } from '@bunnarray/vm';
+import { createVM, type BnyEmission, type BnyProgram, type BnyPause } from '@bunnarray/vm';
 
 /** Append VM emissions and offer the action required by each pause. */
-export default function runDialogue(program: Program, stack: HTMLDivElement): void {
+export default function runDialogue(program: BnyProgram, stack: HTMLDivElement): void {
     let actionEntry: HTMLDivElement | null = null;
     function appendEntry(text?: string): HTMLDivElement {
         const entry = document.createElement('div');
@@ -16,7 +16,7 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
         return entry;
     }
 
-    function handleEmission(emission: Emission): void {
+    function handleEmission(emission: BnyEmission): void {
         switch (emission.kind) {
             case 'say':
                 actionEntry = appendEntry(`${emission.speaker ?? '(NARRATOR)'}: ${emission.text}`);
@@ -28,24 +28,18 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
                 appendEntry(`Signal emitted: ${emission.identifier}${emission.value === undefined ? '' : `: ${emission.value}`}`);
                 break;
             }
-            case 'end':
-                break;
         }
     }
 
-    const vm = createVM(program, { handler: handleEmission });
-
-    function advance(run: () => Wait): void {
-        actionEntry = null;
-        const wait = run();
-        if (wait.kind === 'end') return;
+    function handlePause(pause: BnyPause): void {
+        if (pause.kind === 'end') return;
 
         const actions = document.createElement('div');
         actions.className = 'dialogue-actions';
         const buttons: HTMLButtonElement[] = [];
         let consumed = false;
 
-        function addButton(label: string, resume: () => Wait): void {
+        function addButton(label: string, resume: () => void): void {
             const button = document.createElement('button');
             button.type = 'button';
             button.textContent = label;
@@ -54,27 +48,29 @@ export default function runDialogue(program: Program, stack: HTMLDivElement): vo
                 consumed = true;
                 buttons.forEach(action => { action.disabled = true; });
                 button.classList.add('is-selected');
-                advance(resume);
+                actionEntry = null;
+                resume();
             });
             buttons.push(button);
             actions.append(button);
         }
 
-        switch (wait.kind) {
+        switch (pause.kind) {
             case 'select':
-                wait.options.forEach((option, index) => addButton(option.text, () => vm.choose(index)));
+                pause.options.forEach((option, index) => addButton(option.text, () => pause.resume(index)));
                 break;
             case 'next':
-                addButton('Continue', () => vm.next());
+                addButton('Continue', pause.resume);
                 break;
             case 'yield':
-                actionEntry = appendEntry(`Yield: ${wait.identifier}${wait.value === undefined ? '' : `: ${wait.value}`}`);
-                addButton('Continue', () => vm.resume());
+                actionEntry = appendEntry(`Yield: ${pause.identifier}${pause.value === undefined ? '' : `: ${pause.value}`}`);
+                addButton('Continue', pause.resume);
                 break;
         }
 
         (actionEntry ?? appendEntry()).append(actions);
     }
 
-    advance(() => vm.start());
+    const vm = createVM(program, { onEmission: handleEmission, onPause: handlePause });
+    vm.start();
 }

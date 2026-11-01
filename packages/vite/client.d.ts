@@ -1,6 +1,6 @@
 declare module '*.bny' {
-    import type { Program } from '@bunnarray/vm';
+    import type { BnyProgram } from '@bunnarray/vm';
 
-    const program: Program;
+    const program: BnyProgram;
     export default program;
 }

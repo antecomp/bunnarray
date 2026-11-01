@@ -1,43 +1,43 @@
-export type EqualityCondition = {
+export type BnyCondition = {
     identifier: string;
     value: string;
 };
 
-export type Instruction =
-    | { op: 'SAY', text: string }
+export type BnyInstruction =
+    | { op: 'SAY'; text: string }
     | {
-        op: 'CHOICE',
+        op: 'CHOICE';
         choices: {
             text: string;
             target: number;
-            condition?: EqualityCondition;
+            condition?: BnyCondition;
             id?: string;
-        }[]
+        }[];
         fallback: number;
     }
     | {
-        op: 'BRANCH',
+        op: 'BRANCH';
         cases: {
-            condition: EqualityCondition;
-            target: number
-        }[]
-        fallback: number
+            condition: BnyCondition;
+            target: number;
+        }[];
+        fallback: number;
     }
     | { op: 'JUMP'; target: number }
     | {
         op: 'SET';
-        identifier: string,
-        value: string | null
+        identifier: string;
+        value: string | null;
     }
     | {
         op: 'SIGNAL';
-        identifier: string,
-        value?: string
+        identifier: string;
+        value?: string;
     }
     | {
         op: 'YIELD';
-        identifier: string,
-        value?: string
+        identifier: string;
+        value?: string;
     }
     | {
         op: 'SPEAKER';
@@ -49,18 +49,17 @@ export type Instruction =
     }
     | { op: 'END' };
 
-export type Opcode = Instruction['op'];
+export type BnyOpcode = BnyInstruction['op'];
 
-export type Operation<O extends Opcode> = Extract<Instruction, { op: O }>;
+export type BnyOperation<O extends BnyOpcode> = Extract<BnyInstruction, { op: O }>;
 
-// TODO RENAME THIS TO SOMETHING MORE UNIQUE AND ORIGINAL.
 /** A compiled BunNarraY program. This is to be passed to the interpreter (createVM) */
-export type Program = {
-    instructions: Instruction[]
-    version: Version
+export type BnyProgram = {
+    instructions: BnyInstruction[];
+    version: BnyVersion;
 };
 
-export type Version = {
+export type BnyVersion = {
     major: number;
     minor: number;
     patch?: string;

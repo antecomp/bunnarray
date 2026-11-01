@@ -22,7 +22,7 @@ For TypeScript projects, add `@bunnarray/vite/client` to `compilerOptions.types`
 }
 ```
 
-Plain `.bny` imports have type `Program` and can be passed directly to the VM:
+Plain `.bny` imports have type `BnyProgram` and can be passed directly to the VM:
 
 ```ts
 import story from './story.bny';
