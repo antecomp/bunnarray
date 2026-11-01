@@ -142,7 +142,7 @@ export function createVM(
                         kind: 'yield',
                         identifier: ins.identifier,
                         value: ins.value,
-                        resume: continuation(run)
+                        resume: continuation(run, 'yield resume already called')
                     });
 
                 case 'SAY':
@@ -153,7 +153,7 @@ export function createVM(
                             resume: continuation(() => {
                                 canExecSay = true;
                                 run();
-                            })
+                            }, 'next resume already called')
                         });
                     }
 
@@ -179,7 +179,7 @@ export function createVM(
                         pc = choice.target;
                         canExecSay = true;
                         run();
-                    });
+                    }, 'selection resume already called');
 
                     return pause({
                         kind: 'select',
