@@ -2,6 +2,11 @@
   "name": "@bunnarray/vite",
   "version": "0.1.1",
   "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antecomp/bunnarray.git",
+    "directory": "packages/vite"
+  },
   "type": "module",
   "files": ["dist", "client.d.ts"],
   "exports": {
