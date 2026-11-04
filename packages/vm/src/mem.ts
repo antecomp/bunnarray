@@ -4,7 +4,18 @@ export type BnyMemoryUpdate = {
     value: string | undefined;
 };
 
-export default function createMemory(onUpdate: (update: BnyMemoryUpdate) => void, init: Record<string, string> = {}) {
+export type BnyMemorySnapshot = Record<string, string>;
+export type BnyMemoryUpdateHandler = (update: BnyMemoryUpdate) => void;
+
+export type BnyMemory = {
+    get: (key: string) => string | undefined;
+    has: (key: string) => boolean;
+    set: (key: string, value: string) => void;
+    delete: (key: string) => boolean;
+    snapshot: () => BnyMemorySnapshot;
+};
+
+export default function createMemory(onUpdate: BnyMemoryUpdateHandler, init: BnyMemorySnapshot = {}): BnyMemory {
     const values = new Map(Object.entries(init));
 
     function set(key: string, value: string) {

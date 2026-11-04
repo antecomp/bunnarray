@@ -1,5 +1,4 @@
-import type createMemory from './mem';
-import type { BnyMemoryUpdate } from './mem';
+import type { BnyMemory, BnyMemorySnapshot, BnyMemoryUpdate } from './mem';
 
 /** A selectable option shown to the player. */
 export type BnyOption = { text: string; id?: string };
@@ -33,7 +32,7 @@ export type BnyPauseHandler = (pause: BnyPause) => void;
  * Configuration used to create a VM instance.
  */
 export type BnyVMOptions = {
-    memory?: Record<string, string>;
+    memory?: BnyMemorySnapshot;
     onEmission: BnyEmissionHandler;
     onPause: BnyPauseHandler;
 };
@@ -42,6 +41,6 @@ export type BnyVMOptions = {
  * Runtime interface for driving a compiled instruction program.
  */
 export type BnyVM = {
-    memory: ReturnType<typeof createMemory>;
+    memory: BnyMemory;
     start: VoidFunction;
 };

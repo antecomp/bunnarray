@@ -8,8 +8,16 @@ export type {
     BnyEmissionHandler,
     BnyPauseHandler,
     BnyPauseBody,
-    BnyEmissionBody
+    BnyEmissionBody,
+    BnyPauseKind,
+    BnyEmissionKind
 } from './types';
+export type {
+    BnyMemory,
+    BnyMemorySnapshot,
+    BnyMemoryUpdate,
+    BnyMemoryUpdateHandler
+} from './mem';
 export type {
     BnyCondition,
     BnyInstruction,
