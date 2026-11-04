@@ -1,6 +1,6 @@
 type ScheduleFunction = (task: VoidFunction) => void;
 
-export default function createTrampoline(): ScheduleFunction {
+export default function createTrampoline(onError: (error: unknown) => void): ScheduleFunction {
     const queue: VoidFunction[] = [];
     let busy = false;
 
@@ -11,6 +11,8 @@ export default function createTrampoline(): ScheduleFunction {
         busy = true; // set busy & execute.
         try {
             for (let next = queue.shift(); next; next = queue.shift()) next();
+        } catch (error) {
+            onError(error);
         } finally {
             busy = false;
             queue.length = 0; // wipe queue

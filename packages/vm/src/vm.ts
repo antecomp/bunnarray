@@ -59,14 +59,23 @@ export function createVM(
     let alternateSpeakers: (string | null)[] = [];
     let nextAlternate = 0;
 
-    const schedule = createTrampoline();
+    let halted = false;
+    const schedule = createTrampoline(error => {
+        halted = true;
+        pause({ kind: 'error', error: error instanceof Error ? error : new Error(String(error)) });
+    });
 
     function continuation<T extends unknown[]>(
         fn: (...args: T) => void,
         message?: string
     ): (...args: T) => void {
         return once(
-            (...args: T) => schedule(() => fn(...args)),
+            (...args: T) => {
+                if (halted) throw new Error('VM has halted');
+                schedule(() => {
+                    if (!halted) fn(...args);
+                });
+            },
             message
         );
     }
@@ -197,6 +206,7 @@ export function createVM(
                 }
 
                 case 'END':
+                    halted = true;
                     return pause({ kind: 'end' });
 
                 default:

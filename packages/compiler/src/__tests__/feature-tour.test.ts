@@ -20,7 +20,8 @@ function play(picks: string[]): { emissions: BnyEmission[]; pauses: BnyPause[] }
             const index = pause.options.findIndex(option => option.id === id);
             if (index < 0) throw new Error(`Option ${id} is unavailable`);
             pause.resume(index);
-        } else pause.resume();
+        } else if (pause.kind === 'error') throw pause.error;
+        else pause.resume();
         pause = pauses[pauses.length - 1];
     }
 

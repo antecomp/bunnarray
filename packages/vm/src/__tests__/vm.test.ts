@@ -23,8 +23,9 @@ function say(text: string, speaker: string | null = null): BnyEmission {
 
 describe('VM', () => {
     it('stops infinite loops when the instruction budget is exceeded', () => {
-        const { vm } = runtime([{ op: 'JUMP', target: 0 }, { op: 'END' }]);
-        expect(() => vm.start()).toThrow('Instruction budget (100000) exceeded at pc 0');
+        const { vm, pause } = runtime([{ op: 'JUMP', target: 0 }, { op: 'END' }]);
+        vm.start();
+        expect(pause('error').error.message).toContain('Instruction budget (100000) exceeded at pc 0');
     });
 
     it.each([100_000, 100_001])('enforces the instruction budget for a program of %i instructions', count => {
@@ -36,7 +37,10 @@ describe('VM', () => {
         if (count === 100_000) {
             vm.start();
             pause('end');
-        } else expect(() => vm.start()).toThrow('Instruction budget (100000) exceeded at pc 100000');
+        } else {
+            vm.start();
+            expect(pause('error').error.message).toContain('Instruction budget (100000) exceeded at pc 100000');
+        }
     });
 
     it('resets the instruction budget when execution resumes', () => {
@@ -88,8 +92,9 @@ describe('VM', () => {
     });
 
     it.each([-1, 2, 100, 0.5, NaN, Infinity])('rejects invalid jump target %s', target => {
-        const { vm } = runtime([{ op: 'JUMP', target }, { op: 'END' }]);
-        expect(() => vm.start()).toThrow(`pc (${target}) out of program range!`);
+        const { vm, pause } = runtime([{ op: 'JUMP', target }, { op: 'END' }]);
+        vm.start();
+        expect(pause('error').error.message).toBe(`pc (${target}) out of program range!`);
     });
 
     it.each<BnyInstruction>([
@@ -97,8 +102,9 @@ describe('VM', () => {
         { op: 'BRANCH', cases: [], fallback: 2 },
         { op: 'CHOICE', choices: [], fallback: 2 }
     ])('rejects out-of-range branch and choice fallbacks: %j', instruction => {
-        const { vm } = runtime([instruction, { op: 'END' }], { state: 'yes' });
-        expect(() => vm.start()).toThrow('pc (2) out of program range!');
+        const { vm, pause } = runtime([instruction, { op: 'END' }], { state: 'yes' });
+        vm.start();
+        expect(pause('error').error.message).toBe('pc (2) out of program range!');
     });
 
     it('rejects an out-of-range selected choice target', () => {
@@ -108,7 +114,73 @@ describe('VM', () => {
         ]);
         vm.start();
         pause('select');
-        expect(() => pause('select').resume(0)).toThrow('pc (2) out of program range!');
+        pause('select').resume(0);
+        expect(pause('error').error.message).toBe('pc (2) out of program range!');
+        expect(() => vm.start()).toThrow('VM already started');
+    });
+
+    it('halts after a runtime error and discards queued resumes', () => {
+        const pauses: BnyPause[] = [];
+        let resume: VoidFunction | undefined;
+        const vm = createVM({ version: { major: 1, minor: 0 }, instructions: [
+            { op: 'YIELD', identifier: 'first' },
+            { op: 'YIELD', identifier: 'second' },
+            { op: 'JUMP', target: 99 },
+            { op: 'END' }
+        ] }, {
+            onEmission: () => {},
+            onPause: current => {
+                pauses.push(current);
+                if (current.kind === 'yield') {
+                    resume = current.resume;
+                    current.resume();
+                }
+            }
+        });
+        vm.start();
+        expect(pauses.map(current => current.kind)).toEqual(['yield', 'yield', 'error']);
+        expect(pauses[2]).toMatchObject({ kind: 'error', error: new Error('pc (99) out of program range!') });
+        expect(() => resume?.()).toThrow('yield resume already called');
+    });
+
+    it('reports host emission errors as terminal pauses', () => {
+        const failure = new Error('render failed');
+        const pauses: BnyPause[] = [];
+        const vm = createVM({ version: { major: 1, minor: 0 }, instructions: [
+            { op: 'SAY', text: 'Hello' }, { op: 'END' }
+        ] }, {
+            onEmission: () => { throw failure; },
+            onPause: current => pauses.push(current)
+        });
+        vm.start();
+        expect(pauses).toEqual([{ kind: 'error', error: failure }]);
+    });
+
+    it('discards a resume queued by a failing pause handler', () => {
+        const failure = new Error('pause failed');
+        const pauses: BnyPause[] = [];
+        let resume: VoidFunction | undefined;
+        const vm = createVM({ version: { major: 1, minor: 0 }, instructions: [
+            { op: 'YIELD', identifier: 'wait' },
+            { op: 'SIGNAL', identifier: 'should-not-run' },
+            { op: 'END' }
+        ] }, {
+            onEmission: () => { throw new Error('queued execution ran'); },
+            onPause: current => {
+                pauses.push(current);
+                if (current.kind === 'yield') {
+                    resume = current.resume;
+                    current.resume();
+                    throw failure;
+                }
+            }
+        });
+        vm.start();
+        expect(pauses).toEqual([
+            expect.objectContaining({ kind: 'yield' }),
+            { kind: 'error', error: failure }
+        ]);
+        expect(() => resume?.()).toThrow('yield resume already called');
     });
 
     it('ends an empty program and only starts once', () => {

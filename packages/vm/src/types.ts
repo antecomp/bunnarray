@@ -22,7 +22,8 @@ export type BnyPause =
     | { kind: 'next'; resume: VoidFunction }
     | { kind: 'select'; options: BnyOption[]; resume: (index: number) => void }
     | { kind: 'yield'; identifier: string; value: string | undefined; resume: VoidFunction }
-    | { kind: 'end' };
+    | { kind: 'end' }
+    | { kind: 'error'; error: Error };
 
 export type BnyPauseKind = BnyPause['kind'];
 export type BnyPauseBody<K extends BnyPauseKind> = Extract<BnyPause, { kind: K }>;

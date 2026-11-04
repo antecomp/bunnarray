@@ -33,6 +33,10 @@ export default function runDialogue(program: BnyProgram, stack: HTMLDivElement):
 
     function handlePause(pause: BnyPause): void {
         if (pause.kind === 'end') return;
+        if (pause.kind === 'error') {
+            appendEntry(`Error: ${pause.error.message}`);
+            return;
+        }
 
         const actions = document.createElement('div');
         actions.className = 'dialogue-actions';
