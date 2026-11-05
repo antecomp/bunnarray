@@ -30,14 +30,16 @@ branch ->
     BranchBlockOpen Newline
     branchCase+
     BranchBlockClose
+    Newline?
 
 branchCase ->
     when Newline? statement*
 
 when -> WhenStatementOpen Identifier WhenEquals Text CloseBracket
+id -> IdBlockOpen Text IdBlockClose
 
 skip ->
-    SkipBlockOpen Text CloseBracket Newline
+    SkipBlockOpen Text CloseBracket Newline?
         statement*
     SkipBlockClose Newline?
 
