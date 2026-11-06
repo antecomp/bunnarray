@@ -98,7 +98,7 @@ Selecting "Good" goes directly to the inner choices. Every `?:` still needs opti
 
 Choice blocks can also follow one another, each with its own options. A bare block after a prompted block presents another choice without speaking a new prompt.
 
-Prefix an option with `[when:identifier=value]` to show it only when that memory value matches. Options without a condition are always shown:
+Prefix an option with `[when:identifier=value]` to show it only when that memory value matches. Use `[when:identifier]` to show it whenever that memory entry exists, including when its value is an empty string. Options without a condition are always shown:
 ```bny
 What should we do? {
     ?: [when:has_key=yes] Open the door
@@ -184,7 +184,7 @@ Use a branch block to choose dialogue based on memory. Cases may check the same 
 [/branch]
 What else would you like to know?
 ```
-Each `[when:identifier=value]` compares the current memory value of `identifier` with the literal string `value`. The **first matching case** runs, even if later conditions also match. After that case, dialogue continues after `[/branch]` unless it uses a goto. If none match, it goes straight to the dialogue after the block. For example, with `dragon=alive` and `reputation=trusted`, the second case runs.
+Each `[when:identifier=value]` compares the current memory value of `identifier` with the literal string `value`. A `[when:identifier]` case matches whenever that memory entry exists, including when its value is an empty string; it stops matching after `:SET identifier` or `vm.memory.delete('identifier')`. The **first matching case** runs, even if later conditions also match. After that case, dialogue continues after `[/branch]` unless it uses a goto. If none match, it goes straight to the dialogue after the block. For example, with `dragon=alive` and `reputation=trusted`, the second case runs.
 
 A branch needs at least one `when` case. Case bodies can be empty and can contain other statements, including nested branches, choices, and gotos. Spaces around the identifier and value are trimmed; use the usual text escapes for literal brackets in a value. The value is compared literally: `$variables` are not expanded in conditions. Set memory before the branch runs with `:SET dragon=slain` or `vm.memory.set('dragon', 'slain')`.
 

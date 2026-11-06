@@ -117,4 +117,50 @@ describe('compiled programs in the VM', () => {
             { kind: 'say', text: 'Opened', speaker: null }
         ]);
     });
+
+    it('matches a value-free when while memory is set, including an empty value', () => {
+        const emissions: BnyEmission[] = [];
+        const pauses: BnyPause[] = [];
+        const vm = createVM(build(`:SET x=hfjkdfsh
+            [branch]
+                [when:x]
+                    Nonempty
+            [/branch]
+            :SET x=$missing
+            [branch]
+                [when:x]
+                    Empty
+            [/branch]
+            :SET x
+            [branch]
+                [when:x]
+                    Hidden
+            [/branch]
+            After`), {
+            onEmission: emission => emissions.push(emission),
+            onPause: pause => {
+                if (pause.kind === 'next') pause.resume();
+                else pauses.push(pause);
+            }
+        });
+
+        vm.start();
+        expect(pauses[pauses.length - 1]?.kind).toBe('end');
+        expect(emissions.filter(emission => emission.kind === 'say').map(emission => emission.text))
+            .toEqual(['Nonempty', 'Empty', 'After']);
+    });
+
+    it.each([undefined, '', 'key'])('shows a value-free conditional option for memory value %j', value => {
+        const pauses: BnyPause[] = [];
+        const pause = capture(pauses);
+        const vm = createVM(build(`{
+            ?: [when:x] Open
+            ?: Always
+        }`), { onEmission: () => {}, onPause: next => pauses.push(next) });
+
+        if (value !== undefined) vm.memory.set('x', value);
+        vm.start();
+        expect(pause('select').options.map(option => option.text))
+            .toEqual(value === undefined ? ['Always'] : ['Open', 'Always']);
+    });
 });

@@ -107,9 +107,10 @@ export interface WhenCstNode extends CstNode {
 export type WhenCstChildren = {
     WhenStatementOpen: IToken[];
     Identifier: IToken[];
-    WhenEquals: IToken[];
-    Text: IToken[];
-    CloseBracket: IToken[];
+    WhenEquals?: IToken[];
+    Text?: IToken[];
+    CloseBracket?: IToken[];
+    WhenCloseBracket?: IToken[];
 };
 
 export interface SkipCstNode extends CstNode {

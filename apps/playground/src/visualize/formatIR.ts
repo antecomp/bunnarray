@@ -15,7 +15,7 @@ export default function formatIR(program: BnyProgram): string {
                 return `${prefix}\n`
                     + instruction.choices.map(choice =>
                         `    ${choice.condition === undefined ? '' :
-                            `[when:${choice.condition.identifier}=${JSON.stringify(choice.condition.value)}] `}`
+                            `[when:${choice.condition.identifier}${choice.condition.value === undefined ? '' : `=${JSON.stringify(choice.condition.value)}`}] `}`
                         + `${choice.id === undefined ? '' : `[id:${JSON.stringify(choice.id)}] `}`
                         + `${JSON.stringify(choice.text)} -> ${choice.target}\n`
                     ).join('')
@@ -23,7 +23,7 @@ export default function formatIR(program: BnyProgram): string {
             case 'BRANCH':
                 return `${prefix}\n`
                     + instruction.cases.map(({ condition, target }) =>
-                        `    ${condition.identifier} = ${JSON.stringify(condition.value)} -> ${target}\n`
+                        `    ${condition.identifier}${condition.value === undefined ? '' : ` = ${JSON.stringify(condition.value)}`} -> ${target}\n`
                     ).join('')
                     + `    fallback -> ${instruction.fallback}\n`;
             case 'JUMP':

@@ -56,6 +56,7 @@ describe('VS Code syntax highlighting', () => {
             expect(scopes(line, 'door')).toContain('entity.name.option.bny');
         }
         expect(scopes('[when: key = yes] # case', 'yes')).toContain('constant.other.branch-value.bny');
+        expect(scopes('[when: key ] # case', 'key')).toContain('variable.other.bny');
     });
 
     it('limits interpolation to dialogue and SET values', () => {

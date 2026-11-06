@@ -88,7 +88,9 @@ export function createVM(
     }
 
     function matches(condition: BnyCondition): boolean {
-        return memory.get(condition.identifier) === condition.value;
+        return condition.value === undefined
+            ? memory.has(condition.identifier)
+            : memory.get(condition.identifier) === condition.value;
     }
 
     function speakerForNextLine(): string | null {

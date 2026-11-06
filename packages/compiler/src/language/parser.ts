@@ -35,7 +35,7 @@ branch ->
 branchCase ->
     when Newline? statement*
 
-when -> WhenStatementOpen Identifier WhenEquals Text CloseBracket
+when -> WhenStatementOpen Identifier (WhenEquals Text CloseBracket | WhenCloseBracket)
 id -> IdBlockOpen Text IdBlockClose
 
 skip ->
@@ -65,7 +65,7 @@ import {
 
     SetKeyword, Identifier, SetEquals, DirectiveNewline,
     SignalKeyword, SignalDelim, BranchBlockOpen, BranchBlockClose,
-    WhenStatementOpen, WhenEquals, YieldSignalKeyword, YieldSignalDelim,
+    WhenStatementOpen, WhenEquals, WhenCloseBracket, YieldSignalKeyword, YieldSignalDelim,
 
     allTokens
 } from './lexer';
@@ -157,9 +157,14 @@ class DialogueParser extends CstParser {
     when = this.RULE('when', () => {
         this.CONSUME(WhenStatementOpen);
         this.CONSUME(Identifier);
-        this.CONSUME(WhenEquals);
-        this.CONSUME(Text);
-        this.CONSUME(CloseBracket);
+        this.OR([
+            { ALT: () => {
+                this.CONSUME(WhenEquals);
+                this.CONSUME(Text);
+                this.CONSUME(CloseBracket);
+            } },
+            { ALT: () => this.CONSUME(WhenCloseBracket) }
+        ]);
     });
 
     skip = this.RULE('skip', () => {

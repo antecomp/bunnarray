@@ -34,11 +34,9 @@ export type ChoiceBranch = {
     statements: Statement[]
 };
 
-export type Condition = {
-    type: 'equals'
-    identifier: string;
-    value: string;
-};
+export type Condition =
+    | { type: 'equals'; identifier: string; value: string }
+    | { type: 'exists'; identifier: string };
 
 export type BranchStatement = {
     type: 'branch';

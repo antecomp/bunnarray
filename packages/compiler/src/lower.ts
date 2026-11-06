@@ -1,5 +1,11 @@
-import { DialogueAST, Statement } from './language/ast';
-import type { BnyInstruction, BnyOpcode, BnyOperation, BnyProgram } from '@bunnarray/vm';
+import { DialogueAST, Statement, type Condition } from './language/ast';
+import type { BnyCondition, BnyInstruction, BnyOpcode, BnyOperation, BnyProgram } from '@bunnarray/vm';
+
+function lowerCondition(condition: Condition): BnyCondition {
+    return condition.type === 'exists'
+        ? { identifier: condition.identifier }
+        : { identifier: condition.identifier, value: condition.value };
+}
 
 /** Construct a BnyInstruction while lowering the AST. */
 function INS<O extends BnyOpcode>(
@@ -60,10 +66,7 @@ export function lower(ast: DialogueAST): BnyProgram {
                         target: pos(),
                         ...(branch.id === undefined ? {} : { id: branch.id }),
                         ...(branch.condition === undefined ? {} : {
-                            condition: {
-                                identifier: branch.condition.identifier,
-                                value: branch.condition.value
-                            }
+                            condition: lowerCondition(branch.condition)
                         })
                     });
 
@@ -89,10 +92,7 @@ export function lower(ast: DialogueAST): BnyProgram {
 
                 statement.cases.forEach(branchCase => {
                     currentBranch.cases.push({
-                        condition: {
-                            identifier: branchCase.condition.identifier,
-                            value: branchCase.condition.value
-                        },
+                        condition: lowerCondition(branchCase.condition),
                         target: pos()
                     });
 

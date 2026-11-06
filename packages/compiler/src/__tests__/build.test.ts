@@ -147,6 +147,20 @@ how has life been treating you?`, [
     });
 
     describe('options and fallbacks', () => {
+        it('compiles a value-free choice condition as a memory presence check', () => {
+            expectIR(`{
+                ?: [when:ready] Continue
+                    Continued
+            }`, [
+                { op: 'CHOICE', choices: [
+                    { text: 'Continue', target: 1, condition: { identifier: 'ready' } }
+                ], fallback: 3 },
+                { op: 'SAY', text: 'Continued' },
+                { op: 'JUMP', target: 3 },
+                { op: 'END' }
+            ]);
+        });
+
         it('retains choice IDs and leaves untagged choices without an ID', () => {
             const { instructions } = build(`{
                 ?: [id:first] First
@@ -460,6 +474,25 @@ how has life been treating you?`, [
     });
 
     describe('branch blocks', () => {
+        it('compiles value-free and literal conditions in the same branch', () => {
+            expectIR(`[branch]
+                [when: x ]
+                    Present
+                [when:y=yes]
+                    Equal
+            [/branch]`, [
+                { op: 'BRANCH', cases: [
+                    { condition: { identifier: 'x' }, target: 1 },
+                    { condition: { identifier: 'y', value: 'yes' }, target: 3 }
+                ], fallback: 5 },
+                { op: 'SAY', text: 'Present' },
+                { op: 'JUMP', target: 5 },
+                { op: 'SAY', text: 'Equal' },
+                { op: 'JUMP', target: 5 },
+                { op: 'END' }
+            ]);
+        });
+
         it('compiles nested branches followed by another branch', () => {
             expectIR(`[branch]
                 [when:conditionOne=a]

@@ -1,6 +1,6 @@
 export type BnyCondition = {
     identifier: string;
-    value: string;
+    value?: string;
 };
 
 export type BnyInstruction =

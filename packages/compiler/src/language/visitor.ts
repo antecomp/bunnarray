@@ -103,11 +103,10 @@ class DialogueVisitor extends BaseVisitor {
     }
 
     when(ctx: CST.WhenCstChildren): AST.Condition {
-        return {
-            type: 'equals',
-            identifier: (ctx.Identifier[0].image.trim()),
-            value: decodeText(ctx.Text[0].image.trim())
-        };
+        const identifier = ctx.Identifier[0].image.trim();
+        return ctx.WhenEquals
+            ? { type: 'equals', identifier, value: decodeText(ctx.Text![0].image.trim()) }
+            : { type: 'exists', identifier };
     }
 
     skip(ctx: CST.SkipCstChildren): AST.SkipStatement {

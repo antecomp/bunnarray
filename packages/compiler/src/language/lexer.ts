@@ -201,6 +201,12 @@ export const WhenEquals = createToken({
     pop_mode: true
 });
 
+export const WhenCloseBracket = createToken({
+    name: 'WhenCloseBracket',
+    pattern: /\]/,
+    pop_mode: true
+});
+
 // --- Option IDs ---
 export const IdBlockOpen = createToken({
     name: 'IdBlockOpen',
@@ -248,6 +254,7 @@ export const allTokens = [
     Identifier,
     SetEquals,
     WhenEquals,
+    WhenCloseBracket,
     SignalDelim,
     YieldSignalDelim,
     IdBlockClose,
@@ -264,7 +271,7 @@ export const DialogueLexer = new Lexer({
         signalValue: [Text, Comment, DirectiveNewline],
         yieldHeader: [Whitespace, Identifier, YieldSignalDelim, Comment, DirectiveNewline],
         yieldValue: [Text, Comment, DirectiveNewline],
-        whenHeader: [Whitespace, Identifier, WhenEquals, Comment, DirectiveNewline],
+        whenHeader: [Whitespace, Identifier, WhenEquals, WhenCloseBracket, Comment, DirectiveNewline],
         idHeader: [Text, IdBlockClose, Comment]
     }
 });
