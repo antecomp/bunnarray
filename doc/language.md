@@ -3,10 +3,10 @@ Dialogue is written in `.bny` source files. For the JavaScript and TypeScript AP
 
 ### General Notes
 - Indentation and blank lines are ignored.
-- Line comments can be added with `#`. It can follow a statement or appear on a line by itself.
+- Line comments can be added with `#`. A comment can follow a statement or appear on a line by itself.
 - Certain characters are reserved for language syntax. To place them in text, use their respective escape sequences:
     - Square brackets (`[` and `]`) - `&lbrack;`, `&rbrack;`
-    - Curly Braces (`{` and `}`) - `&lbrace;`, `&rbrace;`
+    - Curly braces (`{` and `}`) - `&lbrace;`, `&rbrace;`
     - Pipes (`|`) - `&pipe;`
     - Hash (`#`) - `&hash;`
     - Ampersand (`&`) - `&amp;`
@@ -22,11 +22,11 @@ Seriously, you are &hash;1!
 ```
 
 ### Speakers
-Use `:SPEAKER name` on its own line to set the speaker for the following dialogue lines. The name carries forward until another speaker directive changes it. `:SPEAKER` by itself without a name will unset the speaker (e.g for a narrator mode).
+Use `:SPEAKER name` on its own line to set the speaker for the following dialogue lines. The name carries forward until another speaker directive changes it. `:SPEAKER` by itself without a name will unset the speaker (e.g., for a narrator mode).
 ```bny
 :SPEAKER Alice
 Hello!
-It's me Alice!
+It's me, Alice!
 :SPEAKER
 Alice hands you a glass of milk.
 ```
@@ -34,7 +34,7 @@ Alice hands you a glass of milk.
 Use `|name|` as a shorthand for `:SPEAKER name`. It can be placed on the same line as the spoken dialogue, or appear on its own. `||` acts the same as an empty `:SPEAKER` line and unsets the speaker.
 ```bny
 |Alice| Hello!
-        It's me Alice!
+        It's me, Alice!
 || Alice hands you a glass of milk
 ```
 
@@ -50,7 +50,7 @@ Still Alice speaking.
 > An empty name, such as in `:ALTERNATE Alice;;Bob`, selects the blank speaker (narrator) for that turn.
 
 ### Options (Player Choices)
-Options (branching dialogue based on player selection) are defined with curly braces. A `?:` and some text defines an individual option, everything below it until the next `?:`, or the closing curly brace, is the option body. The option will run if that option is selected.
+Options (branching dialogue based on player selection) are defined with curly braces. A `?:` followed by some text defines an individual option. Everything below it until the next `?:` or the closing curly brace is the option body. The option will run if that option is selected.
 ```bny
 prompt {
     ?: option text
@@ -61,7 +61,7 @@ prompt {
 ```
 > The newline after the opening `{` is optional; `{ ?: Yes }` is valid.
 
-The option body can contain any other valid BunNarraY logic, including text, nesting more options, or other logic. For example, you can chain options together;
+The option body can contain any other valid BunNarraY logic, including text, nested options, or other logic. For example, you can chain options together:
 ```bny
 How are you? {
     ?: Good
@@ -75,7 +75,7 @@ How are you? {
         Sorry to hear that.
 }
 ```
-Including just directly chaining options together without any text in-between;
+You can also chain options together directly without any text in between:
 ```bny
 How are you? {
     ?: Good,
@@ -91,7 +91,7 @@ How are you? {
 ```
 > Every `?:` still needs option text; `?: {` is not valid syntax.
 
-Prefix an option with `[id:name]` to attach an id to the option. This can be used if you want to track or have special display logic for your options in your implementation.
+Prefix an option with `[id:name]` to attach an ID to the option. This can be used if you want to track your options or have special display logic for them in your implementation.
 
 
 ### Labels and Gotos
@@ -121,7 +121,7 @@ Linear execution jumps over a skip block. Jump to its label to run its contents:
     Optional dialogue
 [/skip]
 ```
-This is a more readable equivalent to doing something like this;
+This is a more readable equivalent to doing something like this:
 ```
 ->skip
 @show
@@ -131,9 +131,9 @@ This is a more readable equivalent to doing something like this;
 ```
 
 ### Runtime Variables
-> The functionality of this relies on the VMs memory implementation.
+> This functionality relies on the VM's memory implementation.
 
-A runtime variable can be defined with `:SET`. Some variable name (`identifier`) can be set to any text (including whitespace) with `:SET identifer=value`. The value of `identifier` can be cleared by a plain `:SET identifier`. Variables can be placed into text with `$identifier`.
+A runtime variable can be defined with `:SET`. A variable (`identifier`) can be set to any text (including whitespace) with `:SET identifier=value`. The value of `identifier` can be cleared by a plain `:SET identifier`. Variables can be placed into text with `$identifier`.
 ```bny
 What do you want to drink? {
     ?: Coffee
@@ -146,9 +146,9 @@ Here is your $drink!
 Variable names start with a letter or underscore and then can contain letters, digits, or underscores (but no whitespace or special characters). A missing `$identifier` is replaced with an empty string in dialogue and speaker names. In `:SET` values, any undefined reference deletes the destination variable; for example, `:SET x=$missing` deletes `x` when `missing` is unset. In condition values, a missing reference makes the expanded value undefined; it matches an unset variable.
 
 ### Branch Blocks / "When" Statements
-Branch blocks can be used to automatically divert dialogue based on memory. It contains a series of `when` statements. Each `[when:identifier=value]` compares the current memory value of `identifier` with `value` after variable expansion. A `[when:identifier]` case matches whenever that variable is set to anything. 
+Branch blocks can be used to automatically divert dialogue based on memory. Each block contains a series of `when` statements. Each `[when:identifier=value]` compares the current memory value of `identifier` with `value` after variable expansion. A `[when:identifier]` case matches whenever that variable is set to anything.
 
-In a branch block, the **first matching case** runs, even if later conditions also match. 
+In a branch block, the **first matching case** runs, even if later conditions also match.
 ```bny
 [branch]
     [when:dragon=slain]
@@ -159,7 +159,7 @@ In a branch block, the **first matching case** runs, even if later conditions al
 ```
 A branch needs at least one `when` case. Case bodies can be empty and can contain other statements, including nested branches, choices, and gotos.
 
-When statements can also be attached to options. Prefix an option with a when statement to only show that option when the condition passes. 
+When statements can also be attached to options. Prefix an option with a when statement to only show that option when the condition passes.
 ```bny
 What should we do? {
     ?: [when:has_key=yes] Open the door
@@ -172,8 +172,8 @@ Conditions are checked when the VM reaches the choice. Every matching option is 
 
 ### "Fallbacks" and "Fall-throughs"
 > this needs to explain it for everything, options, matches, & skips
-Options, branches, and skip blocks are all designed to jump to the dialogue lines following themselves after their nested block has completed, or when there's no available blocks (e.g no matches). 
-For example;
+Options, branches, and skip blocks are all designed to jump to the dialogue lines following them after their nested block has completed, or when there are no available blocks (e.g., no matches).
+For example:
 ```bny
 {
     ?: Option A
@@ -183,7 +183,7 @@ For example;
 }
 C
 ```
-As another example;
+As another example:
 ```bny
 [branch]
     [when:x=something]
@@ -195,7 +195,7 @@ C
 ```
 After either A or B, or neither, we will hit C.
 
-When all options have a when condition, and all fail, we skip the option entirely and proceed to the next line. For example;
+When all options have a when condition, and all fail, we skip the option entirely and proceed to the next line. For example:
 ```bny
 X
 {
@@ -206,7 +206,7 @@ X
 }
 Y
 ```
-When run through, will work effectively like;
+When run, this will work effectively like:
 ```bny
 X
 Y
@@ -214,13 +214,13 @@ Y
 Regardless of what you pick (A or B), C will always print afterwards.
 
 ### Signals
-Use `:SIGNAL identifier` on its own line to emit a notification when execution passes it. This can be used to trigger in-game side effects (e.g update game state, playing sound effects, etc.). Add `:value` to include a specific string value in tandem with the signal identifier.
+Use `:SIGNAL identifier` on its own line to emit a notification when execution passes it. This can be used to trigger in-game side effects (e.g., updating game state or playing sound effects). Add `:value` to include a specific string value in tandem with the signal identifier.
 ```bny
 Here is the key to the castle!
 :SIGNAL keygiven
 :SIGNAL quest:complete
 ```
-> Signal handling is up to VM implementation. In the [BunNarraY vm](../packages/vm/README.md), these are captured by the `onEmission` callback.
+> Signal handling is up to the VM implementation. In the [BunNarraY VM](../packages/vm/README.md), these are captured by the `onEmission` callback.
 
 ### Yields
 Yielding works identically to signals, with the intent of pausing execution to hand control to the consumer. This can be used to trigger animations or other events that should pause dialogue until they've completed.
@@ -228,4 +228,4 @@ Yielding works identically to signals, with the intent of pausing execution to h
 :YIELD rattle_door:front
 The door won't open
 ```
-> Yield handling is up to VM implementation. In the [BunNarraY vm](../packages/vm/README.md), these are handled by the `onPause` callback.
+> Yield handling is up to the VM implementation. In the [BunNarraY VM](../packages/vm/README.md), these are handled by the `onPause` callback.
