@@ -46,8 +46,8 @@ export interface ChoiceCstNode extends CstNode {
 
 export type ChoiceCstChildren = {
     CurlyBraceOpen: IToken[];
-    Newline: (IToken)[];
-    choiceBranch: ChoiceBranchCstNode[];
+    Newline?: IToken[];
+    choiceBranch?: ChoiceBranchCstNode[];
     CurlyBraceClose: IToken[];
 };
 

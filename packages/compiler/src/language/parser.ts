@@ -18,8 +18,8 @@ statement ->
 say -> Text Newline?
 
 choice ->
-    CurlyBraceOpen Newline
-        choiceBranch+
+    CurlyBraceOpen Newline?
+        choiceBranch*
     CurlyBraceClose Newline?
 
 choiceBranch ->
@@ -104,8 +104,8 @@ class DialogueParser extends CstParser {
 
     choice = this.RULE('choice', () => {
         this.CONSUME(CurlyBraceOpen);
-        this.CONSUME(Newline);
-        this.AT_LEAST_ONE(() => this.SUBRULE(this.choiceBranch));
+        this.OPTION1(() => this.CONSUME(Newline));
+        this.MANY(() => this.SUBRULE(this.choiceBranch));
         this.CONSUME(CurlyBraceClose);
         this.OPTION(() => this.CONSUME1(Newline));
     });

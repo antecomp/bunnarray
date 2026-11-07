@@ -11,6 +11,24 @@ function capture(pauses: BnyPause[]) {
 }
 
 describe('compiled programs in the VM', () => {
+    it('skips empty choices and selects an inline nested choice', () => {
+        const emissions: BnyEmission[] = [];
+        const pauses: BnyPause[] = [];
+        const pause = capture(pauses);
+        const vm = createVM(build('{}\n{ ?: Continue {} { ?: Done } }\nAfter'), {
+            onEmission: emission => emissions.push(emission), onPause: pause => pauses.push(pause)
+        });
+
+        vm.start();
+        expect(pause('select').options).toEqual([{ text: 'Continue', id: undefined }]);
+        pause('select').resume(0);
+        expect(pause('select').options).toEqual([{ text: 'Done', id: undefined }]);
+        pause('select').resume(0);
+        pause('end');
+        expect(pauses.map(pause => pause.kind)).toEqual(['select', 'select', 'end']);
+        expect(emissions).toEqual([{ kind: 'say', text: 'After', speaker: null }]);
+    });
+
     it('persists shorthand speakers through choices and stops speaker rotation', () => {
         const emissions: BnyEmission[] = [];
         const pauses: BnyPause[] = [];

@@ -147,6 +147,21 @@ how has life been treating you?`, [
     });
 
     describe('options and fallbacks', () => {
+        it.each(['{}', '{ }', '{\n}', '{ # empty\n}'])('compiles an empty choice %j', source => {
+            expectIR(source, [
+                { op: 'CHOICE', choices: [], fallback: 1 },
+                { op: 'END' }
+            ]);
+        });
+
+        it.each(['{ ?: Yes }', '{ ?: Yes\n}', '{ # choose\n?: Yes\n}'])('compiles a choice %j', source => {
+            expectIR(source, [
+                { op: 'CHOICE', choices: [{ text: 'Yes', target: 1 }], fallback: 2 },
+                { op: 'JUMP', target: 2 },
+                { op: 'END' }
+            ]);
+        });
+
         it('compiles a value-free choice condition as a memory presence check', () => {
             expectIR(`{
                 ?: [when:ready] Continue
