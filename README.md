@@ -4,7 +4,7 @@ BunNarraY is a simple dialogue scripting language built with [chevrotain](https:
 Originally created as part of a small [game jam project](https://github.com/antecomp/pixicrystal/tree/main), it has been completely redesigned for general use!
 
 ### Index
-- [Language guide](language.md): dialogue, choices, branches, variables, speakers, and directives.
+- [Language guide](doc/language.md): dialogue, choices, branches, variables, speakers, and directives.
 - [Runtime guide](packages/vm/README.md): emissions, pauses, memory, and errors.
 - [Compiler guide](packages/compiler/README.md) to compile source and handle diagnostics.
 - [Vite plugin](packages/vite/README.md) to import `.bny` files in a Vite app.

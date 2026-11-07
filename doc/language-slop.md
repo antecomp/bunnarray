@@ -83,11 +83,11 @@ How are you? {
 To present another set of choices without displaying a new prompt, put a bare choice block inside an option:
 ```
 How are you? {
-    ?: Good
+    ?: Good,
         {
-            ?: Really good
+            ?: really good.
                 Wonderful!
-            ?: Mostly good
+            ?: mostly.
                 Glad to hear it.
         }
     ?: Bad
@@ -184,9 +184,9 @@ Use a branch block to choose dialogue based on memory. Cases may check the same 
 [/branch]
 What else would you like to know?
 ```
-Each `[when:identifier=value]` compares the current memory value of `identifier` with the literal string `value`. A `[when:identifier]` case matches whenever that memory entry exists, including when its value is an empty string; it stops matching after `:SET identifier` or `vm.memory.delete('identifier')`. The **first matching case** runs, even if later conditions also match. After that case, dialogue continues after `[/branch]` unless it uses a goto. If none match, it goes straight to the dialogue after the block. For example, with `dragon=alive` and `reputation=trusted`, the second case runs.
+Each `[when:identifier=value]` compares the current memory value of `identifier` with `value` after expanding any `$variables` using current memory. If any referenced variable is undefined, the expanded value is undefined and matches only an unset variable; a defined empty string remains a valid comparison value. A `[when:identifier]` case matches whenever that memory entry exists, ~~including when its value is an empty string~~; it stops matching after `:SET identifier` or `vm.memory.delete('identifier')`. The **first matching case** runs, even if later conditions also match. After that case, dialogue continues after `[/branch]` unless it uses a goto. If none match, it goes straight to the dialogue after the block. For example, with `dragon=alive` and `reputation=trusted`, the second case runs.
 
-A branch needs at least one `when` case. Case bodies can be empty and can contain other statements, including nested branches, choices, and gotos. Spaces around the identifier and value are trimmed; use the usual text escapes for literal brackets in a value. The value is compared literally: `$variables` are not expanded in conditions. Set memory before the branch runs with `:SET dragon=slain` or `vm.memory.set('dragon', 'slain')`.
+A branch needs at least one `when` case. Case bodies can be empty and can contain other statements, including nested branches, choices, and gotos. Spaces around the identifier and value are trimmed; use the usual text escapes for literal brackets in a value. Values in both branch and option conditions support single-pass variable expansion; for example, `[when:key=$other]` compares the current values of `key` and `other`. An undefined reference makes the expanded value undefined, including in embedded text such as `[when:greeting=Hello $name]`. Two undefined values compare equal. Set memory before the branch runs with `:SET dragon=slain` or `vm.memory.set('dragon', 'slain')`.
 
 ### Signals
 Use `:SIGNAL identifier` on its own line to notify listeners when execution reaches it. Add `:value` to include a string value:
@@ -257,7 +257,7 @@ The VM emits "Choose your route." before reporting the `yield` pause. Resuming i
 The browser playground displays dialogue, memory changes, and signals as they are emitted, and shows each yield when the VM pauses. It offers Continue for `next` and `yield` pauses, and buttons for the options in a `select` pause. A game integration can resume a yield after its own action completes.
 
 ### Runtime Variables
-The same string memory is used by branch and option conditions, and by `$variables` in dialogue, speaker names, and `:SET` values. Speaker names (including `:ALTERNATE` names) are interpolated for each dialogue line using current memory:
+The same string memory is used by branch and option conditions, and by `$variables` in dialogue, speaker names, `:SET` values, and condition values. Speaker names (including `:ALTERNATE` names) are interpolated for each dialogue line using current memory:
 ```bny
 :SET name=Rabbit
 Hello, $name.
@@ -269,7 +269,7 @@ $greeting!
         The dragon is gone!
 [/branch]
 ```
-Variable names start with a letter or underscore and can then contain letters, digits, or underscores. The same rule applies to identifiers in `:SET`, `:SIGNAL`, `:YIELD`, and `[when:...]`. A missing `$variable` is replaced with an empty string. `:SET identifier=value` stores the interpolated string when execution reaches it; `:SET identifier` deletes the value. Interpolation is a single pass: a `$` in a stored value is not expanded again when that value is used in dialogue. There is no source-level escape for a literal `$name`.
+Variable names start with a letter or underscore and can then contain letters, digits, or underscores. The same rule applies to identifiers in `:SET`, `:SIGNAL`, `:YIELD`, and `[when:...]`. A missing `$variable` is replaced with an empty string in dialogue and speaker names; in `:SET` values, any undefined reference deletes the destination variable (for example, `:SET x=$missing` deletes `x` when `missing` is unset); in a condition value, it makes the expanded value undefined, which matches an unset variable. `:SET identifier=value` stores the interpolated string when execution reaches it; `:SET identifier` deletes the value. Interpolation is a single pass: a `$` in a stored value is not expanded again when that value is used in dialogue. There is no source-level escape for a literal `$name`.
 
 You can also supply initial values and change them while the VM is running:
 ```ts
