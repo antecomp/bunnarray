@@ -11,6 +11,63 @@ function capture(pauses: BnyPause[]) {
 }
 
 describe('compiled programs in the VM', () => {
+    it.each<{ value: string; memory: Record<string, string>; matches: boolean }>([
+        { value: '$other', memory: { key: 'yes', other: 'yes' }, matches: true },
+        { value: '$other', memory: { key: 'no', other: 'yes' }, matches: false },
+        { value: '$other', memory: { key: '', other: '' }, matches: true },
+        { value: '$other', memory: { key: '' }, matches: false },
+        { value: '$other', memory: {}, matches: true },
+        { value: '$other', memory: { other: 'yes' }, matches: false },
+        { value: 'Hello $name$ending', memory: { key: 'Hello Alice!', name: 'Alice', ending: '!' }, matches: true },
+        { value: 'Hello $name$ending', memory: { key: 'Hello Alice', name: 'Alice' }, matches: false },
+        { value: 'Hello $name$ending', memory: { name: 'Alice' }, matches: true },
+        { value: '$other', memory: { key: '$third', other: '$third', third: 'expanded' }, matches: true }
+    ])('compares expanded when values, including undefined: %j', ({ value, memory, matches }) => {
+        const emissions: BnyEmission[] = [];
+        const pauses: BnyPause[] = [];
+        const pause = capture(pauses);
+        const vm = createVM(build(`[branch]
+            [when:key=${value}]
+                Matched
+            [/branch]
+            {
+                ?: [when:key=${value}] Conditional
+                ?: Always
+            }`), {
+            memory,
+            onEmission: emission => emissions.push(emission), onPause: pause => pauses.push(pause)
+        });
+
+        vm.start();
+        expect(emissions.filter(emission => emission.kind === 'say').map(emission => emission.text))
+            .toEqual(matches ? ['Matched'] : []);
+        expect(pause('select').options.map(option => option.text))
+            .toEqual(matches ? ['Conditional', 'Always'] : ['Always']);
+    });
+
+    it('expands when values using memory at the time each condition runs', () => {
+        const pauses: BnyPause[] = [];
+        const pause = capture(pauses);
+        const vm = createVM(build(`:YIELD update
+            [branch]
+                [when:key=$other]
+                    :SET other=no
+            [/branch]
+            {
+                ?: [when:key=$other] Conditional
+                ?: Always
+            }`), {
+            memory: { key: 'yes' },
+            onEmission: () => {}, onPause: pause => pauses.push(pause)
+        });
+
+        vm.start();
+        vm.memory.set('other', 'yes');
+        pause('yield').resume();
+        expect(vm.memory.get('other')).toBe('no');
+        expect(pause('select').options.map(option => option.text)).toEqual(['Always']);
+    });
+
     it('skips empty choices and selects an inline nested choice', () => {
         const emissions: BnyEmission[] = [];
         const pauses: BnyPause[] = [];
@@ -144,17 +201,18 @@ describe('compiled programs in the VM', () => {
                 [when:x]
                     Nonempty
             [/branch]
-            :SET x=$missing
+            :SET x=$empty
             [branch]
                 [when:x]
                     Empty
             [/branch]
-            :SET x
+            :SET x=$missing
             [branch]
                 [when:x]
                     Hidden
             [/branch]
             After`), {
+            memory: { empty: '' },
             onEmission: emission => emissions.push(emission),
             onPause: pause => {
                 if (pause.kind === 'next') pause.resume();

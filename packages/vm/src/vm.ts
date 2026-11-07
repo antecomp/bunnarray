@@ -80,17 +80,22 @@ export function createVM(
         );
     }
 
-    function interpolate(text: string): string {
-        return text.replace(
-            /\$([A-Za-z_][A-Za-z0-9_]*)/g,
-            (_, identifier: string) => memory.get(identifier) ?? ''
-        );
+    function interpolate(text: string): string;
+    function interpolate(text: string, preserveUndefined: true): string | undefined;
+    function interpolate(text: string, preserveUndefined = false): string | undefined {
+        let missing = false;
+        const value = text.replace(/\$([A-Za-z_][A-Za-z0-9_]*)/g, (_, identifier: string) => {
+            const replacement = memory.get(identifier);
+            if (replacement === undefined) missing = true;
+            return replacement ?? '';
+        });
+        return preserveUndefined && missing ? undefined : value;
     }
 
     function matches(condition: BnyCondition): boolean {
         return condition.value === undefined
             ? memory.has(condition.identifier)
-            : memory.get(condition.identifier) === condition.value;
+            : memory.get(condition.identifier) === interpolate(condition.value, true);
     }
 
     function speakerForNextLine(): string | null {
@@ -123,11 +128,13 @@ export function createVM(
                     pc = ins.cases.find(branchCase => matches(branchCase.condition))?.target ?? ins.fallback;
                     continue;
 
-                case 'SET':
-                    if (ins.value === null) memory.delete(ins.identifier);
-                    else memory.set(ins.identifier, interpolate(ins.value));
+                case 'SET': {
+                    const value = ins.value === null ? undefined : interpolate(ins.value, true);
+                    if (value === undefined) memory.delete(ins.identifier);
+                    else memory.set(ins.identifier, value);
                     pc++;
                     continue;
+                }
 
                 case 'SPEAKER':
                     speaker = ins.value;

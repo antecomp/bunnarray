@@ -388,6 +388,26 @@ describe('VM', () => {
         expect(vm.memory.get('name')).toBeUndefined();
     });
 
+    it.each<{ value: string; memory: Record<string, string>; expected: string | undefined }>([
+        { value: '$missing', memory: {}, expected: undefined },
+        { value: 'Hello $missing', memory: {}, expected: undefined },
+        { value: '$name$missing', memory: { name: 'Rabbit' }, expected: undefined },
+        { value: '$x', memory: {}, expected: 'previous' },
+        { value: '$empty', memory: { empty: '' }, expected: '' },
+        { value: '$name', memory: { name: '$missing' }, expected: '$missing' }
+    ])('sets or deletes an interpolated value: %j', ({ value, memory, expected }) => {
+        const { vm, emissions, pause } = runtime([
+            { op: 'SET', identifier: 'x', value },
+            { op: 'END' }
+        ], { ...memory, x: 'previous' });
+
+        vm.start();
+        pause('end');
+        expect(vm.memory.get('x')).toBe(expected);
+        expect(vm.memory.has('x')).toBe(expected !== undefined);
+        expect(emissions).toEqual([{ kind: 'memory', key: 'x', prev: 'previous', value: expected }]);
+    });
+
     it('emits host memory writes and deletions after applying them', () => {
         const emissions: BnyEmission[] = [];
         const vm = createVM({ version: { major: 1, minor: 0 }, instructions: [{ op: 'END' }] }, {
