@@ -9,7 +9,7 @@ Dialogue is written in `.bny` source files. For the JavaScript and TypeScript AP
     - Curly braces (`{` and `}`) - `&lbrace;`, `&rbrace;`
     - Pipes (`|`) - `&pipe;`
     - Hash (`#`) - `&hash;`
-    - Ampersand (`&`) - `&amp;`
+    - Use `&amp;` for an ampersand that would otherwise start a recognized escape sequence. For example, `&amp;hash;` produces the literal text `&hash;`. Other ampersands can appear as they are.
 
 ## Syntax
 
@@ -52,7 +52,7 @@ Still Alice speaking.
 ### Options (Player Choices)
 Options (branching dialogue based on player selection) are defined with curly braces. A `?:` followed by some text defines an individual option. Everything below it until the next `?:` or the closing curly brace is the option body. The option will run if that option is selected.
 ```bny
-prompt {
+Some dialogue {
     ?: option text
         ...
     ?: another option
@@ -91,8 +91,13 @@ How are you? {
 ```
 > Every `?:` still needs option text; `?: {` is not valid syntax.
 
-Prefix an option with `[id:name]` to attach an ID to the option. This can be used if you want to track your options or have special display logic for them in your implementation.
-
+Place `[id:name]` after `?:` and before the option text to attach an ID to the option. This can be used if you want to track your options or have special display logic for them in your implementation.
+```bny
+{
+    ?: [id:leave] Leave
+        We turn back.
+}
+```
 
 ### Labels and Gotos
 A label marks a position in the script; it does not emit dialogue. Put `@label` before any statement you want to jump to. For example:
@@ -131,9 +136,9 @@ This is a more readable equivalent to doing something like this:
 ```
 
 ### Runtime Variables
-> This functionality relies on the VM's memory implementation.
+Runtime variables hold text values that can be used in dialogue and conditions. A variable can be set or unset.
 
-A runtime variable can be defined with `:SET`. A variable (`identifier`) can be set to any text (including whitespace) with `:SET identifier=value`. The value of `identifier` can be cleared by a plain `:SET identifier`. Variables can be placed into text with `$identifier`.
+A runtime variable can be defined with `:SET`. A variable (`identifier`) can be set to a single line of text with `:SET identifier=value`. Leading and trailing whitespace is trimmed; spaces within the value are kept. Reserved characters use the escape sequences listed above. The value of `identifier` can be cleared by a plain `:SET identifier`. Variables can be placed into text with `$identifier`.
 ```bny
 What do you want to drink? {
     ?: Coffee
@@ -168,11 +173,10 @@ What should we do? {
         We turn back.
 }
 ```
-Conditions are checked when the VM reaches the choice. Every matching option is shown in its original order. If none are available, the VM continues after the choice block without showing an empty option list (see next section).
+Conditions are checked when execution reaches the choice. Every matching option is shown in its original order. If none are available, execution continues after the choice block without showing an empty option list (see next section).
 
 ### "Fallbacks" and "Fall-throughs"
-> this needs to explain it for everything, options, matches, & skips
-Options, branches, and skip blocks are all designed to jump to the dialogue lines following them after their nested block has completed, or when there are no available blocks (e.g., no matches).
+Options, branches, and skip blocks continue with the statements following them after their selected or entered body has completed. A goto within the body can divert execution elsewhere.
 For example:
 ```bny
 {
@@ -183,6 +187,8 @@ For example:
 }
 C
 ```
+In this example, regardless of what you pick (A or B), C will print afterwards.
+
 As another example:
 ```bny
 [branch]
@@ -195,7 +201,7 @@ C
 ```
 After either A or B, or neither, we will hit C.
 
-When all options have a when condition, and all fail, we skip the option entirely and proceed to the next line. For example:
+If no branch case matches, execution continues after the branch block. The same applies to choices: when all options have a when condition, and all fail, we skip the choice entirely and proceed to the next line. For example:
 ```bny
 X
 {
@@ -206,12 +212,11 @@ X
 }
 Y
 ```
-When run, this will work effectively like:
+If neither `x` nor `y` is set to `never`, this will work effectively like:
 ```bny
 X
 Y
 ```
-Regardless of what you pick (A or B), C will always print afterwards.
 
 ### Signals
 Use `:SIGNAL identifier` on its own line to emit a notification when execution passes it. This can be used to trigger in-game side effects (e.g., updating game state or playing sound effects). Add `:value` to include a specific string value in tandem with the signal identifier.
