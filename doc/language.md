@@ -24,33 +24,33 @@ Seriously, you are &hash;1!
 ### Speakers
 Use `:SPEAKER name` on its own line to set the speaker for the following dialogue lines. The name carries forward until another speaker directive changes it. `:SPEAKER` by itself without a name will unset the speaker (e.g., for a narrator mode).
 ```bny
-:SPEAKER Alice
+:SPEAKER Hazel
 Hello!
-It's me, Alice!
+It's me, Hazel!
 :SPEAKER
-Alice hands you a glass of milk.
+Hazel hops away.
 ```
 
 Use `|name|` as a shorthand for `:SPEAKER name`. It can be placed on the same line as the spoken dialogue, or appear on its own. `||` acts the same as an empty `:SPEAKER` line and unsets the speaker.
 ```bny
-|Alice| Hello!
-        It's me, Alice!
-|| Alice hands you a glass of milk
+|Hazel| Hello!
+        It's me, Hazel!
+|| Hazel hops away.
 ```
 
 Use `:ALTERNATE` with semicolon-separated names to rotate speakers on each subsequent dialogue line. Names may contain spaces. A bare `:ALTERNATE` stops the rotations and leaves the last speaker in place. `:SPEAKER` (including the shorthand) also stops the rotation and sets a new speaker. Only dialogue lines advance the rotation.
 ```bny
-:ALTERNATE Alice; Bob Smith
-Hello!          # Alice
-Hi!             # Bob Smith
-Hello again!    # Alice
+:ALTERNATE Hazel; Captian Holly
+Hello!          # Hazel
+Hi!             # Captain Holly
+Hello again!    # Hazel
 :ALTERNATE
-Still Alice speaking.
+Still Hazel speaking.
 ```
-> An empty name, such as in `:ALTERNATE Alice;;Bob`, selects the blank speaker (narrator) for that turn.
+> An empty name, such as in `:ALTERNATE Hazel;;Fiver`, selects the blank speaker (narrator) for that turn.
 
 ### Options (Player Choices)
-Options (branching dialogue based on player selection) are defined with curly braces. A `?:` followed by some text defines an individual option. Everything below it until the next `?:` or the closing curly brace is the option body. The option will run if that option is selected.
+Options (branching dialogue based on player selection) are defined with curly braces. A `?:` followed by some text defines an individual option. Everything below it until the next `?:` or the closing curly brace is the option body. That option body will run if that option is selected.
 ```bny
 Some dialogue {
     ?: option text
@@ -234,3 +234,89 @@ Yielding works identically to signals, with the intent of pausing execution to h
 The door won't open
 ```
 > Yield handling is up to the VM implementation. In the [BunNarraY VM](../packages/vm/README.md), these are handled by the `onPause` callback.
+
+## Example
+**Below is a full-fledged usage example.**
+
+```bny
+:SPEAKER server
+What would you like to drink? {
+    ?: Coffee
+        :SET drink = coffee
+    ?: Tea
+        :SET drink = tea
+}
+
+What would you like in it? {
+    ?: Sugar
+        :SET addition = sugar
+    ?: Milk
+        :SET addition = milk
+    ?: [when:drink=coffee] Cream      # I refuse to offer tea with cream.
+        :SET addition = cream
+    ?: Nothing, thanks
+        :SET addition               # Clear any addition left from an earlier order.
+}
+
+[branch]
+    [when:addition]
+        Here is your $drink with $addition!
+    [when:drink]
+        Here is your $drink, just as it is!
+[/branch]
+:SIGNAL drink_served
+:YIELD sip:cup                      # Let the consumer finish the sipping animation.
+
+:SPEAKER   # narrator
+Another man walks into the café and sits beside you.
+
+|Man| Hello there.
+[branch]
+    [when:drink=tea]
+        What kind of tea did you get? {
+            ?: Black
+                A classic. I like mine strong, too.
+            ?: Green
+                Good choice. I always let that one cool a little.
+            ?: White
+                They keep the good stuff behind the counter!
+        }
+    [when:drink=coffee]
+        Ew coffee.
+        -> coffee_debate
+[/branch]
+
+[skip:coffee_debate]
+    :ALTERNATE server; Man
+    Be nice. Some of us like coffee.
+    All right, all right. It does smell good.
+    :ALTERNATE                         # The Man keeps speaking after rotation stops.
+    Maybe I'll try a cup next time.
+[/skip]
+
+|server| Anything else? {
+    ?: [id:story] Why is this called the &lbrace;Curly Cup&rbrace; café?
+        ->cafe_story
+    ?: [id:bill] Just the bill, please
+        # An empty option body continues after the choice.
+}
+
+#identifiers can't start with a number, so this still works cleanly
+|server| Your total is on receipt $12.  
+{
+    ?: [when:addition=cream] Was the cream extra?
+        No, it's included.
+}
+# Without cream, the choice above has no available options and is skipped.
+->goodbye
+
+[skip:cafe_story]                   # Only entered when the player asks for the story.
+    |server| Our first sign painter really loved curly braces.
+    |Man| And now the menu looks like a programming language.
+    |server| That story is on the house. So is your drink today.
+[/skip]
+
+@goodbye
+|server| Come back soon!
+|| You step outside as the café bell rings.
+```
