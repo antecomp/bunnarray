@@ -11,6 +11,44 @@ function capture(pauses: BnyPause[]) {
 }
 
 describe('compiled programs in the VM', () => {
+    it.each<{ condition: string; memory: Record<string, string>; whenMatches: boolean }>([
+        { condition: 'key', memory: {}, whenMatches: false },
+        { condition: 'key', memory: { key: '' }, whenMatches: true },
+        { condition: 'key', memory: { key: 'yes' }, whenMatches: true },
+        { condition: 'key=yes', memory: {}, whenMatches: false },
+        { condition: 'key=yes', memory: { key: 'yes' }, whenMatches: true },
+        { condition: 'key=yes', memory: { key: 'no' }, whenMatches: false },
+        { condition: 'key=$other', memory: {}, whenMatches: true },
+        { condition: 'key=$other', memory: { key: 'yes' }, whenMatches: false },
+        { condition: 'key=$other', memory: { other: 'yes' }, whenMatches: false },
+        { condition: 'key=$other', memory: { key: 'yes', other: 'yes' }, whenMatches: true },
+        { condition: 'key=$other', memory: { key: 'no', other: 'yes' }, whenMatches: false }
+    ])('uses unless as the exact inverse of when for %j', ({ condition, memory, whenMatches }) => {
+        for (const keyword of ['when', 'unless'] as const) {
+            const matches = keyword === 'when' ? whenMatches : !whenMatches;
+            const emissions: BnyEmission[] = [];
+            const pauses: BnyPause[] = [];
+            const vm = createVM(build(`[branch]
+                [${keyword}:${condition}]
+                    Matched
+            [/branch]
+            {
+                ?: [${keyword}:${condition}] Conditional
+                ?: Always
+            }`), {
+                memory,
+                onEmission: emission => emissions.push(emission),
+                onPause: pause => pauses.push(pause)
+            });
+
+            vm.start();
+            expect(emissions.filter(emission => emission.kind === 'say').map(emission => emission.text))
+                .toEqual(matches ? ['Matched'] : []);
+            expect(capture(pauses)('select').options.map(option => option.text))
+                .toEqual(matches ? ['Conditional', 'Always'] : ['Always']);
+        }
+    });
+
     it.each<{ value: string; memory: Record<string, string>; matches: boolean }>([
         { value: '$other', memory: { key: 'yes', other: 'yes' }, matches: true },
         { value: '$other', memory: { key: 'no', other: 'yes' }, matches: false },

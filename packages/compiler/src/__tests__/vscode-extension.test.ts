@@ -50,13 +50,20 @@ describe('VS Code syntax highlighting', () => {
     });
 
     it('highlights option metadata in either order', () => {
-        for (const line of ['?: [when:key=yes] [id:door] Open', '?: [id:door] [when:key=yes] Open']) {
-            expect(scopes(line, 'when')).toContain('keyword.control.branch-case.bny');
+        for (const line of [
+            '?: [when:key=yes] [id:door] Open',
+            '?: [id:door] [when:key=yes] Open',
+            '?: [unless:key=yes] [id:door] Open',
+            '?: [id:door] [unless:key=yes] Open'
+        ]) {
+            expect(scopes(line, line.includes('unless') ? 'unless' : 'when')).toContain('keyword.control.branch-case.bny');
             expect(scopes(line, 'key')).toContain('variable.other.bny');
             expect(scopes(line, 'door')).toContain('entity.name.option.bny');
         }
         expect(scopes('[when: key = yes] # case', 'yes')).toContain('constant.other.branch-value.bny');
         expect(scopes('[when: key ] # case', 'key')).toContain('variable.other.bny');
+        expect(scopes('[unless: key = yes] # case', 'yes')).toContain('constant.other.branch-value.bny');
+        expect(scopes('[unless: key ] # case', 'key')).toContain('variable.other.bny');
     });
 
     it('limits interpolation to dialogue and SET values', () => {
@@ -90,8 +97,8 @@ describe('VS Code authoring support', () => {
         const snippets = JSON.parse(read('snippets.json')) as Record<string, { body: string[] }>;
         for (const [name, snippet] of Object.entries(snippets)) {
             let source = snippet.body.join('\n').replace(/\$\{\d+:([^}]*)\}/g, '$1').replace(/\$\d+/g, '');
-            if (name === 'Conditional Option' || name === 'Option ID') source = `{\n${name === 'Option ID' ? '?: ' : ''}${source}${name === 'Option ID' ? ' Answer' : ''}\n}`;
-            if (name === 'Branch Case') source = `[branch]\n${source}\n[/branch]`;
+            if (name === 'Conditional Option' || name === 'Unless Option' || name === 'Option ID') source = `{\n${name === 'Option ID' ? '?: ' : ''}${source}${name === 'Option ID' ? ' Answer' : ''}\n}`;
+            if (name === 'Branch Case' || name === 'Unless Branch Case') source = `[branch]\n${source}\n[/branch]`;
             if (name === 'Goto') source = `@label\n${source}`;
             expect(() => build(source), name).not.toThrow();
         }

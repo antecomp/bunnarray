@@ -176,6 +176,42 @@ how has life been treating you?`, [
             ]);
         });
 
+        it('compiles unless conditions on branch cases and options in either metadata order', () => {
+            expect(build(`[branch]
+                [unless: key ]
+                    Missing
+                [unless:status=ready]
+                    Different
+            [/branch]
+            {
+                ?: [unless:state=ready] [id:go] Continue
+                ?: [id:stop] [unless:state] Stop
+            }`)).toStrictEqual({ version: { major: 1, minor: 0, patch: 'indev' }, instructions: [
+                { op: 'BRANCH', cases: [
+                    { condition: { identifier: 'key', negated: true }, target: 1 },
+                    { condition: { identifier: 'status', value: 'ready', negated: true }, target: 3 }
+                ], fallback: 5 },
+                { op: 'SAY', text: 'Missing' },
+                { op: 'JUMP', target: 5 },
+                { op: 'SAY', text: 'Different' },
+                { op: 'JUMP', target: 5 },
+                { op: 'CHOICE', choices: [
+                    { text: 'Continue', target: 6, id: 'go', condition: { identifier: 'state', value: 'ready', negated: true } },
+                    { text: 'Stop', target: 7, id: 'stop', condition: { identifier: 'state', negated: true } }
+                ], fallback: 8 },
+                { op: 'JUMP', target: 8 },
+                { op: 'JUMP', target: 8 },
+                { op: 'END' }
+            ] });
+        });
+
+        it.each([
+            '[branch]\n[unless:key]\nMissing\n[/branch]',
+            '{\n?: [unless:key] Missing\n}'
+        ])('marks a program with only one kind of unless condition as version 2', source => {
+            expect(build(source).version.major).toBe(1);
+        });
+
         it('retains choice IDs and leaves untagged choices without an ID', () => {
             const { instructions } = build(`{
                 ?: [id:first] First

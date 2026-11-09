@@ -2,9 +2,10 @@ import { DialogueAST, Statement, type Condition } from './language/ast';
 import type { BnyCondition, BnyInstruction, BnyOpcode, BnyOperation, BnyProgram } from '@bunnarray/vm';
 
 function lowerCondition(condition: Condition): BnyCondition {
+    const negated = condition.negated ? { negated: true as const } : {};
     return condition.type === 'exists'
-        ? { identifier: condition.identifier }
-        : { identifier: condition.identifier, value: condition.value };
+        ? { identifier: condition.identifier, ...negated }
+        : { identifier: condition.identifier, value: condition.value, ...negated };
 }
 
 /** Construct a BnyInstruction while lowering the AST. */

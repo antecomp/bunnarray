@@ -1,4 +1,9 @@
-import type { BnyProgram } from '@bunnarray/vm';
+import type { BnyCondition, BnyProgram } from '@bunnarray/vm';
+
+function formatCondition(condition: BnyCondition): string {
+    return `[${condition.negated ? 'unless' : 'when'}:${condition.identifier}`
+        + `${condition.value === undefined ? '' : `=${JSON.stringify(condition.value)}`}]`;
+}
 
 /** Format a BnyProgram as a versioned instruction listing with indented branch targets. */
 export default function formatIR(program: BnyProgram): string {
@@ -14,8 +19,7 @@ export default function formatIR(program: BnyProgram): string {
             case 'CHOICE':
                 return `${prefix}\n`
                     + instruction.choices.map(choice =>
-                        `    ${choice.condition === undefined ? '' :
-                            `[when:${choice.condition.identifier}${choice.condition.value === undefined ? '' : `=${JSON.stringify(choice.condition.value)}`}] `}`
+                        `    ${choice.condition === undefined ? '' : `${formatCondition(choice.condition)} `}`
                         + `${choice.id === undefined ? '' : `[id:${JSON.stringify(choice.id)}] `}`
                         + `${JSON.stringify(choice.text)} -> ${choice.target}\n`
                     ).join('')
@@ -23,7 +27,7 @@ export default function formatIR(program: BnyProgram): string {
             case 'BRANCH':
                 return `${prefix}\n`
                     + instruction.cases.map(({ condition, target }) =>
-                        `    ${condition.identifier}${condition.value === undefined ? '' : ` = ${JSON.stringify(condition.value)}`} -> ${target}\n`
+                        `    ${formatCondition(condition)} -> ${target}\n`
                     ).join('')
                     + `    fallback -> ${instruction.fallback}\n`;
             case 'JUMP':

@@ -58,7 +58,7 @@ export interface ChoiceBranchCstNode extends CstNode {
 
 export type ChoiceBranchCstChildren = {
     ChoiceToken: IToken[];
-    when?: (WhenCstNode)[];
+    condition?: (ConditionCstNode)[];
     id?: (IdCstNode)[];
     Text: IToken[];
     Newline?: IToken[];
@@ -94,18 +94,19 @@ export interface BranchCaseCstNode extends CstNode {
 }
 
 export type BranchCaseCstChildren = {
-    when: WhenCstNode[];
+    condition: ConditionCstNode[];
     Newline?: IToken[];
     statement?: StatementCstNode[];
 };
 
-export interface WhenCstNode extends CstNode {
-    name: 'when';
-    children: WhenCstChildren;
+export interface ConditionCstNode extends CstNode {
+    name: 'condition';
+    children: ConditionCstChildren;
 }
 
-export type WhenCstChildren = {
-    WhenStatementOpen: IToken[];
+export type ConditionCstChildren = {
+    WhenStatementOpen?: IToken[];
+    UnlessStatementOpen?: IToken[];
     Identifier: IToken[];
     WhenEquals?: IToken[];
     Text?: IToken[];
@@ -230,7 +231,7 @@ export interface ICstNodeVisitor<IN, OUT> extends ICstVisitor<IN, OUT> {
     id(children: IdCstChildren, param?: IN): OUT;
     branch(children: BranchCstChildren, param?: IN): OUT;
     branchCase(children: BranchCaseCstChildren, param?: IN): OUT;
-    when(children: WhenCstChildren, param?: IN): OUT;
+    condition(children: ConditionCstChildren, param?: IN): OUT;
     skip(children: SkipCstChildren, param?: IN): OUT;
     set(children: SetCstChildren, param?: IN): OUT;
     label(children: LabelCstChildren, param?: IN): OUT;

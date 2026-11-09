@@ -38,11 +38,27 @@
       "    $0"
     ]
   },
+  "Unless Option": {
+    "prefix": "option-unless",
+    "description": "Insert an option shown unless a memory condition matches",
+    "body": [
+      "?: [unless:${1:identifier}=${2:value}] [id:${3:option_id}] ${4:Option text}",
+      "    $0"
+    ]
+  },
   "Branch Case": {
     "prefix": "when",
     "description": "Insert a branch case",
     "body": [
       "[when:${1:identifier}=${2:value}]",
+      "    $0"
+    ]
+  },
+  "Unless Branch Case": {
+    "prefix": "unless",
+    "description": "Insert a branch case with a negated memory condition",
+    "body": [
+      "[unless:${1:identifier}=${2:value}]",
       "    $0"
     ]
   },

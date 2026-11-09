@@ -93,9 +93,10 @@ export function createVM(
     }
 
     function matches(condition: BnyCondition): boolean {
-        return condition.value === undefined
+        const matched = condition.value === undefined
             ? memory.has(condition.identifier)
             : memory.get(condition.identifier) === interpolate(condition.value, true);
+        return condition.negated ? !matched : matched;
     }
 
     function speakerForNextLine(): string | null {

@@ -1,6 +1,7 @@
 export type BnyCondition = {
     identifier: string;
     value?: string;
+    negated?: true;
 };
 
 export type BnyInstruction =

@@ -150,8 +150,8 @@ Here is your $drink!
 ```
 Variable names start with a letter or underscore and then can contain letters, digits, or underscores (but no whitespace or special characters). A missing `$identifier` is replaced with an empty string in dialogue and speaker names. In `:SET` values, any undefined reference deletes the destination variable; for example, `:SET x=$missing` deletes `x` when `missing` is unset. In condition values, a missing reference makes the expanded value undefined; it matches an unset variable.
 
-### Branch Blocks / "When" Statements
-Branch blocks can be used to automatically divert dialogue based on memory. Each block contains a series of `when` statements. Each `[when:identifier=value]` compares the current memory value of `identifier` with `value` after variable expansion. A `[when:identifier]` case matches whenever that variable is set to anything.
+### Branch Blocks / "When" and "Unless" Statements
+Branch blocks can be used to automatically divert dialogue based on memory. Each block contains a series of `when` or `unless` statements. Each `[when:identifier=value]` compares the current memory value of `identifier` with `value` after variable expansion. A `[when:identifier]` case matches whenever that variable is set to anything. `unless` negates the corresponding `when` condition: `[unless:identifier]` matches only when the variable is unset, and `[unless:identifier=value]` matches when its value is different, including when the variable is unset and the expected value is defined.
 
 In a branch block, the **first matching case** runs, even if later conditions also match.
 ```bny
@@ -160,15 +160,18 @@ In a branch block, the **first matching case** runs, even if later conditions al
         The dragon is gone. Here is your reward!
     [when:reputation=trusted]
         I can tell you where the dragon lives.
+    [unless:reputation]
+        I do not know you yet.
 [/branch]
 ```
-A branch needs at least one `when` case. Case bodies can be empty and can contain other statements, including nested branches, choices, and gotos.
+A branch needs at least one `when` or `unless` case. Case bodies can be empty and can contain other statements, including nested branches, choices, and gotos.
 
-When statements can also be attached to options. Prefix an option with a when statement to only show that option when the condition passes.
+Conditions can also be attached to options. Prefix an option with a `when` or `unless` statement to only show that option when the condition passes.
 ```bny
 What should we do? {
     ?: [when:has_key=yes] Open the door
         The door opens.
+    ?: [unless:has_key] Search for a key
     ?: Leave
         We turn back.
 }

@@ -6,7 +6,7 @@ Included:
 
 - Full-line and inline `#` comments.
 - Labels, gotos, skip blocks, branches, and choice blocks.
-- Option conditions (`[when:identifier=value]`) and IDs (`[id:name]`) in either order.
+- Option conditions (`[when:identifier=value]` or `[unless:identifier=value]`) and IDs (`[id:name]`) in either order.
 - `:SET` assignments and deletion, `:SIGNAL`, `:YIELD`, `:SPEAKER`, and `:ALTERNATE`.
 - Speaker shorthand (`|name|` and `||`), including dialogue on the same line.
 - `$variables` in dialogue and `:SET` values. Speaker names also interpolate at runtime, though the extension styles them as speaker text. Option text, IDs, conditions, and signal/yield values are literal strings.
@@ -14,7 +14,7 @@ Included:
 - Bracket matching, auto-closing, and surrounding for `{}` and `[]`.
 - `.bny` file association.
 
-Snippet prefixes: `choice`, `option-when`, `option-id`, `branch`, `when`, `skip`, `set`, `unset`, `speaker`, `speaker-inline`, `alternate`, `signal`, `yield`, `label`, and `goto`.
+Snippet prefixes: `choice`, `option-when`, `option-unless`, `option-id`, `branch`, `when`, `unless`, `skip`, `set`, `unset`, `speaker`, `speaker-inline`, `alternate`, `signal`, `yield`, `label`, and `goto`.
 
 See the [language guide](../../doc/language.md) and [feature tour](../../examples/feature-tour.bny) for syntax and runtime behavior.
 

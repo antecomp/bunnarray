@@ -195,6 +195,12 @@ export const WhenStatementOpen = createToken({
     push_mode: 'whenHeader'
 });
 
+export const UnlessStatementOpen = createToken({
+    name: 'UnlessStatementOpen',
+    pattern: /\[unless:/,
+    push_mode: 'whenHeader'
+});
+
 export const WhenEquals = createToken({
     name: 'WhenEquals',
     pattern: /=[ \t]*/,
@@ -234,6 +240,7 @@ const normalTokens = [
     BranchBlockOpen,
     BranchBlockClose,
     WhenStatementOpen,
+    UnlessStatementOpen,
     ChoiceToken,
     GotoToken,
     LabelToken,

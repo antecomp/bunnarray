@@ -80,7 +80,7 @@ class DialogueVisitor extends BaseVisitor {
             type: 'choiceBranch',
             text: decodeText(ctx.Text[0].image.trim()),
             statements: (ctx.statement ?? []).map(s => this.visit(s)),
-            condition: ctx.when && this.visit(ctx.when),
+            condition: ctx.condition && this.visit(ctx.condition),
             id: ctx.id && this.visit(ctx.id)
         };
     }
@@ -97,16 +97,17 @@ class DialogueVisitor extends BaseVisitor {
     branchCase(ctx: CST.BranchCaseCstChildren): AST.BranchCase {
         return {
             type: 'branchCase',
-            condition: this.visit(ctx.when),
+            condition: this.visit(ctx.condition),
             statements: (ctx.statement ?? []).map(s => this.visit(s))
         };
     }
 
-    when(ctx: CST.WhenCstChildren): AST.Condition {
+    condition(ctx: CST.ConditionCstChildren): AST.Condition {
         const identifier = ctx.Identifier[0].image.trim();
+        const negated = ctx.UnlessStatementOpen ? { negated: true as const } : {};
         return ctx.WhenEquals
-            ? { type: 'equals', identifier, value: decodeText(ctx.Text![0].image.trim()) }
-            : { type: 'exists', identifier };
+            ? { type: 'equals', identifier, value: decodeText(ctx.Text![0].image.trim()), ...negated }
+            : { type: 'exists', identifier, ...negated };
     }
 
     skip(ctx: CST.SkipCstChildren): AST.SkipStatement {

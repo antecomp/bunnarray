@@ -23,7 +23,7 @@ choice ->
     CurlyBraceClose Newline?
 
 choiceBranch ->
-    ChoiceToken (when id? | id when?)? Text Newline?
+    ChoiceToken (condition id? | id condition?)? Text Newline?
         statement*
 
 branch ->
@@ -33,9 +33,10 @@ branch ->
     Newline?
 
 branchCase ->
-    when Newline? statement*
+    condition Newline? statement*
 
-when -> WhenStatementOpen Identifier (WhenEquals Text CloseBracket | WhenCloseBracket)
+condition -> (WhenStatementOpen | UnlessStatementOpen) Identifier
+    (WhenEquals Text CloseBracket | WhenCloseBracket)
 id -> IdBlockOpen Text IdBlockClose
 
 skip ->
@@ -65,7 +66,7 @@ import {
 
     SetKeyword, Identifier, SetEquals, DirectiveNewline,
     SignalKeyword, SignalDelim, BranchBlockOpen, BranchBlockClose,
-    WhenStatementOpen, WhenEquals, WhenCloseBracket, YieldSignalKeyword, YieldSignalDelim,
+    WhenStatementOpen, UnlessStatementOpen, WhenEquals, WhenCloseBracket, YieldSignalKeyword, YieldSignalDelim,
 
     allTokens
 } from './lexer';
@@ -112,19 +113,19 @@ class DialogueParser extends CstParser {
 
     choiceBranch = this.RULE('choiceBranch', () => {
         this.CONSUME(ChoiceToken);
-        // (when id? | id when?)? Text
+        // (condition id? | id condition?)? Text
         this.OPTION(() => {
             this.OR([
                 {
                     ALT: () => {
-                        this.SUBRULE(this.when);
+                        this.SUBRULE(this.condition);
                         this.OPTION1(() => this.SUBRULE(this.id));
                     }
                 },
                 {
                     ALT: () => {
                         this.SUBRULE1(this.id);
-                        this.OPTION2(() => this.SUBRULE1(this.when));
+                        this.OPTION2(() => this.SUBRULE1(this.condition));
                     }
                 }
             ]);
@@ -149,15 +150,18 @@ class DialogueParser extends CstParser {
     });
 
     branchCase = this.RULE('branchCase', () => {
-        this.SUBRULE(this.when);
+        this.SUBRULE(this.condition);
         this.OPTION(() => this.CONSUME1(Newline));
         this.MANY(() => this.SUBRULE(this.statement));
     });
 
-    when = this.RULE('when', () => {
-        this.CONSUME(WhenStatementOpen);
+    condition = this.RULE('condition', () => {
+        this.OR1([
+            { ALT: () => this.CONSUME(WhenStatementOpen) },
+            { ALT: () => this.CONSUME(UnlessStatementOpen) }
+        ]);
         this.CONSUME(Identifier);
-        this.OR([
+        this.OR2([
             { ALT: () => {
                 this.CONSUME(WhenEquals);
                 this.CONSUME(Text);
