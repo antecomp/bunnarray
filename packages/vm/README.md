@@ -69,6 +69,7 @@ const onEmission: BnyEmissionHandler = (emission) => {
     }
 }
 ```
+> *Consider using simple, fixed speaker names in your dialogue and looking them up when handling `say` emissions. This makes it easier to link each speaker to a sprite and other display details.*
 
 ## Pauses & onPause
 
