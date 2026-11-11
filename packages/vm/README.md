@@ -50,7 +50,8 @@ type BnyEmission =
 type BnyEmissionHandler = (emission: BnyEmission) => void;
 ```
 
-For example, you could link this up to a JavaScript game like this:
+### For example,
+you could link this up to a JavaScript game like this:
 
 ```ts
 const onEmission: BnyEmissionHandler = (emission) => {
@@ -71,7 +72,7 @@ const onEmission: BnyEmissionHandler = (emission) => {
 
 ## Pauses & onPause
 
-Pauses are events that indicate the vm has paused execution, typically indicating it's awaiting input in order to continue. They include:
+Pauses tell you when the VM has stopped running and what it needs before it can continue. They include:
 
 | `kind` | Data | Host action |
 | --- | --- | --- |
@@ -81,7 +82,8 @@ Pauses are events that indicate the vm has paused execution, typically indicatin
 | `end` | none | The program finished. |
 | `error` | `error: Error` | Execution stopped after a runtime or callback error. |
 
-Similar to `onEmission`, `onPause` (`BnyPauseHandler`) is a callback of the shape `(pause: BnyPause) => void;`. Each pause is one of the types above, identified by it's `kind` property:
+Like `onEmission`, `onPause` (`BnyPauseHandler`) is a callback with the shape `(pause: BnyPause) => void`. Each pause is one of the types above, identified by its `kind` property:
+
 ```ts
 type BnyPause =
     | { kind: 'next'; resume: VoidFunction }
@@ -89,28 +91,87 @@ type BnyPause =
     | { kind: 'yield'; identifier: string; value: string | undefined; resume: VoidFunction }
     | { kind: 'end' }
     | { kind: 'error'; error: Error };
+
+type BnyPauseHandler = (pause: BnyPause) => void;
 ```
 
-For the pause items that require input to continue, they include a `resume` method. Calling `resume` is what will continue the vms operation. They are designed to only be called once. 
+Pauses that need input to continue include a `resume` method. Call it when you're ready for the VM to continue; each `resume` method can only be called once.
 
-Each pause event requires unique handling:
+Each kind of pause needs different handling:
 
 #### next
-The vm, typically when running through the dialogue pauses *before* emitting a line of text, pausing with the `next` type. Calling `resume` here will emit that line of text and continue through the dialogue until the next pause event.
 
-The exception to that is when an option is selected (see below), the first line of text immediately following an option selection will automatically emit without any pause beforehand.
+The VM usually pauses *before* emitting a line of text. Call `resume()` when the player is ready to advance; the VM will emit that line and continue until the next pause. The first line after an option selection is an exception: it emits immediately, without a `next` pause.
 
 #### select
-Indicates we've hit a set of options (user dialogue choices). This event would be wired up to user input to display and select these options. 
-In the case of `select`, the `resume` method requires an index of the selected option. That index corresponds to the index of the option within the options array, an invalid index will throw without crashing the vm. There will always be at least one option. Each option has `text` and optional `id`; untagged options have `id: undefined`. Option ids can be used for adding custom display logic, they have no impact on the vms handling.
 
-> *Note: option conditions are evaluated when the VM reaches a choice, and hidden options do not occupy an index. If no option is visible, the VM skips the choice without a `select` pause.*
+The VM has reached a set of dialogue choices. Show `options` to the player, then call `resume(index)` with the zero-based index of the option they choose. The index refers to the visible `options` array; passing an invalid index throws an error but does not halt the VM.
+
+Each option has `text` and an optional `id`. Untagged options have `id: undefined`. You can use IDs for custom display logic, but they do not affect how the VM handles a choice.
+
+Option conditions are evaluated when the VM reaches the choice. Hidden options are left out of the array, so they do not take up an index. A `select` pause always has at least one option; if none are visible, the VM skips the choice without pausing.
 
 #### yield
-Operates in a similar way to a signal emission, but with the expectation that execution should not continue until the signal is handled. This would typically be reserved for animations or other events where you want to pause dialogue until some external action is complete.  This pause has plain `resume` method, like next, for when you're ready to resume execution.
+
+A `yield` is similar to a signal emission, but the VM waits for you to handle it before continuing. Use `identifier` and `value` to decide what to do, such as playing an animation, then call `resume()` when that action is complete. Like `next`, it takes no argument.
 
 #### end
-Hit the end of the dialogue. Link this up to your cleanup code.
+
+The dialogue has ended. Link this up to your cleanup code.
 
 #### error
-When the vm encounters a halting runtime error. For example, the VM may signal this if it encounters an infinite loop.
+
+The VM has stopped because of a runtime or callback error. For example, this can happen if it encounters an infinite loop.
+
+### For example,
+you could link this up to a JavaScript game like this:
+
+```ts
+const onPause: BnyPauseHandler = (pause) => {
+    switch (pause.kind) {
+        case 'next':
+            continueButton.disabled = false;
+            continueButton.onclick = () => {
+                continueButton.disabled = true;
+                pause.resume();
+            };
+            break;
+        case 'select':
+            showOptions(pause.options, (index) => pause.resume(index));
+            break;
+        case 'yield':
+            handleAction(pause.identifier, pause.value, () => pause.resume());
+            break;
+        case 'end':
+            cleanupDialogue();
+            break;
+        case 'error':
+            showDialogueError(pause.error);
+            break;
+    }
+};
+```
+
+## Memory
+
+`vm.memory` lets you read and update the VM's memory:
+
+- `get(key)`: Returns the value for a key, or `undefined` if the key is absent.
+- `has(key)`: Returns whether a key is present.
+- `set(key, value)`: Sets a key to a string value.
+- `delete(key)`: Removes a key and returns whether it was present.
+- `snapshot()`: Returns the current memory as a record of keys and values.
+
+Memory values are strings. You can change them while the VM is paused, including before resuming a yield or choice. Conditions use the current values when the VM reaches them.
+
+Memory changes from BunNarraY (such as `:SET`) or from `set` and `delete` also produce a memory emission with a `BnyMemoryUpdate`:
+
+```ts
+type BnyMemoryUpdate = {
+    key: string;
+    prev: string | undefined;
+    value: string | undefined;
+};
+```
+
+You can use these emissions to react to memory changes, such as updating game state or persisting values elsewhere.
