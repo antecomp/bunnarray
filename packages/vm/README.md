@@ -1,4 +1,4 @@
-Run BunNarray dialogues compiled with [`@bunnarray/compiler`](https://www.npmjs.com/package/@bunnarray/compiler?activeTab=readme) or imported through [`@bunnarray/vite`](https://www.npmjs.com/package/@bunnarray/vite?activeTab=readme).
+Runs BunNarray dialogues compiled with [`@bunnarray/compiler`](https://www.npmjs.com/package/@bunnarray/compiler?activeTab=readme) or imported through [`@bunnarray/vite`](https://www.npmjs.com/package/@bunnarray/vite?activeTab=readme).
 See the project at https://github.com/antecomp/bunnarray/.
 
 ```shell
@@ -30,14 +30,17 @@ In short:
 - `start` starts the VM running the dialogue. After that, continuing through it is the responsibility of the `onPause` handler. More on that below.
 
 ## Emissions & onEmission
-Emission are the fire-and-forget events the VM fires when running through the dialogue. This includes:
+
+Emissions are fire-and-forget events from the VM as it runs through the dialogue. They include:
+
 | `kind`   | Data                                       | Meaning                                                       |
 | -------- | ------------------------------------------ | ------------------------------------------------------------- |
 | `say`    | `text`, `speaker: string \| null`          | Encountered a dialogue line.                                  |
 | `signal` | `identifier`, `value: string \| undefined`   | Generic non-blocking notification (`:SIGNAL`s in the language) |
 | `memory` | `key`, `prev`, `value`                     | A memory entry was set or deleted. `undefined` means absent.   |
 
-The `onEmission` (`BnyEmissionHandler`) method is of the shape: `(emission: BnyEmission) => void`, where `emission`'s are one of the 3 items above, identified by the `kind` property. Specifically:
+The `onEmission` (`BnyEmissionHandler`) callback has the shape `(emission: BnyEmission) => void`. Each emission is one of the three types above, identified by its `kind` property:
+
 ```ts
 type BnyEmission =
     | {  kind: 'say'; text: string; speaker: string | null }
@@ -47,7 +50,8 @@ type BnyEmission =
 type BnyEmissionHandler = (emission: BnyEmission) => void;
 ```
 
-So, for example, this could be linked up to a javascript game as such:
+For example, you could link this up to a JavaScript game like this:
+
 ```ts
 const onEmission: BnyEmissionHandler = (emission) => {
     switch(emission.kind) {
@@ -58,8 +62,8 @@ const onEmission: BnyEmissionHandler = (emission) => {
             // update persisted game memory here, if desired.
             break;
         case 'signal': 
-            // f.e this can be used to update game state, trigger animations, etc.
-            handleSignal(emission.key, emission.value);
+            // This can update game state, trigger animations, etc.
+            handleSignal(emission.identifier, emission.value);
             break;
     }
 }
