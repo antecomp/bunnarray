@@ -2,7 +2,7 @@ Runs BunNarray dialogues compiled with [`@bunnarray/compiler`](https://www.npmjs
 See the project at https://github.com/antecomp/bunnarray/.
 
 ```shell
-npm install @bunnarray/compiler
+npm install @bunnarray/vm
 ```
 
 The core export from this package is `createVM`, which configures a BunNarraY interpreter to run compiled dialogue programs.
@@ -175,3 +175,66 @@ type BnyMemoryUpdate = {
 ```
 
 You can use these emissions to react to memory changes, such as updating game state or persisting values elsewhere.
+
+## Full example
+
+This compiles a short dialogue and runs it in the VM. Install `@bunnarray/compiler` alongside the VM for this example. The UI functions stand in for your game's dialogue display, input, and other actions.
+
+```ts
+import { build } from '@bunnarray/compiler';
+import { createVM } from '@bunnarray/vm';
+
+const program = build(`
+:SPEAKER Guide
+Hello, $player.
+Which way should we go? {
+    ?: [id:forest] Into the forest
+        :SET route = forest
+        :YIELD transition:forest
+        Let's take the forest path.
+    ?: [id:warren] Back to the warren
+        :SET route = warren
+        :YIELD transition:warren
+        Let's head back to warren.
+}
+:SIGNAL route_chosen
+`);
+
+const vm = createVM(program, {
+    memory: { player: 'Hazel' },
+    onEmission: (emission) => {
+        switch (emission.kind) {
+            case 'say':
+                showLine(emission.speaker, emission.text);
+                break;
+            case 'memory':
+                saveMemory(emission.key, emission.value);
+                break;
+            case 'signal':
+                handleSignal(emission.identifier, emission.value);
+                break;
+        }
+    },
+    onPause: (pause) => {
+        switch (pause.kind) {
+            case 'next':
+                showContinueButton(() => pause.resume());
+                break;
+            case 'select':
+                showOptions(pause.options, (index) => pause.resume(index));
+                break;
+            case 'yield':
+                handleAction(pause.identifier, pause.value, () => pause.resume());
+                break;
+            case 'end':
+                cleanupDialogue();
+                break;
+            case 'error':
+                showDialogueError(pause.error);
+                break;
+        }
+    }
+});
+
+vm.start();
+```
