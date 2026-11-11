@@ -69,3 +69,48 @@ const onEmission: BnyEmissionHandler = (emission) => {
 }
 ```
 
+## Pauses & onPause
+
+Pauses are events that indicate the vm has paused execution, typically indicating it's awaiting input in order to continue. They include:
+
+| `kind` | Data | Host action |
+| --- | --- | --- |
+| `next` | `resume()` | Continue to the next dialogue line. |
+| `select` | `options`, `resume(index)` | Show the visible options and pass a zero-based index into that list. |
+| `yield` | `identifier`, `value`, `resume()` | Complete an external action, then continue. |
+| `end` | none | The program finished. |
+| `error` | `error: Error` | Execution stopped after a runtime or callback error. |
+
+Similar to `onEmission`, `onPause` (`BnyPauseHandler`) is a callback of the shape `(pause: BnyPause) => void;`. Each pause is one of the types above, identified by it's `kind` property:
+```ts
+type BnyPause =
+    | { kind: 'next'; resume: VoidFunction }
+    | { kind: 'select'; options: BnyOption[]; resume: (index: number) => void }
+    | { kind: 'yield'; identifier: string; value: string | undefined; resume: VoidFunction }
+    | { kind: 'end' }
+    | { kind: 'error'; error: Error };
+```
+
+For the pause items that require input to continue, they include a `resume` method. Calling `resume` is what will continue the vms operation. They are designed to only be called once. 
+
+Each pause event requires unique handling:
+
+#### next
+The vm, typically when running through the dialogue pauses *before* emitting a line of text, pausing with the `next` type. Calling `resume` here will emit that line of text and continue through the dialogue until the next pause event.
+
+The exception to that is when an option is selected (see below), the first line of text immediately following an option selection will automatically emit without any pause beforehand.
+
+#### select
+Indicates we've hit a set of options (user dialogue choices). This event would be wired up to user input to display and select these options. 
+In the case of `select`, the `resume` method requires an index of the selected option. That index corresponds to the index of the option within the options array, an invalid index will throw without crashing the vm. There will always be at least one option. Each option has `text` and optional `id`; untagged options have `id: undefined`. Option ids can be used for adding custom display logic, they have no impact on the vms handling.
+
+> *Note: option conditions are evaluated when the VM reaches a choice, and hidden options do not occupy an index. If no option is visible, the VM skips the choice without a `select` pause.*
+
+#### yield
+Operates in a similar way to a signal emission, but with the expectation that execution should not continue until the signal is handled. This would typically be reserved for animations or other events where you want to pause dialogue until some external action is complete.  This pause has plain `resume` method, like next, for when you're ready to resume execution.
+
+#### end
+Hit the end of the dialogue. Link this up to your cleanup code.
+
+#### error
+When the vm encounters a halting runtime error. For example, the VM may signal this if it encounters an infinite loop.
