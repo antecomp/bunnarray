@@ -28,8 +28,6 @@ Plain `.bny` imports have type `BnyProgram` and can be passed directly to the VM
 import story from './story.bny';
 import { createVM } from '@bunnarray/vm';
 
-const vm = createVM(story, { handler: emission => console.log(emission) });
+const vm = createVM(story, { ... });
 vm.start();
 ```
-
-Use `?raw` when source text is needed instead of a compiled program. The compiler runs in Vite's build process; the generated module contains only program data.

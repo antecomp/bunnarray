@@ -29,6 +29,10 @@ In short:
 - `memory` lets you interface with the VM memory directly (read & update).
 - `start` starts the VM running the dialogue. After that, continuing through it is the responsibility of the `onPause` handler. More on that below.
 
+`createVM` throws if the program's major version does not match the VM's, or if the program does not end with an `END` instruction.
+
+Each VM instance runs one dialogue once. `start()` can only be called once; calling it again throws. Create a new VM instance for each dialogue run, including when replaying the same program.
+
 ## Emissions & onEmission
 
 Emissions are fire-and-forget events from the VM as it runs through the dialogue. They include:
