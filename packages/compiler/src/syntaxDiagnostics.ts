@@ -1,10 +1,10 @@
 import type { ILexingError, IRecognitionException } from 'chevrotain';
 
 /**
- * A normalized compiler syntax diagnostic produced by the lexer or parser.
+ * A normalized compiler diagnostic produced by the lexer, parser, or lowerer.
  */
 export interface SyntaxDiagnostic {
-    kind: 'lex' | 'parse';
+    kind: 'lex' | 'parse' | 'semantic';
     message: string;
     line: number;
     column: number;
@@ -48,13 +48,14 @@ export function getParseDiagnostics(errors: IRecognitionException[], source: str
  * Formats one or more syntax diagnostics into a readable multi-line compiler error message.
  */
 export function formatDiagnostics(diagnostics: SyntaxDiagnostic[]): string {
+    const kindNames = { lex: 'Lex', parse: 'Parse', semantic: 'Semantic' };
     return diagnostics.map(({ kind, line, column, message }) =>
-        `${kind === 'lex' ? 'Lex' : 'Parse'} error at line ${line}, column ${column}: ${message}`
+        `${kindNames[kind]} error at line ${line}, column ${column}: ${message}`
     ).join('\n');
 }
 
 /**
- * Error raised when the BunNarraY compiler encounters one or more syntax issues.
+ * Error raised when the BunNarraY compiler encounters one or more source issues.
  * The original diagnostics remain attached for callers that need structured error details.
  */
 export class CompilerSyntaxError extends SyntaxError {

@@ -28,6 +28,10 @@ describe('@bunnarray/vite', () => {
                 message: expect.stringContaining('line 1, column 6'),
                 loc: { line: 1, column: 5 }
             });
+            await expect(server.transformRequest('/invalid-semantic.bny')).rejects.toMatchObject({
+                message: expect.stringContaining('Semantic error at line 2, column 3: encountered goto to unknown label: missing'),
+                loc: { line: 2, column: 2 }
+            });
         } finally {
             await server.close();
         }

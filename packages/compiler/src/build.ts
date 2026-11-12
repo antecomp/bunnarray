@@ -10,7 +10,7 @@ import { CompilerSyntaxError, getLexDiagnostics, getParseDiagnostics } from './s
 /**
  * Compiles raw BunNarraY dialogue source into a program.
  *
- * @throws a {@link CompilerSyntaxError} when lexing or parsing fails.
+ * @throws a {@link CompilerSyntaxError} when lexing, parsing, or semantic validation fails.
  *
  * @param raw Raw dialogue source.
  * @returns The compiled VM program.

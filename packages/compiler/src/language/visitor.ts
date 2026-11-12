@@ -1,5 +1,6 @@
 import type * as AST from './ast';
 import type * as CST from './cst';
+import type { IToken } from 'chevrotain';
 
 import parser from './parser';
 const BaseVisitor = parser.getBaseCstVisitorConstructor();
@@ -17,6 +18,10 @@ const escapedCharacters: Record<string, string> = {
 function decodeText(text: string): string {
     return text.replace(/&(lbrack|rbrack|lbrace|rbrace|hash|pipe|amp);/g,
         (_, name: string) => escapedCharacters[name]);
+}
+
+function position(token: IToken): AST.SourcePosition {
+    return { line: token.startLine!, column: token.startColumn!, offset: token.startOffset };
 }
 
 function splitSpeakerNames(text: string): string[] {
@@ -114,6 +119,7 @@ class DialogueVisitor extends BaseVisitor {
         return {
             type: 'skip',
             label: decodeText(ctx.Text[0].image.trim()),
+            position: position(ctx.SkipBlockOpen[0]),
             statements: (ctx.statement ?? []).map(s => this.visit(s))
         };
     }
@@ -148,14 +154,16 @@ class DialogueVisitor extends BaseVisitor {
     label(ctx: CST.LabelCstChildren): AST.LabelStatement {
         return {
             type: 'label',
-            name: decodeText(ctx.Text[0].image.trim())
+            name: decodeText(ctx.Text[0].image.trim()),
+            position: position(ctx.LabelToken[0])
         };
     }
 
     goto(ctx: CST.GotoCstChildren): AST.GotoStatement {
         return {
             type: 'goto',
-            target: decodeText(ctx.Text[0].image.trim())
+            target: decodeText(ctx.Text[0].image.trim()),
+            position: position(ctx.GotoToken[0])
         };
     }
 

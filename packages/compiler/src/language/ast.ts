@@ -3,6 +3,12 @@ export type DialogueAST = {
     statements: Statement[];
 };
 
+export type SourcePosition = {
+    line: number;
+    column: number;
+    offset: number;
+};
+
 export type Statement =
     | SayStatement
     | ChoiceStatement
@@ -70,17 +76,20 @@ export type YieldStatement = {
 export type SkipStatement = {
     type: 'skip';
     label: string;
+    position: SourcePosition;
     statements: Statement[];
 };
 
 export type LabelStatement = {
     type: 'label';
     name: string;
+    position: SourcePosition;
 };
 
 export type GotoStatement = {
     type: 'goto';
     target: string;
+    position: SourcePosition;
 };
 
 export type SpeakerStatement = {

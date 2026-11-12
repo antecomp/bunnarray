@@ -1,5 +1,6 @@
-import { DialogueAST, Statement, type Condition } from './language/ast';
+import { DialogueAST, Statement, type Condition, type SourcePosition } from './language/ast';
 import type { BnyCondition, BnyInstruction, BnyOpcode, BnyOperation, BnyProgram } from '@bunnarray/vm';
+import { CompilerSyntaxError } from './syntaxDiagnostics';
 
 function lowerCondition(condition: Condition): BnyCondition {
     const negated = condition.negated ? { negated: true as const } : {};
@@ -21,14 +22,17 @@ const UNRESOLVED = -1;
 export function lower(ast: DialogueAST): BnyProgram {
     const instructions: BnyInstruction[] = [];
     const labels: Record<string, number> = Object.create(null); // <- removes prototype names.
-    const unresolvedGotos: { jump: BnyOperation<'JUMP'>, target: string }[] = [];
+    const unresolvedGotos: { jump: BnyOperation<'JUMP'>, target: string, position: SourcePosition }[] = [];
 
     const emit = (next: BnyInstruction) => { instructions.push(next); };
     const pos = () => instructions.length;
 
-    function defineLabel(name: string) {
-        // TODO: Eventually try to carry symbol references through and make this a more informative error type.
-        if (labels[name] !== undefined) throw new Error(`duplicate label: ${name}`);
+    function semanticError(message: string, position: SourcePosition): never {
+        throw new CompilerSyntaxError([{ kind: 'semantic', message, ...position }]);
+    }
+
+    function defineLabel(name: string, position: SourcePosition) {
+        if (labels[name] !== undefined) semanticError(`duplicate label: ${name}`, position);
         labels[name] = pos();
     }
 
@@ -43,7 +47,7 @@ export function lower(ast: DialogueAST): BnyProgram {
                 break;
 
             case 'label':
-                defineLabel(statement.name);
+                defineLabel(statement.name, statement.position);
                 break;
 
             case 'goto': {
@@ -51,7 +55,8 @@ export function lower(ast: DialogueAST): BnyProgram {
                 emit(jump);
                 unresolvedGotos.push({
                     jump,
-                    target: statement.target
+                    target: statement.target,
+                    position: statement.position
                 });
                 break;
             }
@@ -113,7 +118,7 @@ export function lower(ast: DialogueAST): BnyProgram {
             case 'skip': {
                 const skipJump = INS('JUMP', { target: UNRESOLVED });
                 emit(skipJump);
-                defineLabel(statement.label);
+                defineLabel(statement.label, statement.position);
                 compileSequence(statement.statements);
                 skipJump.target = pos();
                 break;
@@ -167,7 +172,9 @@ export function lower(ast: DialogueAST): BnyProgram {
     emit({ op: 'END' });
 
     unresolvedGotos.forEach(pending => {
-        if(labels[pending.target] === undefined) throw new Error('encountered goto to unknown label: ' + pending.target);
+        if(labels[pending.target] === undefined) {
+            semanticError(`encountered goto to unknown label: ${pending.target}`, pending.position);
+        }
 
         pending.jump.target = labels[pending.target];
     });

@@ -59,6 +59,26 @@ describe('syntax diagnostics', () => {
         expect(offset).toBeLessThanOrEqual(preprocess(source).length);
     });
 
+    it.each([
+        ['  # note\r\n  ->missing', 2, 3, 11, 'encountered goto to unknown label: missing'],
+        ['@same\nFirst.\n  @same', 3, 3, 15, 'duplicate label: same'],
+        ['@same\n[skip:same]\nInside.\n[/skip]', 2, 1, 6, 'duplicate label: same'],
+        ['{\n?: A\n  ->missing\n}\n', 3, 3, 9, 'encountered goto to unknown label: missing']
+    ] as const)('throws located semantic diagnostics from build for %j', (source, line, column, offset, message) => {
+        let caught: unknown;
+        try {
+            build(source);
+        } catch (error) {
+            caught = error;
+        }
+
+        expect(caught).toBeInstanceOf(CompilerSyntaxError);
+        if (!(caught instanceof CompilerSyntaxError)) throw new Error('Expected CompilerSyntaxError');
+        expect(caught.diagnostics).toEqual([{ kind: 'semantic', message, line, column, offset }]);
+        expect(JSON.parse(JSON.stringify(caught.diagnostics))).toEqual(caught.diagnostics);
+        expect(caught.message).toBe(`Semantic error at line ${line}, column ${column}: ${message}`);
+    });
+
     it('returns empty diagnostics and formatted strings for empty error lists', () => {
         expect(getLexDiagnostics([], '')).toEqual([]);
         expect(getParseDiagnostics([], '')).toEqual([]);
