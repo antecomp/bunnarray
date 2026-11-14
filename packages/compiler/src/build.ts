@@ -9,7 +9,7 @@ import { CompilerSyntaxError, getLexDiagnostics, getParseDiagnostics } from './s
 
 const BUILD_VERSION = {
     major: 1,
-    minor: 1,
+    minor: 0,
     patch: ''
 }
 

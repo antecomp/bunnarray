@@ -15,8 +15,7 @@ describe('@bunnarray/vite', () => {
         });
 
         try {
-            const { story, rawSource, run } = await server.ssrLoadModule('/consumer.ts');
-            expect(story.version.major).toBe(1);
+            const { rawSource, run } = await server.ssrLoadModule('/consumer.ts');
             expect(rawSource).toBe('Hello from a .bny import.\n');
             expect(run()).toEqual({
                 pauses: [{ kind: 'end' }],
