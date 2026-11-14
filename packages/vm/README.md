@@ -1,4 +1,4 @@
-Runs BunNarraY dialogues compiled with [`@bunnarray/compiler`](https://www.npmjs.com/package/@bunnarray/compiler?activeTab=readme) or imported through [`@bunnarray/vite`](https://www.npmjs.com/package/@bunnarray/vite?activeTab=readme).
+Runs BunNarraY dialogues compiled with [`@bunnarray/compiler`](https://github.com/antecomp/bunnarray/tree/main/packages/compiler) or imported through [`@bunnarray/vite`](https://github.com/antecomp/bunnarray/tree/main/packages/vite).
 See the project at https://github.com/antecomp/bunnarray/.
 
 ```shell
