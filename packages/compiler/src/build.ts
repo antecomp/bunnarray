@@ -11,7 +11,7 @@ const BUILD_VERSION = {
     major: 1,
     minor: 0,
     patch: ''
-}
+};
 
 /**
  * Compiles raw BunNarraY dialogue source into a program.
