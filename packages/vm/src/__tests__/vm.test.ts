@@ -186,6 +186,19 @@ describe('VM', () => {
         expect(pauses).toEqual([{ kind: 'error', error: failure }]);
     });
 
+    it('wraps non-Error host throws in an error pause', () => {
+        const pauses: BnyPause[] = [];
+        const vm = createVM({ version: { major: 1, minor: 0 }, instructions: [
+            { op: 'SIGNAL', identifier: 'fail' }, { op: 'END' }
+        ] }, {
+            onEmission: () => { throw 'signal failed'; },
+            onPause: current => pauses.push(current)
+        });
+
+        expect(() => vm.start()).not.toThrow();
+        expect(pauses).toEqual([{ kind: 'error', error: new Error('signal failed') }]);
+    });
+
     it('discards a resume queued by a failing pause handler', () => {
         const failure = new Error('pause failed');
         const pauses: BnyPause[] = [];
