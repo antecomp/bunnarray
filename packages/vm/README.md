@@ -16,7 +16,7 @@ createVM(
         onPause: BnyPauseHandler,
         memory?: BnyMemorySnapshot
     }
-)
+) => BnyVM
 ```
 
 In short: 
@@ -25,7 +25,7 @@ In short:
 - `onPause` is a callback for whenever the VM "pauses" and needs user input, such as advancing through lines of text or selecting options. This is what you'd wire up to your player input code.
 - The optional `memory` snapshot is a record of variables you'd like to set before starting the dialogue, such as pulling in game state.
 
-`createVM` then returns a simple `vm` interface: `memory` and `start`.
+`createVM` then returns a simple `BnyVM` interface: `memory` and `start`.
 - `memory` lets you interface with the VM memory directly (read & update).
 - `start` starts the VM running the dialogue. After that, continuing through it is the responsibility of the `onPause` handler. More on that below.
 
