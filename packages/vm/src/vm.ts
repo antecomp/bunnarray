@@ -228,6 +228,7 @@ export function createVM(
 
     return {
         memory,
-        start: continuation(run, 'VM already started!')
+        start: continuation(run, 'VM already started!'),
+        version: formatVersion(VM_VERSION)
     };
 }

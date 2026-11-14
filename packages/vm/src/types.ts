@@ -76,4 +76,6 @@ export type BnyVM = {
     memory: BnyMemory;
     /** Start execution. Call once per instance; subsequent calls throw. */
     start: VoidFunction;
+    /** Active VM version */
+    version: string;
 };
