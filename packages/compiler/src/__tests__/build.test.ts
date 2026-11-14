@@ -421,6 +421,15 @@ how has life been treating you?`, [
     });
 
     describe('labels and gotos', () => {
+        it.each(['__proto__', 'constructor', 'toString'])('resolves a label named %s', name => {
+            expectIR(`->${name}\nSkipped\n@${name}\nReached`, [
+                { op: 'JUMP', target: 2 },
+                { op: 'SAY', text: 'Skipped' },
+                { op: 'SAY', text: 'Reached' },
+                { op: 'END' }
+            ]);
+        });
+
         it('resolves forward and backward gotos without emitting label instructions', () => {
             expectIR(`->later
                 @earlier

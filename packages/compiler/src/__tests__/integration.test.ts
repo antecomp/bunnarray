@@ -124,6 +124,93 @@ describe('compiled programs in the VM', () => {
         expect(emissions).toEqual([{ kind: 'say', text: 'After', speaker: null }]);
     });
 
+    it('runs consecutive choice blocks after completing the first option', () => {
+        const emissions: BnyEmission[] = [];
+        const pauses: BnyPause[] = [];
+        const pause = capture(pauses);
+        const vm = createVM(build(`{
+            ?: First
+                First path
+        }
+        {
+            ?: Second
+                Second path
+        }
+        After`), {
+            onEmission: emission => emissions.push(emission),
+            onPause: current => pauses.push(current)
+        });
+
+        vm.start();
+        expect(pause('select').options).toEqual([{ text: 'First', id: undefined }]);
+        pause('select').resume(0);
+        expect(pause('select').options).toEqual([{ text: 'Second', id: undefined }]);
+        pause('select').resume(0);
+        pause('next').resume();
+        expect(pause('end')).toEqual({ kind: 'end' });
+        expect(emissions).toEqual([
+            { kind: 'say', text: 'First path', speaker: null },
+            { kind: 'say', text: 'Second path', speaker: null },
+            { kind: 'say', text: 'After', speaker: null }
+        ]);
+    });
+
+    it('passes compiled option IDs through to the visible selection and follows its target', () => {
+        const emissions: BnyEmission[] = [];
+        const pauses: BnyPause[] = [];
+        const pause = capture(pauses);
+        const vm = createVM(build(`{
+            ?: [when:visible=yes] [id:hidden] Hidden
+                Hidden path
+            ?: [id:go] Go
+                Go path
+            ?: Plain
+                Plain path
+        }`), {
+            onEmission: emission => emissions.push(emission),
+            onPause: current => pauses.push(current)
+        });
+
+        vm.start();
+        expect(pause('select').options).toEqual([
+            { text: 'Go', id: 'go' },
+            { text: 'Plain', id: undefined }
+        ]);
+        pause('select').resume(0);
+        expect(pause('end')).toEqual({ kind: 'end' });
+        expect(emissions).toEqual([{ kind: 'say', text: 'Go path', speaker: null }]);
+    });
+
+    it('executes forward and backward gotos while skipping and later entering a skip block', () => {
+        const emissions: BnyEmission[] = [];
+        const pauses: BnyPause[] = [];
+        const vm = createVM(build(`->start
+            @repeat
+            Repeated
+            ->done
+            @start
+            First
+            [skip:secret]
+                Secret
+                ->repeat
+            [/skip]
+            Skipped
+            ->secret
+            @done
+            End`), {
+            onEmission: emission => emissions.push(emission),
+            onPause: current => {
+                if (current.kind === 'next') current.resume();
+                else pauses.push(current);
+            }
+        });
+
+        vm.start();
+        expect(pauses).toEqual([{ kind: 'end' }]);
+        expect(emissions.filter(emission => emission.kind === 'say').map(emission => emission.text))
+            .toEqual(['First', 'Skipped', 'Secret', 'Repeated', 'End']);
+    });
+
     it('persists shorthand speakers through choices and stops speaker rotation', () => {
         const emissions: BnyEmission[] = [];
         const pauses: BnyPause[] = [];
@@ -154,6 +241,39 @@ describe('compiled programs in the VM', () => {
             { kind: 'say', text: 'Still Carol too.', speaker: 'Carol' },
             { kind: 'say', text: 'Narration.', speaker: null }
         ]);
+    });
+
+    it('advances alternating speakers only for spoken lines across signals, yields, sets, and choices', () => {
+        const emissions: BnyEmission[] = [];
+        const pauses: BnyPause[] = [];
+        const pause = capture(pauses);
+        const vm = createVM(build(`:ALTERNATE Alice; Bob
+            First
+            :SIGNAL ping
+            :YIELD wait
+            :SET state=ready
+            { ?: [id:continue] Continue }
+            Second
+            :ALTERNATE
+            Third`), {
+            onEmission: emission => emissions.push(emission),
+            onPause: current => pauses.push(current)
+        });
+
+        vm.start();
+        expect(pause('yield').identifier).toBe('wait');
+        pause('yield').resume();
+        expect(pause('select').options).toEqual([{ text: 'Continue', id: 'continue' }]);
+        pause('select').resume(0);
+        pause('next').resume();
+        expect(pause('end')).toEqual({ kind: 'end' });
+        expect(emissions.filter(emission => emission.kind === 'say')).toEqual([
+            { kind: 'say', text: 'First', speaker: 'Alice' },
+            { kind: 'say', text: 'Second', speaker: 'Bob' },
+            { kind: 'say', text: 'Third', speaker: 'Bob' }
+        ]);
+        expect(emissions).toContainEqual({ kind: 'signal', identifier: 'ping', value: undefined });
+        expect(emissions).toContainEqual({ kind: 'memory', key: 'state', prev: undefined, value: 'ready' });
     });
 
     it('preserves optional payloads and memory deletion through JSON serialization', () => {

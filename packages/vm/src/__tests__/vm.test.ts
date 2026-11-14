@@ -22,6 +22,24 @@ function say(text: string, speaker: string | null = null): BnyEmission {
 }
 
 describe('VM', () => {
+    it.each([
+        { major: 0, minor: 0 },
+        { major: 2, minor: 0 }
+    ])('rejects an incompatible program version %j', version => {
+        expect(() => createVM({ version, instructions: [{ op: 'END' }] }, {
+            onEmission: () => {}, onPause: () => {}
+        })).toThrow(`Program version ${version.major}.${version.minor} incompatible with vm version 1.0`);
+    });
+
+    it('accepts a different minor version with the same major version', () => {
+        const pauses: BnyPause[] = [];
+        const vm = createVM({ version: { major: 1, minor: 99 }, instructions: [{ op: 'END' }] }, {
+            onEmission: () => {}, onPause: current => pauses.push(current)
+        });
+        vm.start();
+        expect(pauses).toEqual([{ kind: 'end' }]);
+    });
+
     it('stops infinite loops when the instruction budget is exceeded', () => {
         const { vm, pause } = runtime([{ op: 'JUMP', target: 0 }, { op: 'END' }]);
         vm.start();
@@ -117,6 +135,18 @@ describe('VM', () => {
         pause('select').resume(0);
         expect(pause('error').error.message).toBe('pc (2) out of program range!');
         expect(() => vm.start()).toThrow('VM already started');
+    });
+
+    it.each([-1, 1, 0.5, NaN, Infinity])('rejects invalid choice index %s without consuming the selection', index => {
+        const { vm, pause } = runtime([
+            { op: 'CHOICE', choices: [{ text: 'Continue', target: 1 }], fallback: 1 },
+            { op: 'END' }
+        ]);
+        vm.start();
+        const select = pause('select');
+        expect(() => select.resume(index)).toThrow(`Invalid choice index: ${index}`);
+        select.resume(0);
+        expect(pause('end')).toEqual({ kind: 'end' });
     });
 
     it('halts after a runtime error and discards queued resumes', () => {

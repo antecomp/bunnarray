@@ -60,6 +60,27 @@ describe('syntax diagnostics', () => {
     });
 
     it.each([
+        ['[branch]\n[/branch]', 2, 1],
+        ['[skip:route]\nInside', 3, 1],
+        ['[branch]\n[when:flag=]\nYep\n[/branch]', 2, 12],
+        ['{\n?: [id:] Go\n}', 2, 8],
+        [':SET x=', 1, 8],
+        [':SIGNAL event:', 1, 15],
+        [':YIELD action:', 1, 15]
+    ] as const)('rejects malformed structural and directive syntax in %j', (source, line, column) => {
+        let caught: unknown;
+        try {
+            build(source);
+        } catch (error) {
+            caught = error;
+        }
+
+        expect(caught).toBeInstanceOf(CompilerSyntaxError);
+        if (!(caught instanceof CompilerSyntaxError)) throw new Error('Expected CompilerSyntaxError');
+        expect(caught.diagnostics[0]).toMatchObject({ kind: 'parse', line, column });
+    });
+
+    it.each([
         ['  # note\r\n  ->missing', 2, 3, 11, 'encountered goto to unknown label: missing'],
         ['@same\nFirst.\n  @same', 3, 3, 15, 'duplicate label: same'],
         ['@same\n[skip:same]\nInside.\n[/skip]', 2, 1, 6, 'duplicate label: same'],
