@@ -29,5 +29,5 @@ Run these commands from the repository root. `build` and `test` run their packag
 
 - `packages/compiler/src/language` contains tokenization, parsing, and AST conversion. `build.ts` normalizes source and reports syntax diagnostics; `lower.ts` produces VM instructions.
 - `packages/vm/src` is for the interpreter VM. It contains instruction types, execution, memory, and pause scheduling. The public API is exported from `index.ts`.
-- `packages/vite/src` Is for the vite plugin. It transforms plain `.bny` imports to program modules. `client.d.ts` declares the TypeScript import type.
+- `packages/vite/src` is for the Vite plugin. It transforms plain `.bny` imports to program modules. `client.d.ts` declares the TypeScript import type.
 - `apps/playground/src` contains the browser editor, instruction display, and interactive runner.

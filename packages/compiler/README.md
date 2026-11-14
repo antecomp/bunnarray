@@ -14,7 +14,7 @@ build(source: string) => BnyProgram
 
 Pass in the dialogue text itself, such as a string you've read from a `.bny` file. `build` runs synchronously and returns the program. The `BnyProgram` type is exported by `@bunnarray/vm`.
 
-You can read the compiler's version with `build.version`. Each compiled program records it's version in `program.version` also.
+You can read the compiler's version with `build.version`. Each compiled program also records its version in `program.version`.
 
 ### For example,
 you can compile a short dialogue like this:

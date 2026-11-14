@@ -2,7 +2,7 @@ type ScheduleFunction = (task: VoidFunction) => void;
 
 
 /** 
- * Simple FIFO scheduler to run reentrate tasks in sequence.
+ * Simple FIFO scheduler to run reentrant tasks in sequence.
  * Routes errors through `onError`.
  */
 export default function createTrampoline(onError: (error: unknown) => void): ScheduleFunction {

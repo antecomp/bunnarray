@@ -26,9 +26,9 @@ function EM<E extends BnyEmission['kind']>(
 }
 
 /**
- * Creates a bunnarray virtual machine.
+ * Creates a BunNarraY virtual machine.
  *
- * See project {@link https://github.com/antecomp/bunnarray/blob/main/packages/vm/README.md|README} for usage instructions.
+ * See the project {@link https://github.com/antecomp/bunnarray/blob/main/packages/vm/README.md|README} for usage instructions.
  *
  * @param program The program (compiled by \@bunnarray/compiler) to execute.
  * @param options Runtime configuration including the emission/pause handler and initial memory.

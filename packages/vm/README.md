@@ -202,7 +202,7 @@ Which way should we go? {
     ?: [id:warren] Back to the warren
         :SET route = warren
         :YIELD transition:warren
-        Let's head back to warren.
+        Let's head back to the warren.
 }
 :SIGNAL route_chosen
 `);

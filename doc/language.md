@@ -40,7 +40,7 @@ Use `|name|` as a shorthand for `:SPEAKER name`. It can be placed on the same li
 
 Use `:ALTERNATE` with semicolon-separated names to rotate speakers on each subsequent dialogue line. Names may contain spaces. A bare `:ALTERNATE` stops the rotations and leaves the last speaker in place. `:SPEAKER` (including the shorthand) also stops the rotation and sets a new speaker. Only dialogue lines advance the rotation.
 ```bny
-:ALTERNATE Hazel; Captian Holly
+:ALTERNATE Hazel; Captain Holly
 Hello!          # Hazel
 Hi!             # Captain Holly
 Hello again!    # Hazel
@@ -231,7 +231,7 @@ Here is the key to the castle!
 > Signal handling is up to the VM implementation. In the [BunNarraY VM](../packages/vm/README.md), these are captured by the `onEmission` callback.
 
 ### Yields
-Yielding works identically to signals, with the intent of pausing execution to hand control to the consumer. This can be used to trigger animations or other events that should pause dialogue until they've completed.
+Yields work identically to signals, with the intent of pausing execution to hand control to the consumer. This can be used to trigger animations or other events that should pause dialogue until they've completed.
 ```bny
 :YIELD rattle_door:front
 The door won't open
@@ -304,7 +304,7 @@ Another man walks into the café and sits beside you.
         # An empty option body continues after the choice.
 }
 
-#identifiers can't start with a number, so this still works cleanly
+# Identifiers can't start with a number, so this still works cleanly.
 |server| Your total is on receipt $12.  
 {
     ?: [when:addition=cream] Was the cream extra?

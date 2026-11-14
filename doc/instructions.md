@@ -19,7 +19,7 @@ type BnyProgram = {
 };
 ```
 
-Instructions begin at index `0` and typically moves to the next instruction after executing one. `JUMP`, `BRANCH`, and `CHOICE` can move execution to another index. Every `target` and `fallback` is an absolute, zero-based index into `instructions`.
+Execution begins at index `0` and typically moves to the next instruction after executing one. `JUMP`, `BRANCH`, and `CHOICE` can move execution to another index. Every `target` and `fallback` is an absolute, zero-based index into `instructions`.
 
 Labels are resolved to instruction indexes during compilation, so there is no label opcode. Skip blocks become jumps, and the compiler adds jumps after choice and branch bodies so they continue after the block. A target does not act like a function call: there is no automatic return to where execution came from.
 
@@ -39,7 +39,7 @@ For example, `{ identifier: 'has_key', value: 'yes' }` matches when `has_key` is
 
 ## Note: Variable expansion
 
-The VM implementation and expectation is that `$identifier` strings are expanded with current memory values. However, this is not enforced with any sort of templating in the instruction-set. `SAY`, `SET` and other instructions plainly include `$identifier` as a string.
+The VM implementation and expectation are that `$identifier` strings are expanded with current memory values. However, this is not enforced with any sort of templating in the instruction set. `SAY`, `SET`, and other instructions plainly include `$identifier` as a string.
 
 ## Opcodes
 

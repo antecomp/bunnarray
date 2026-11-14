@@ -4,7 +4,7 @@ export type BnyCondition = {
     identifier: string;
     /** Expected value; omit to test whether the key exists. */
     value?: string;
-    /** Invert the result of the test when `true`. I.e "unless" */
+    /** Invert the result of the test when `true`, i.e., "unless". */
     negated?: true;
 };
 

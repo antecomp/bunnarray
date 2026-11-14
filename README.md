@@ -1,5 +1,5 @@
 # The BunNarraY Dialogue Language 𑣲₍ ᐢ. .ᐢ₎
-BunNarraY is a simple dialogue scripting language built with [chevrotain](https://chevrotain.io/docs/). It is designed to integrate into your TS/JS games and experiences.
+BunNarraY is a simple dialogue scripting language built with [Chevrotain](https://chevrotain.io/docs/). It is designed to integrate into your TS/JS games and experiences.
 
 Originally created as part of a small [game jam project](https://github.com/antecomp/pixicrystal/tree/main), it has been completely redesigned for general use!
 
@@ -14,7 +14,7 @@ Originally created as part of a small [game jam project](https://github.com/ante
 
 
 ### Quick Example
-For a quick feel of the language without checking documentation, see below:
+For a quick feel for the language without checking the documentation, see below:
 ```
 :SPEAKER Alice
 Hello! It's good to see you!
@@ -28,7 +28,7 @@ What should we do? {
 }
 We chose $route.
 ```
-BunNarraY has many more tricks than this! But hopefully this gives some clarity on how simple it is to use! No spamming quotation marks or any other noisy syntax!
+BunNarraY has many more tricks than this! But hopefully, this gives some clarity on how simple it is to use! No spamming quotation marks or any other noisy syntax!
 
 ### Using it in a project
 
