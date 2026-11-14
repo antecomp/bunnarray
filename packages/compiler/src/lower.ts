@@ -1,5 +1,5 @@
 import { DialogueAST, Statement, type Condition, type SourcePosition } from './language/ast';
-import type { BnyCondition, BnyInstruction, BnyOpcode, BnyOperation, BnyProgram } from '@bunnarray/vm';
+import type { BnyCondition, BnyInstruction, BnyOpcode, BnyOperation } from '@bunnarray/vm';
 import { CompilerSyntaxError } from './syntaxDiagnostics';
 
 function lowerCondition(condition: Condition): BnyCondition {
@@ -19,7 +19,7 @@ function INS<O extends BnyOpcode>(
 
 const UNRESOLVED = -1;
 
-export function lower(ast: DialogueAST): BnyProgram {
+export function lower(ast: DialogueAST): BnyInstruction[] {
     const instructions: BnyInstruction[] = [];
     const labels: Record<string, number> = Object.create(null); // <- removes prototype names.
     const unresolvedGotos: { jump: BnyOperation<'JUMP'>, target: string, position: SourcePosition }[] = [];
@@ -179,12 +179,5 @@ export function lower(ast: DialogueAST): BnyProgram {
         pending.jump.target = labels[pending.target];
     });
 
-    return { 
-        version: {
-            major: 1,
-            minor: 0,
-            patch: 'indev'
-        },
-        instructions
-    };
+    return instructions;
 }

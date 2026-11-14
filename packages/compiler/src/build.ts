@@ -7,6 +7,12 @@ import type { BnyProgram } from '@bunnarray/vm';
 import { lower } from './lower';
 import { CompilerSyntaxError, getLexDiagnostics, getParseDiagnostics } from './syntaxDiagnostics';
 
+const BUILD_VERSION = {
+    major: 1,
+    minor: 1,
+    patch: ''
+}
+
 /**
  * Compiles raw BunNarraY dialogue source into a program.
  *
@@ -31,6 +37,10 @@ export function build(raw: string): BnyProgram {
 
     const ast = visitor.visit(cst) as DialogueAST;
 
-    const program = lower(ast);
-    return program;
+    const instructions = lower(ast);
+
+    return {
+        version: BUILD_VERSION,
+        instructions
+    };
 }
