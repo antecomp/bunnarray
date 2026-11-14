@@ -1,6 +1,6 @@
 # BNY Language Support
 
-VS Code syntax highlighting, snippets, and editor support for current `.bny` dialogue files. This extension is declarative: it does not provide compiler diagnostics, execution, or label navigation.
+VS Code syntax highlighting, snippets, and editor support for BunNarraY (`.bny`) dialogue files.
 
 Included:
 
@@ -17,10 +17,6 @@ Included:
 Snippet prefixes: `choice`, `option-when`, `option-unless`, `option-id`, `branch`, `when`, `unless`, `skip`, `set`, `unset`, `speaker`, `speaker-inline`, `alternate`, `signal`, `yield`, `label`, and `goto`.
 
 See the [language guide](../../doc/language.md) and [feature tour](../../examples/feature-tour.bny) for syntax and runtime behavior.
-
-## Changes in 2.1.0
-
-Legacy angle-bracket tags such as `<face:thinking>` and `<signal:keygiven>` no longer receive directive highlighting, and `<` no longer auto-closes. The compiler treats these tags as ordinary dialogue text. Use `:SIGNAL keygiven` to emit a signal, or `:YIELD identifier` to pause for a consumer action. There is no built-in face-change directive; consumers can implement one using signals or yields.
 
 ## Use it locally
 
