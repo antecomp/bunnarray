@@ -6,11 +6,11 @@ import type { BnyEmission, BnyVM, BnyVMOptions } from './types';
 
 const INSTRUCTION_BUDGET = 100_000;
 
-const VM_VERSION = {
+const VM_VERSION = Object.freeze({
     major: 1,
     minor: 0,
     patch: ''
-} as const satisfies BnyVersion;
+} as const satisfies BnyVersion);
 
 function formatVersion(ver: BnyVersion): string {
     return `${ver.major}.${ver.minor}`
@@ -228,7 +228,10 @@ export function createVM(
 
     return {
         memory,
-        start: continuation(run, 'VM already started!'),
-        version: formatVersion(VM_VERSION)
+        start: continuation(run, 'VM already started!')
     };
+}
+
+export namespace createVM {
+    export const version = VM_VERSION;
 }

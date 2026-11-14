@@ -3,15 +3,15 @@ import { DialogueLexer } from './language/lexer';
 import parser from './language/parser';
 import visitor from './language/visitor';
 import preprocess from './language/preprocess';
-import type { BnyProgram } from '@bunnarray/vm';
+import type { BnyProgram, BnyVersion } from '@bunnarray/vm';
 import { lower } from './lower';
 import { CompilerSyntaxError, getLexDiagnostics, getParseDiagnostics } from './syntaxDiagnostics';
 
-const BUILD_VERSION = {
+const BUILD_VERSION = Object.freeze({
     major: 1,
     minor: 0,
     patch: ''
-};
+} as const satisfies BnyVersion);
 
 /**
  * Compiles raw BunNarraY dialogue source into a program.
@@ -43,4 +43,8 @@ export function build(raw: string): BnyProgram {
         version: BUILD_VERSION,
         instructions
     };
+}
+
+export namespace build {
+    export const version = BUILD_VERSION;
 }
