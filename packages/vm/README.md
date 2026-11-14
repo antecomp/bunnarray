@@ -31,6 +31,8 @@ In short:
 
 `createVM` throws if the program's major version does not match the VM's, or if the program does not end with an `END` instruction.
 
+You can read the VM's version with `createVM.version`. Its `major` field must match the compiled program's `version.major`.
+
 Each VM instance runs one dialogue once. `start()` can only be called once; calling it again throws. Create a new VM instance for each dialogue run, including when replaying the same program.
 
 ## Emissions & onEmission
